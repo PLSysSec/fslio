@@ -21,13 +21,46 @@ release of information, is needed~\citep{Sabelfeld:Sands:CSFW05}. In this
 article, we focus on \emph{non-interference}. 
 
 %% Language-based enforcement 
-Recently, it has become popular that language-based IFC enforcements are given
-in the form of an execution monitors~\citep{Hedin2011}. This decision is mainly
+Recently, it has become popular to provide language-based IFC enforcements in
+the form of execution monitors~\citep{Hedin2011}. This decision is mainly
 motivated by (i) the permissiveness of dynamic techniques over static
 ones~\citep{Sabelfeld:Russo:PSI09}, and (ii) the simplicity for treating notions
 like dynamic code evaluation---a feature commonly present in modern scripting
-languages.
+languages. To describe confidentiality demands on data, IFC monitors often
+maintain a mapping from variables to security
+labels~\citep{myers:dlm,Stefan:2011}.  For simplicity, we only consider two
+labels: \high (high), which denotes secrets, and \low (low), which denotes
+public data. The partial ordering $\low \canflow \high$ and $\high \not \canflow
+\low$ expresses that information can only flow from public data into secret
+entities. 
+
 %% Treatment of variables 
+%% Definition flow-sensitive, flow-insensitive 
+%% Why one instead of the other one 
+%%%%% FS+ Permissiveness in dynamic approaches, limited resources, less burnen to
+%%%%% the programmer 
+%%%%% FI+ Compositionality, good for static analysis 
+One of the facets to IFC analysis lies in the treatment of variables. Some
+analyzes, called \emph{flow-insensitive}, forbid variables to change its
+security labels at execution time, i.e., labels are \emph{immutable}. In
+contrast, \emph{flow-sensitive} enforcements admit changes on variables'
+security labels provided that they reflect the confidentiality of the stored
+data, i.e., labels are \emph{mutable}. For instance, assuming secret variable
+$h$ and function $\mathit{publish}(v)$, which produce a public event of value
+$v$, the program $h := 0 ; \mathit{publish}(h)$ is accepted by the analysis
+since the label associated to $h$ changed to $L$ after the first
+assignment. Although static flow-sensitive and flow-insensitive analysis are
+equivalent in expressiveness (module code rewriting)~\citep{Hunt:2006}, the 
+situation is not as clear for  dynamic analysis.
+
+% Flow-insensitive 
+% analysis are often popular on static IFC enforcements
+% (e.g.~\citep{Volpano:Smith:Irvine:Sound,jif,Pottier:Simonet:POPL02}), where 
+% the security of the programs compositionality 
+% Flow-sensitivity popular on dynamic 
+%,Guernic:2007:ACM,Askarov:2009}).
+
+
 
 %% Flow-insensitive 
 
