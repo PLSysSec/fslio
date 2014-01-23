@@ -53,8 +53,6 @@ $h$ changed to $L$ after the first assignment.
 
 %% Why one instead of the other one 
 %%%%% FS+ Permissiveness in dynamic approaches, limited resources, 
-%%%%% FI+ Compositionality, good for static analysis 
-%On one hand, 
 Flow-sensitive analyzes are beneficial for some scenarios. In presence of scarce
 resources, for instance CPU registers, it is not feasible to think that they
 will be assigned a fixed security label throughout program execution. More
@@ -86,21 +84,51 @@ under safe conditions.
 %% LIO brings together OS and LB  
 \LIO~is a IFC system that brings ideas from the OS domain into a language-based
 setting~\citep{stefan:lio,stefan:addressing-covert}.  \LIO~is a floating-label
-system, where the label of a computation can automatically rise to accommodate
+system, where the label of a computation can be safely raised to accommodate
 reading sensitive data. This action can be seen as raising the program counter
 (\emph{pc}) in more traditional language-based
 systems~\citep{sabelfeld:language-based-iflow} or as allowing implicit subjects'
-label changes in the OS work. In this light, it is not surprising that
-\LIO~consider objects (e.g. references, synchronization variables, etc.) as
-flow-insensitive entities, i.e., with immutable labels.
+label changes in the OS work. Considering its origins, it is not surprising that
+\LIO~treats objects (e.g. references, synchronization variables, etc.) as
+flow-insensitive entities. Different from other IFC
+tools~\citep{jif,FlowCaml,Hedin13}, \LIO~utilizes public labels and allows
+programs to query objects' security labels without tainted the
+floating-label---a useful feature that increases permissiveness when interacting
+with external databases~\citep{giffin:hails}.
 
 %% Contributions 
+Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, we adapt \LIO~to
+work with flow-sensitive objects. In a sequential setting, we demand the
+floating-label to get permanently tainted with the label corresponding to the
+object being inspected---regardless if it is its label or content what is under
+scrutiny. In a concurrent setting, however, we simply adapt the
+no-sensitive-upgrades to work with \LIO. We argue, via an attack, that
+no-sensitive-upgrades is the most permissive solution for scenario where
+floating-label systems take decisions based on thread's local data. Although
+developed for \LIO, we believe that our solutions apply to other language-based
+floating-label systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as OS work in
+IFC. More concretely, the contribution of this paper are as follows.
+\begin{itemize}
 
+\item An extension to \LIO to handle flow-sensitive objects. As a result, \LIO
+  can safely manipulate both flow-insensitive and flow-sensitive objects. 
 
+\item An attack which exhibits the complications of having flow-sensitive
+  objects in presence of concurrency.
 
+\item Soundness proofs regarding our solutions for the sequential and 
+the concurrent settings. 
 
+\item An implementation of our ideas where programmers can write routines 
+  parametric on the flow-sensitivity of objects---a novelty for IFC tools 
+  (to the best of our knowledge).
 
+\end{itemize}
 
+\begin{itemize}
+\item \hl{Missing: Parametric on the flow-sensitivity of the object}
+\item \hl{Missing: OS do not prove guarantees}
+\end{itemize}
 % Local Variables:
 % TeX-master: "main.ltx"
 % TeX-command-default: "Make"
