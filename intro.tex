@@ -5,9 +5,9 @@
 Information-flow control (IFC) emerges as a promising technology to preserve
 confidentiality and integrity of data in presence of untrusted code.  In fact,
 it has become particularly attractive for web applications
-(e.g.~\citep{DeGroef:2012:FWB:2382196.2382275, giffin:hails, yang:2013:towards,
-  conf/esorics/AkhaweLHSS13, Hedin13}) as well as mobile phone platforms
-(e.g.~\citep{Enck:2010,android:esorics13}), where the challenge is to allow
+~\citep[e.g.][]{DeGroef:2012:FWB:2382196.2382275, giffin:hails, yang:2013:towards,
+  conf/esorics/AkhaweLHSS13, Hedin13} as well as mobile phone platforms
+~\citep[e.g.][]{Enck:2010,android:esorics13}), where the challenge is to allow
 untrusted code to access confidential information while restricting its
 manipulation.
 
@@ -36,37 +36,55 @@ entities.
 
 %% Treatment of variables 
 %% Definition flow-sensitive, flow-insensitive 
+One of the facets to IFC analysis lies in the treatment of
+variables~\citep{Hunt:2006}. Some analyzes, called \emph{flow-insensitive},
+forbid variables to change its security labels at execution time, i.e., labels
+are \emph{immutable}. In contrast, \emph{flow-sensitive} enforcements admit
+changes on variables' security labels provided that they reflect the
+confidentiality of the stored data, i.e., labels are \emph{mutable}. For
+instance, assuming secret variable $h$ and function $\mathit{publish}(v)$, which
+produce a public event of value $v$, the program $P = h := 0 ;
+\mathit{publish}(h)$ is accepted by the analysis since the label associated to
+$h$ changed to $L$ after the first assignment.
+
+%Although static flow-sensitive and flow-insensitive analysis are
+%equivalent in expressiveness (module code rewriting)~\citep{Hunt:2006}, the 
+%situation is not as clear for purely dynamic analysis.
+
 %% Why one instead of the other one 
-%%%%% FS+ Permissiveness in dynamic approaches, limited resources, less burnen to
-%%%%% the programmer 
+%%%%% FS+ Permissiveness in dynamic approaches, limited resources, 
 %%%%% FI+ Compositionality, good for static analysis 
-One of the facets to IFC analysis lies in the treatment of variables. Some
-analyzes, called \emph{flow-insensitive}, forbid variables to change its
-security labels at execution time, i.e., labels are \emph{immutable}. In
-contrast, \emph{flow-sensitive} enforcements admit changes on variables'
-security labels provided that they reflect the confidentiality of the stored
-data, i.e., labels are \emph{mutable}. For instance, assuming secret variable
-$h$ and function $\mathit{publish}(v)$, which produce a public event of value
-$v$, the program $h := 0 ; \mathit{publish}(h)$ is accepted by the analysis
-since the label associated to $h$ changed to $L$ after the first
-assignment. Although static flow-sensitive and flow-insensitive analysis are
-equivalent in expressiveness (module code rewriting)~\citep{Hunt:2006}, the 
-situation is not as clear for  dynamic analysis.
+%On one hand, 
+Flow-sensitive analyzes are beneficial for some scenarios. In presence of scarce
+resources, for instance CPU registers, it is not feasible to think that they
+will be assigned a fixed security label throughout program execution. More
+importantly, having flow-sensitivite variables often boost permissiveness since
+analyses are able to leverage the changes on labels to avoid rejecting programs
+(recall program $P$ above). Unfortunately, purely dynamic IFC systems can turn
+the change of labels itself into a covert channel~\citep{Russo:2010}. To solve
+this problem, there exists several proposals: incorporate some static analysis
+into the execution monitor~\citep{Russo:2010}, forbid certain label changes ---a
+policy known as \emph{no-sensitive upgrades}~\citep{Austin:Flanagan:PLAS10}---,
+and deny branches on certain variables which have mutated their labels---a
+policy named \emph{permissive upgrades}~\citep{Austin:Flanagan:PLAS10}. 
 
-% Flow-insensitive 
-% analysis are often popular on static IFC enforcements
-% (e.g.~\citep{Volpano:Smith:Irvine:Sound,jif,Pottier:Simonet:POPL02}), where 
-% the security of the programs compositionality 
-% Flow-sensitivity popular on dynamic 
-%,Guernic:2007:ACM,Askarov:2009}).
+%% Operating system community
+Before language-based techniques, the operating system community has
+traditionally handle the problems inherent with flow-sensitive analysis and
+purely dynamic approaches. Modern examples of that are the operating systems
+Asbestos~\citep{Efstathopoulos:2005}, HiStar~\citep{zeldovich:histar}, and
+Flume~\citep{krohn:flume}. In a nutshell, those systems are composed of subjects
+(e.g. processes) and objects (e.g. files or sockets) with security labels. While
+security labels for objects are immutable, labels for subjects can be
+changed---often by a more restrictive one. Making label changes implicit as a
+result of observing data from object, an action known as \emph{tainting}, turns
+changing labels into a covert channel. To close it, HiStar and Flume require
+label changes to be done explicitly. Instead, Asbestos allows changes in 
+security labels as the result of receiving messages from other subjects  
+under safe conditions.
 
+%% LIO bringing things together 
 
-
-%% Flow-insensitive 
-
-%% Flow sensitivity 
-
-%% Floating label systems (O.S. people)
 
 %% Flow sensitivity here
 
