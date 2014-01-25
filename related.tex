@@ -8,26 +8,38 @@ menace of mutuable label for purely dynamic monitors. They prove that monitors
 require static analysis in order to be more permissive than traditional
 flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
 Flanagan~\citep{Austin:Flanagan:PLAS10} provide the label changes policies
-\emph{no-permissive upgrades} and \emph{permissive upgrades}, where the latter
-is provably more permissive (i.e. it rejects less suspicious programs) than the
-former. Unfortunately, none of the mentioned work consider
-concurrency. Different from permissive upgrades, our approach for sequential
-settings does not require programs to stop at branches nor use extra security
-levels to indicate mutation of labels. Austin and Flanagan propose a
-\emph{privatization} operation to increase the permissiveness of permissive
-upgrades. However, it is not clear how such technique generalizes to arbitrary
-lattices.
-\hl{I assume we explained no-permissive upgrades and permissive upgrades 
-before in the paper}
+\emph{\nsu} and \emph{\pu}, where the latter is provably more permissive
+(i.e. it rejects less suspicious programs) than the former. The discipline
+{\nsu} stops the execution on any attempt to change the label of a public
+variable inside a secret context. In contrast, {\pu} allows such changes but
+marking the altered variables so that the program cannot branch on
+them. Unfortunately, none of the mentioned work so far consider
+concurrency. Different from {\pu}, our approach for sequential settings does not
+require programs to stop at branches nor use extra security levels to indicate
+mutation of labels. Austin and Flanagan propose a \emph{privatization} operation
+to boost the permissiveness of {\pu}.  However, it is not clear how such
+technique generalizes to arbitrary lattices.  
 
-Recently,Hritcu et al.~\citep{10.1109/SP.2013.10} propose a floating-label
+%% Breeze
+Recently, Hritcu et al.~\citep{10.1109/SP.2013.10} propose a floating-label
 system called Breeze. It allows label changes in the current label (i.e. pc) and
 consider flow-insensitive objects. Given the design similarities with
 \LIO~\citep{stefan:lio}, we believe that our results could be easily adapted to
 Breeze.
 
+%% JSFlow
+In a web scenario, and focusing on reducing the number of rejected web pages,
+Hedin et al. \citep{Hedin13} recently develop JSFlow, a IFC flow-sensitive
+monitor for JavaScript. The monitor utilizes the label changing policy
+{\nsu}. To overcome some of the restrictions imposed by this discipline, the 
+primitive \textbf{upgrade} is introduced to explicitly change labels. The
+flow-sensitive version of {\forkLIO} can be seen as an application of
+\textbf{upgrade} every time that the current label gets raised.  
 
 
+
+
+%% OS work?
 % Local Variables:
 % TeX-master: "main.ltx"
 % TeX-command-default: "Make"

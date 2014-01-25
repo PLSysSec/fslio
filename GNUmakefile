@@ -3,8 +3,10 @@ RUBBER=rubber -Wrefs -Wmisc
 pdf: main.pdf
 .PHONY: pdf
 
-main.pdf: main.tex 
+main.pdf: main.ltx 
+	lhs2TeX main.ltx > main.tex  
 	$(RUBBER) --pdf main.tex
+
 .PHONY: main.pdf
 
 main.tex: main.ltx #graphs
