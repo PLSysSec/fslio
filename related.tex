@@ -1,0 +1,24 @@
+\section{Related work}
+
+Hunt and Sands~\citep{Hunt:2006} show the equivalence (modulo code
+transformation) between flow-sensitive and flow-insensitive type-systems. In a
+dynamic setting, Russo and Sabelfeld~\citep{Russo:2010} formally pin down the
+menace of mutuable label for purely dynamic monitors. They prove that monitors
+require static analysis in order to be more permissive than traditional
+flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
+Flanagan~\citep{Austin:Flanagan:PLAS10} provide the label changes policies
+\emph{no-permissive upgrades} and \emph{permissive upgrades}, where the latter
+is provably more permissive (i.e. it rejects less suspicious programs) than the
+former. Unfortunately, none of the mentioned work consider
+concurrency. Different from permissive upgrades, our approach for sequential
+settings does not require programs to stop at branches nor use extra security
+levels to indicate mutation of labels. Austin and Flanagan propose a
+\emph{privatization} operation to increase the permissiveness of permissive
+upgrades. However, it is not clear how such technique generalizes to arbitrary
+lattices.
+
+
+% Local Variables:
+% TeX-master: "main.ltx"
+% TeX-command-default: "Make"
+% End:
