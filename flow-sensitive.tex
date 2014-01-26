@@ -1,0 +1,91 @@
+\section{Flow-sensitivity extensions}
+
+In this section, we extend the formalization of {\LIO} to include both
+flow-insensitive and flow-sensitive
+LIORefs. Figure~\ref{fig:fs-exts-syntax} introduces the syntax for
+values, terms and types that we require in order to account for both
+flow-sensitive and flow-insensitive references.
+
+\begin{figure}[!ht] % syntax
+\vspace*{-5pt}
+\begin{align*}
+\textrm{Value:}   && v    \Coloneqq~ &
+                                 \LIORefRTS{l}{t}
+                           \ \mid\  \Lb{l}{t} \\
+\textrm{Term:}    && t    \Coloneqq~ &
+                             \newRef{l}{t}
+                           \mid  \writeRef{t}{v} \\
+                  && &     \mid  \readRef{t}
+                           \mid  \labelOf{t} \\
+\textrm{Type:}    && \tau \Coloneqq~& 
+                          \LIORef{\ell}{\tau} \\
+\end{align*}
+\caption{Formal syntax for values, terms, and types.\label{fig:fs-exts-syntax}}
+\vspace*{-5pt}
+\end{figure} 
+
+Figure~\ref{fig:fs-exts-semantics} introduces the semantics for LIORef
+operations. Rule $\textsc{NewRef}$ creates a new LIORef with a given
+initial label and value, adding it to the mutable reference store
+$\RTS$. The following rules come in two versions, one for
+flow-insensitive variables and another one for flow-sensitive ones,
+marked as $\textsc{FI}$ and $\textsc{FS}$ respectively. Rules
+$\textsc{ReadRef-FI}$, $\textsc{WriteRef-FI}$ and
+$\textsc{LabelOf-FI}$ are exactly like in previous versions of the
+library. In rule $\textsc{ReadRef-FS}$, in addition to the usual
+tainting of the current label $\env.\lbl$, we have a taint on
+$\env.\fel$, which is used to keep track of the taint caused by
+flow-sensitive variables within |toLabeled| blocks. Rule
+$\textsc{WriteRef-FS}$ causes the label in the flow-sensitive
+reference to be replaced by the current label, allowing operations
+that would otherwise trigger a security violation exception on a
+flow-insensitive variable. Rule $\textsc{LabelOf-FS}$ works by
+tainting the current label with the label of the reference being
+inspected, before returning this label.
+
+\begin{figure}[!ht] % semantics
+\vspace*{-5pt}
+\small
+\begin{mathpar}
+\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{v} ]\and x\mbox{ fresh}}
+{\defRTS{E[\newRef{l}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{E[\returnLIO{(\LIORefRTS{l}{x})}]}}[\textsc{NewRef}]
+\and
+\inferrule{\env' = \env[\lbl\mapsto \env.\lbl \lub l] \and  \Lb{l}{v} = \RTS(x)}
+{\defRTS{E[\readRefFI{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FI}]
+\and
+\inferrule{\env' = \env[\lbl\mapsto \env.\lbl \lub l] \\ \env' = \env[\fel\mapsto \env.\fel \lub l] \\  \Lb{l}{v} = \RTS(x)}
+{\defRTS{E[\readRefFS{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FS}]
+\and
+\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{v} ] }
+{\defRTS{E[\writeRefFI{(\LIORefRTS{l}{x})}{v}]} \lto \\ \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FI}]
+\and
+\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{v} ]}
+{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \\ \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
+\and
+\inferrule{}
+{\defRTS{E[\labelOfFI{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env}{\RTS}{E[\returnLIO{l}]}}[\textsc{LabelOf-FI}]
+\and
+\inferrule{l \flows \env.\clr \and \env' = \env[\lbl\mapsto\env.\lbl \lub l]}
+{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env'}{\RTS}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
+\end{mathpar}
+\caption{Semantics for references.\label{fig:fs-exts-semantics}}
+\vspace*{-5pt}
+\end{figure}
+
+\begin{figure}[!ht] % semantics
+\vspace*{-5pt}
+\small
+\begin{mathpar}
+\inferrule{\env.\lbl \flows l \flows \env.\clr \\ \defRTS{t}\lto^*\wEnvRTS{\env'}{\RTS'}{\lioValp{t'}} \\ \env'' = \env[\lbl\mapsto\env.\lbl \lub \env'.\fel]}
+{\defRTS{E[\toLabeled{l}{t}]} \lto \\ \wEnvRTS{\env''}{\RTS'}{E[\returnLIO{(\Lb{l}{t'})}]}}[\textsc{toLabeled}]
+\end{mathpar}
+\caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
+\vspace*{-5pt}
+\end{figure}
+
+Figure~\ref{fig:toLabeled-semantics} shows the reduction rule for
+|toLabeled| operations. In this rule, we see that the $\env.\fel$
+label is used to taint the current label after the |toLabeled|
+operation is complete. This allows any partially-leaked information
+(due to flow-sensitive references) to be taken into account in future
+label checks.

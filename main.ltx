@@ -1,5 +1,28 @@
 \documentclass[10pt, conference, compsocconf, letterpaper]{IEEEtran}
 %include polycode.fmt
+%format >*> = "\succ"
+%format Conc = "Thread"
+%format RTSl = "\Sigma.\lbl"
+%format RTSl' = "\Sigma'.\lbl"
+%format hole = "\bullet"
+%format eN = "\eraseName_L"
+%format v_s
+%format v_RTSl
+%format m_1
+%format m_2
+%format r_s
+%format ts = t"_s"
+%format t_s
+%format e_s
+%format elm = "\el{m}"
+%format elt_s = "\el{t_s}"
+%format ele = "\el{e}"
+%format elc = "\el{c}"
+%format elp = "\el{p}"
+%format sch = "\mathbf{sch}"
+%format vss = "v_s"
+%format run  = "run"
+%format val  = "x"
 
 \usepackage{paralist}
 \usepackage{graphicx,subfig,wrapfig}
@@ -44,6 +67,8 @@
 \newcommand{\nsu}{{no sensitive-upgrade}}
 \newcommand{\pu}{{permissive-upgrade}}
 
+\input{notation}
+
 \begin{document}
 
 \title{Mutable Labels in Floating Label Systems}
@@ -79,7 +104,8 @@
 
 \input{background} % 2 1/2 Pages (Deian) explain LIO with semantics, style like in JFP
 
-\input{flow-sensitive} % 2 Pages (Pablo/Ale) explain sequential 
+%include flow-sensitive.tex
+% 2 Pages (Pablo/Ale) explain sequential 
 
 \input{concurrency} % 1 Page (Pablo/Ale), attack and discussion 
 

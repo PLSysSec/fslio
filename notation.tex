@@ -1,0 +1,183 @@
+\newcommand{\event}{\ensuremath{\gamma}}
+\newcommand{\lang}{\ensuremath{\lambda^\to_{\ell|\mathrm{TS}}}}
+\newcommand{\review}{\ensuremath{\lambda\textrm{Chair}}}
+\renewcommand{\implies}{\Rightarrow}
+\newcommand{\Coloneqq}{::=} % txfonts
+\DeclareMathOperator{\dom}{dom}
+\newcommand{\Lcurr}{\ensuremath{L_{\textrm{cur}}}}
+\newcommand{\Ccurr}{\ensuremath{C_{\textrm{cur}}}}
+
+% terms:
+\newcommand{\LbName}{\texttt{Lb}}
+\newcommand{\Lb}[2]{\LbName^\textrm{TCB}\ #1\ #2}
+\newcommand{\lioValp}[1]{(#1)^\texttt{\tiny LIO}}
+\newcommand{\true}{\texttt{true}}
+\newcommand{\false}{\texttt{false}}
+\newcommand{\unit}{\texttt{()}}
+\newcommand{\fix}[1]{\texttt{fix}\ #1}
+\newcommand{\proj}[2]{\pi_{#1}\ #2}
+\newcommand{\ifel}[3]{\texttt{if}\ #1\ \texttt{then}\ #2\ \texttt{else}\ #3}
+\newcommand{\letbind}[3]{\texttt{let}\ #1=#2\ \texttt{in}\ #3}
+\newcommand{\withLblClr}[2]{\texttt{withLblClr}\ #1\ #2}
+\newcommand{\lowerClr}[1]{\texttt{lowerClr}\ #1}
+\newcommand{\lowerClrName}{\texttt{lowerClr}}
+\newcommand{\labelE}[2]{\labelEName\ #1\ #2}
+\newcommand{\unlabel}[1]{\unlabelName\ #1}
+\newcommand{\toLabeled}[2]{\toLabeledName\ #1\ #2}
+\newcommand{\labelEName}{\texttt{label}}
+\newcommand{\unlabelName}{\texttt{unlabel}}
+\newcommand{\toLabeledName}{\texttt{toLabeled}}
+\newcommand{\LIORefRTS}[2]{\texttt{LIORef}^\textrm{TCB}\ #1\ #2}
+
+\newcommand{\rulefont}[1]{\textsc{#1}}
+\newcommand{\pc}{\texttt{pc}}
+\newcommand{\fs}{\textrm{fs}}
+
+\newcommand{\returnLIO}[1]{\returnLIOName \ #1}
+\newcommand{\bindLIO}[2]{#1\ \bindLIOName \ #2}
+\newcommand{\returnLIOName}{\texttt{return}}
+\newcommand{\bindLIOName}{\texttt{>>=}}
+\newcommand{\newRef}[2]{\newRefName_\fs\ #1\ #2}
+\newcommand{\readRef}[1]{\readRefName_\fs\ #1}
+\newcommand{\readRefFI}[1]{\readRefName_{\textrm{FI}}\ #1}
+\newcommand{\readRefFS}[1]{\readRefName_{\textrm{FS}}\ #1}
+\newcommand{\writeRef}[2]{\writeRefName_\fs\ #1\ #2}
+\newcommand{\writeRefFI}[2]{\writeRefName_{\textrm{FI}}\ #1\ #2}
+\newcommand{\writeRefFS}[2]{\writeRefName_{\textrm{FS}}\ #1\ #2}
+\newcommand{\newRefName}{\texttt{newRef}}
+\newcommand{\readRefName}{\texttt{readRef}}
+\newcommand{\writeRefName}{\texttt{writeRef}}
+\newcommand{\labelOf}[1]{\texttt{labelOf}_\fs\ #1}
+\newcommand{\labelOfFI}[1]{\texttt{labelOf}_{\textrm{FI}}\ #1}
+\newcommand{\labelOfFS}[1]{\texttt{labelOf}_{\textrm{FS}}\ #1}
+\newcommand{\curLbl}{\texttt{getLabel}}
+\newcommand{\curClr}{\texttt{getClearance}}
+\newcommand{\out}[2]{\texttt{out}\ {#1}\ {#2}}
+
+% types:
+\newcommand{\LabeledName}{\texttt{Labeled}}
+\newcommand{\Labeled}[2]{\LabeledName \ #1\ #2}
+\newcommand{\LIORef}[2]{\texttt{LIORef}\ #1\ #2}
+\newcommand{\Bool}{\texttt{Bool}}
+
+% environment related:
+\newcommand{\env}{\sigma}
+\newcommand{\wEnv}[2]{\langle #1, #2 \rangle}
+\newcommand{\defEnv}[1]{\wEnv{\env}{#1}}
+\newcommand{\store}{\phi}
+\newcommand{\fel}{\texttt{fel}}
+\newcommand{\lbl}{\texttt{lbl}}
+\newcommand{\clr}{\texttt{clr}}
+
+% runtime system
+\newcommand{\RTS}{\Sigma}
+\newcommand{\wEnvRTS}[3]{\langle #1, #2 \mid #3 \rangle}
+\newcommand{\defRTS}[1]{\wEnvRTS{\env}{\RTS}{#1}}
+\newcommand{\vtl}{\vartriangleleft}
+\newcommand{\vtr}{\vartriangleright}
+
+% label related:
+\newcommand{\flows}{\sqsubseteq}
+\newcommand{\lub}{\sqcup}
+\newcommand{\glb}{\sqcap}
+\newcommand{\lpure}{l_\bot}
+\newcommand{\lclear}{l_\top}
+\newcommand{\nolabel}{\obslash}
+\newcommand{\Lequiv}{\approx_L}
+
+% arrows
+\newcommand{\lto}{\longrightarrow}
+\newcommand{\ltoc}{\lto}
+\newcommand{\ltoX}[1]{\overset{#1}{\lto}}
+\newcommand{\hto}{\hookrightarrow}
+
+% term erasure
+\newcommand{\hole}{\bullet}
+\newcommand{\eraseName}{\varepsilon}
+\newcommand{\erase}[2]{\eraseName_{#1}(#2)}
+\newcommand{\el}[1]{\erase{L}{#1}}
+\newcommand{\mkEnt}[2]{$\el{#1}=#2$}
+\newcommand{\mkEntTwo}[2]{\el{#1}=#2}
+
+% simple lattice
+\newcommand{\lL}{\texttt{L}}
+\newcommand{\lM}{\texttt{M}}
+\newcommand{\lH}{\texttt{H}}
+\newcommand{\lE}{\texttt{E}}
+
+
+% relational:
+\newcommand{\rnv}{\mathcal{R}}
+\newcommand{\dbInsert}[1]{\texttt{insert}\ #1}
+\newcommand{\dbQuery}[2]{\texttt{query}\ #1\ #2}
+\newcommand{\dbUpdate}[2]{\texttt{update}\ #1\ #2}
+\newcommand{\dbDelete}[1]{\texttt{delete}\ #1}
+\newcommand{\dbSel}[2]{\texttt{sel}\ #1\ #2}
+
+\newcommand{\wRnv}[3]{\langle #1;#2, #3 \rangle}
+\newcommand{\defRnv}[1]{\wRnv{\env}{\rnv}{#1}}
+\newcommand{\rlbl}{\texttt{rlbl}}
+\newcommand{\rclr}{\texttt{rclr}}
+
+% DCLabels
+\newcommand{\dcL}[2]{\left\langle\left\{#1\right\}, \left\{#2\right\}\right\rangle} 
+\newcommand{\CFL}{\texttt{CONFLICT}}
+
+% proof helpers
+%\newcommand{\remove}[3]{\left(#3\right)_{\downarrow #1}^{\uparrow #2}}
+\newcommand{\removeLbl}[2]{(#2)_{\downarrow #1}}
+\newcommand{\removeClr}[2]{(#2)_{\uparrow #1}}
+\newcommand{\nrToLabeled}[1]{\#(#1)}
+
+
+
+%% NEW OAKLAND STUFF:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+% concurrency
+\newcommand{\lForkName}{\texttt{lFork}}
+\newcommand{\lWaitName}{\texttt{lWait}}
+\newcommand{\newLMVarName}{\texttt{newLMVar}}
+\newcommand{\takeLMVarName}{\texttt{takeLMVar}}
+\newcommand{\putLMVarName}{\texttt{putLMVar}}
+\newcommand{\labelOfLMVarName}{\texttt{labelOfLMVar}}
+
+\newcommand{\lFork}[2]{\lForkName\ #1\ #2}
+\newcommand{\lWait}[1]{\lWaitName\ #1}
+\newcommand{\newLMVar}[2]{\newLMVarName\ #1\ #2}
+\newcommand{\takeLMVar}[1]{\takeLMVarName\ #1}
+\newcommand{\putLMVar}[2]{\putLMVarName\ #1\ #2}
+\newcommand{\labelOfLMVar}[1]{\labelOfLMVarName\ #1}
+
+\newcommand{\LMVarName}{\texttt{LMVar}}
+\newcommand{\LMVar}[2]{\LMVarName\ #1\ #2}
+\newcommand{\EName}{\texttt{R}}
+\newcommand{\E}[1]{\EName\ #1}
+\newcommand{\ETypeName}{\ensuremath{\mathtt{Result}}}
+\newcommand{\EType}[2]{\ETypeName~#1~#2}
+
+
+% sockets:
+\newcommand{\LSocketName}{\texttt{LSocket}}
+\newcommand{\LSockName}{\texttt{LSock}}
+\newcommand{\getAddrName}{\texttt{getAddr}}
+\newcommand{\listenOnName}{\texttt{listenOn}}
+\newcommand{\connectToName}{\texttt{connectTo}}
+\newcommand{\sendName}{\texttt{send}}
+\newcommand{\recvName}{\texttt{recv}}
+
+\newcommand{\Port}{\rho}
+\newcommand{\Server}{\mathcal{S}}
+\newcommand{\Client}{\mathcal{C}}
+
+\newcommand{\LSocket}[2]{\LSocketName^{#1}\ #2}
+\newcommand{\LSock}[3]{\LSockName^{#1}_{#2}\ #3}
+\newcommand{\getAddr}[1]{\getAddrName\ #1}
+\newcommand{\listenOn}[2]{\listenOnName^{#1}\ #2}
+\newcommand{\connectTo}[2]{\connectToName^{#1}\ #2}
+\newcommand{\send}[2]{\sendName\ #1\ #2}
+\newcommand{\recv}[2]{\recvName\ #1\ #2}
+
+\newcommand{\ports}{\varphi}
+\newcommand{\Disconnected}{\mathbf{D}}
+\newcommand{\Accept}{\mathbf{A}}
+\newcommand{\Connected}{\mathbf{C}}
