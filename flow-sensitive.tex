@@ -1,10 +1,74 @@
 \section{Flow-sensitivity extensions}
 
-In this section, we extend the formalization of {\LIO} to include both
-flow-insensitive and flow-sensitive
-LIORefs. Figure~\ref{fig:fs-exts-syntax} introduces the syntax for
-values, terms and types that we require in order to account for both
-flow-sensitive and flow-insensitive references.
+Previous versions of |LIO| support mutable references (LIORefs) with a
+fixed label, which is preserved throughout the computation. These
+references are known as \emph{flow-insensitive}. In this work, we
+extend |LIO| to include \emph{flow-sensitive} references,
+i.e. references which can store values with different labels over the
+course of the computation. Unlike their flow-insensitive counterparts,
+the label associated with such a reference is mutable, and will vary
+according to the sensitivity of what is stored in the
+reference. Writing a secret value to a public reference in this
+context will cause the reference to be relabelled as secret, instead
+of halting the program.
+
+Flow-sensitive references allow the enforcement mechanism to accept a
+greater number of secure programs. Nevertheless,
+Russo~and~Sabelfeld~\citep{?} show that a naive implementation of this
+idea in a dynamic enforcement introduces a security leak. We
+illustrate this attack in the context of |LIO| in
+Figure~\ref{fig:fs-attack}. In this function, we assume that we have a
+version of |LIO| where |LIORef|s are flow-sensitive, so the
+|writeLIORef| operations in the conditionals can raise the label of
+the reference they assign to, if the current label is $H$. The
+function takes both a |public| and a |secret| reference as input,
+which contain either 1 or 0. Then, the function creates a public
+reference |temp| with initial value 0, and assigns 1 to |public|.
+Note that, if the value of |secret| is 1, the first |writeLIORef| is
+executed, but this causes |temp| to be 1, which prevents the second
+|writeLIORef| from executing. Thus, |public| is untouched and it will
+contain the value of |secret|. If the value of |secret| is 0, the
+first |writeLIORef| is not executed, but the second one is, causing
+|public| to be assigned the value 0. Since |temp| has not been
+assigned in a secret context, its label remains $L$, and so does the
+label of |public|. In either case, the final value of |public| matches
+the value in |secret|, so one bit of information has been leaked
+through this attack, without using the termination channel.
+% maybe say that the key part of the attack is the fact that temp
+% has different labels in different runs of the progam ???
+
+\begin{figure}[!ht]
+\vspace*{-5pt}
+\begin{code}
+attack public secret = 
+  do  temp    <- newLIORef L 0
+      writeLIORef public 1
+      toLabeled H $ do  x <- readLIORef secret
+                        when (x == 1) (writeLIORef temp 1)
+      toLabeled H $ do  c <- readLIORef temp
+                        when (c /= 1) (writeLIORef public 0)
+\end{code}
+\caption{Potential flow-sensitivity attack in |LIO|.\label{fig:fs-attack}}
+\vspace*{-5pt}
+\end{figure}
+
+This problem can be addressed in several ways. Prior work proposed the
+\emph{no-sensitive-upgrade} strategy~\citep{?} and the
+\emph{permissive-upgrade} strategy~\citep{?}. The no-sensitive-upgrade
+check forbids assignment to a public reference in a secret context. In
+contrast, the permissive-upgrade check allows the assignment but marks
+it as a partial leak; if there is a subsequent conditional branch on
+partially leaked data, the program stops. We adapt the
+permissive-upgrade idea to our floating-label model, which results in
+a slightly more permissive enforcement that allows the conditional
+branch. We believe that our enforcement is just as permissive as %% I don't like this sentence
+permissive-upgrades extended with dynamic insertion of privatization
+operations~\citep{?}.
+
+We extend the formalization of |LIO| to include both flow-insensitive
+and flow-sensitive LIORefs. Figure~\ref{fig:fs-exts-syntax} introduces
+the syntax for values, terms and types that we require in order to
+account for both flow-sensitive and flow-insensitive references.
 
 \begin{figure}[!ht] % syntax
 \vspace*{-5pt}
