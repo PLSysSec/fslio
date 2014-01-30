@@ -3,10 +3,10 @@
 
 %% Information-flow control as a promising technology 
 Information-flow control (IFC) emerges as a promising technology to preserve
-confidentiality and integrity of data in presence of untrusted code.  It has
-become particularly attractive for web applications
+confidentiality and integrity of data in presence of untrusted code.  In
+particular, it has become attractive for web applications
 ~\citep[e.g.][]{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
-  yang:2013:towards, conf/esorics/AkhaweLHSS13, Hedin13} as well as mobile phone
+  yang:2013:towards, conf/esorics/AkhaweLHSS13, Hedin13} and mobile phone
 platforms ~\citep[e.g.][]{Enck:2010,android:esorics13}, where the challenge is
 to allow untrusted code to access confidential information while restricting its
 manipulation.
@@ -26,9 +26,9 @@ the form of execution monitors~\citep{Hedin2011}. This decision is mainly
 motivated by (i) the permissiveness of dynamic techniques over static
 ones~\citep{Sabelfeld:Russo:PSI09}, and (ii) the simplicity for treating notions
 like dynamic code evaluation---a feature commonly present in modern scripting
-languages. To describe confidentiality demands on data, IFC monitors maintain a
+languages. To fulfill confidentiality demands, IFC monitors maintain a
 mapping from variables to security labels~\citep{myers:dlm,Stefan:2011}.  For
-simplicity of exposition, we consider just two labels: \high (high), which
+simplicity of exposition, we consider only two labels: \high (high), which
 denotes secrets, and \low (low), which denotes public data. The partial ordering
 $\low \canflow \high$ and $\high \not \canflow \low$ expresses that information
 can only flow from public data into secret entities.
@@ -39,11 +39,11 @@ One of the facets to IFC analysis lies in the treatment of
 variables~\citep{Hunt:2006}. Some analyzes, called \emph{flow-insensitive},
 forbid variables to change its security labels at execution time, i.e., labels
 are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} enforcements
-admit changes on labels which reflect the confidentiality of the stored
+admit changes on labels to reflect the confidentiality of the stored
 data, i.e., labels are considered as \emph{mutable}. For instance, assuming secret
 variable $h$ and function $\mathit{publish}(v)$, which produce a public event of
 value $v$, the program $P = h := 0 ; \mathit{publish}(h)$ is accepted by such an
-analysis since the label associated to $h$ changed to $L$ after the first
+enforcement since the label associated to $h$ changed to $L$ after the first
 assignment ($h := 0$).
 
 %Although static flow-sensitive and flow-insensitive analysis are
@@ -59,7 +59,7 @@ execution~\citep{BonelliCM05}. More importantly, flow-sensitivite analyses often
 boost permissiveness by leveraging the changes on labels to reduce the number of
 rejected programs (recall program $P$ above). Unfortunately, purely dynamic IFC
 systems can turn label changes into a covert channel~\citep{Russo:2010}. To
-close it, there exists mainly three different language-based proposals:
+close it, there exists mainly three different proposals:
 incorporate some static analysis/information into the execution
 monitor~\citep{Russo:2010,stefan:lio,10.1109/SP.2013.10}, forbid certain label
 changes ---a policy known as \emph{no-sensitive
@@ -71,24 +71,24 @@ for sequential programming languages.
 
 %% Operating system community
 Before the apparition of language-based techniques for IFC, the operating system
-community has traditionally handle, and sometimes avoid, the problem inherent to
-combine mutable labels and purely dynamic monitors. Modern examples of that are
-the operating systems Asbestos~\citep{Efstathopoulos:2005},
-HiStar~\citep{zeldovich:histar}, and Flume~\citep{krohn:flume}. In a nutshell,
-those systems are composed of subjects (e.g. processes) and objects (e.g. files
-or sockets) with security labels. While security labels for objects are
-immutable, labels for subjects can be changed---often by a more restrictive
-one. Making label changes implicit, e.g., as a result of observing data from
-object, is known as \emph{tainting}. Subjects' labels are used to restrict read
-and write actions so that confidentiality is preserve. For instance, if a
-process reads a file labeled as \high, it gets tainted and its label becomes
-\high, which makes it unable to write into files labeled as public. As before,
-changing labels might become a covert channel itself. To avoid it, HiStar and
-Flume require label changes to be done explicitly.  Asbestos, on the other hand,
-allows changes in security labels as the result of receiving messages under
-specific and safe conditions. Different form language-based approaches, OS work
-rarely comes with soundness guarantees---bare in mind that an operating system
-is not a simple piece of software to prove correct.
+community has traditionally handle the problem inherent to combine mutable
+labels and purely dynamic monitors. Modern examples of that are the operating
+systems Asbestos~\citep{Efstathopoulos:2005}, HiStar~\citep{zeldovich:histar},
+and Flume~\citep{krohn:flume}. In a nutshell, those systems are composed of
+subjects (e.g. processes) and objects (e.g. files or sockets) with security
+labels. While security labels for objects are immutable, labels for subjects can
+be changed---often by a more restrictive one. Making label changes implicit
+(e.g. as a result of observing data from objects) is known as
+\emph{tainting}. Subjects' labels restrict read and write actions in order to
+preserve confidentiality. For instance, if a process reads a file labeled as
+\high, it gets tainted and its label becomes \high, which makes it unable to
+write into public files. As before, changing labels might become a covert
+channel itself. To avoid it, HiStar and Flume require label changes to be done
+explicitly.  Asbestos, on the other hand, allows changes in security labels as
+the result of receiving messages under specific and safe conditions. Different
+form language-based approaches, OS work rarely comes with soundness guarantees
+(except from \citep{Krohn,seL4IF}). Bare in mind that an operating system is not
+a simple piece of software to prove correct.
 
 
 %% LIO brings together OS and LB  
@@ -109,13 +109,13 @@ with external databases~\citep{giffin:hails}.
 Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, we adapt {\LIO} to
 work with flow-sensitive objects. In a sequential setting, we demand the
 floating-label to get permanently tainted with the label corresponding to the
-object being inspected---regardless if it is its label or content what is under
-scrutiny. In a concurrent setting, on the other hand, we simply adapt the
-no-sensitive-upgrades policy to work with \LIO. Moreover, we argue, by showing
-an attack, that no-sensitive-upgrades is the most permissive policy for
-scenarios where {\LIO} forbids actions based on threads' local data---an
+flow-sensitive objects being inspected---regardless if it is their label or
+content what is under scrutiny. In a concurrent setting, on the other hand, we
+simply adapt the no-sensitive-upgrades policy to work with \LIO. We argue, by
+showing an attack, that no-sensitive-upgrades is the most permissive policy for
+scenarios where actions are forbidden based on threads' local data---an
 essential requirement to obtain performance and scalability. Although developed
-for {\LIO}, we believe that our solutions apply to other language-based
+for {\LIO}, we believe that our approaches might apply to other language-based
 floating-label systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as IFC OS
 work.  More concretely, the contribution of this paper are as follows.
 \begin{itemize}
@@ -125,11 +125,10 @@ work.  More concretely, the contribution of this paper are as follows.
   combining flow-insensitive and flow-sensitive objects.
 
 
-\item We exhibit an attack which nails down the complications of having
-  flow-sensitive objects in presence of concurrency.
+\item An attack that nails down the complications of having flow-sensitive
+  objects in presence of concurrency.
 
-\item Soundness proofs regarding our solutions for the sequential and 
-the concurrent settings. 
+\item Provably non-interference. 
 
 \item An implementation of our ideas in Haskell, where programmers can write
   routines \emph{parametric} on the flow-sensitivity of objects---a novelty for IFC
