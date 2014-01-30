@@ -9,7 +9,7 @@ require static analysis in order to be more permissive than traditional
 flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
 Flanagan~\citep{Austin:Flanagan:PLAS10} provide the label changes policies
 \emph{\nsu} and \emph{\pu}, where the latter is provably more permissive
-(i.e. it rejects less suspicious programs) than the former. The discipline
+(i.e. it rejects less suspicious programs). The discipline
 {\nsu} stops the execution on any attempt to change the label of a public
 variable inside a secret context. In contrast, {\pu} allows such changes but
 marking the altered variables so that the program cannot branch on
@@ -31,15 +31,45 @@ Breeze.
 In a web scenario, and focusing on reducing the number of rejected web pages,
 Hedin et al. \citep{Hedin13} recently develop JSFlow, a IFC flow-sensitive
 monitor for JavaScript. The monitor utilizes the label changing policy
-{\nsu}. To overcome some of the restrictions imposed by this discipline, the 
+{\nsu}. To overcome some of the restrictions imposed by this discipline, the
 primitive \textbf{upgrade} is introduced to explicitly change labels. The
-flow-sensitive version of {\forkLIO} can be seen as an application of
-\textbf{upgrade} every time that the current label gets raised.  
+flow-sensitive version of {\forkLIO} can be seen as an automatic application of
+\textbf{upgrade} every time that the current label gets raised. Using testing,
+Birgisson et al.~\citep{Arnar2012} automatically insert instructions
+\textbf{upgrade} in order to reduce the number of runs with possible leaks due
+to label changes.
 
 
 
+%% OS-like work for the browser 
+Coarse-grain IFC enforcements, similar to the ones found in OS work, have been
+applied to web browsers. BFlow~\citep{Yip:2009} tracks flows of information at
+the granularity of secure zones, i.e., compartments composed of one or several
+iframes. The zones' labels (i.e. subjects) must be explicitly updated---no
+implicit tainting. The data-confined sandbox (DCS)
+system~\citep{conf/esorics/AkhaweLHSS13}, on the other hand, allows implicit
+tainting while restricting the propagation of information by using iframes and
+mediating crossdomain operations (e.g. access to local storage, fragment-IDs,
+network communication, etc.). It is unclear that flow-sensitive objects would be
+useful in such scenarios. Naturally, the DOM-tree could be thought as being
+composed of flow-sensitive objects, which change security labels based on the
+dynamic behavior of the web page~\citep{Russo:2009}. However, the
+course-granularity of the mentioned approaches leads to treat the whole DOM-tree
+as having the same security label as the security zone (BFlow) or sandbox iframe
+(DCS). 
 
-%% OS work?
+%% Logic / verification approaches 
+Hoare-like logics for IFC are often
+flow-sensitive~\citep[e.g.][]{Amtoft:2006,Nanevski:2011}. Different from dynamic
+approaches, these logics have the ability to observe all the execution paths and
+safely approximate label changes. As a result, no leaks due to label changes is
+present in provably secure programs.
+
+
+%% Tools 
+
+
+
 % Local Variables:
 % TeX-master: "main.ltx"
 % TeX-command-default: "Make"
