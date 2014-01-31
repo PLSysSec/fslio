@@ -106,18 +106,24 @@ floating-label---a useful feature to increase permissiveness when interacting
 with external databases~\citep{giffin:hails}.
 
 %% Contributions 
-Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, we adapt {\LIO} to
-work with flow-sensitive objects. In a sequential setting, we demand the
-floating-label to get permanently tainted with the label corresponding to the
-flow-sensitive objects being inspected---regardless if it is their label or
-content what is under scrutiny. In a concurrent setting, on the other hand, we
-simply adapt the no-sensitive-upgrades policy to work with \LIO. We argue, by
-showing an attack, that no-sensitive-upgrades is the most permissive policy for
-scenarios where actions are forbidden based on threads' local data---an
-essential requirement to obtain performance and scalability. Although developed
-for {\LIO}, we believe that our approaches might apply to other language-based
-floating-label systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as IFC OS
-work.  More concretely, the contribution of this paper are as follows.
+%Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
+In this paper, we adapt {\LIO} to work with flow-sensitive objects. To guarantee
+non-interference, we demand the floating-label to get permanently tainted with
+the label corresponding to the flow-sensitive objects being
+inspected---regardless if it is their label or content what is under
+scrutiny. While secure and novel, this mechanism facilitates label creep. We
+present two mechanisms to mitigate this problem: an explicitly change labels
+(inspired by \citep{Hedin13}), and a block-structured instruction which allows
+using flow-sensitive entities without permanently tainting the floating label,
+but enforcing their destruction after the execution of the block.  On the other
+hand, in a concurrent setting, we simply adapt the {\nsu} policy to work with
+\LIO. We argue, by showing an attack, that no-sensitive-upgrades is the most
+permissive policy for scenarios where actions are forbidden based on threads'
+local data---an essential requirement to obtain performance and
+scalability. Although developed for {\LIO}, we believe that our approaches might
+apply to other language-based floating-label
+systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as IFC OS work.  More
+concretely, the contribution of this paper are as follows.
 \begin{itemize}
 
 \item An extension to incorporate flow-sensitive objects in {\LIO}. As a result,
