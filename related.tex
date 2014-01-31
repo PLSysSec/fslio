@@ -9,16 +9,20 @@ require static analysis in order to be more permissive than traditional
 flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
 Flanagan~\citep{Austin:Flanagan:PLAS10} provide the label changes policies
 \emph{\nsu} and \emph{\pu}, where the latter is provably more permissive
-(i.e. it rejects less suspicious programs). The discipline
-{\nsu} stops the execution on any attempt to change the label of a public
-variable inside a secret context. In contrast, {\pu} allows such changes but
-marking the altered variables so that the program cannot branch on
-them. Unfortunately, none of the mentioned work so far consider
-concurrency. Different from {\pu}, our approach for sequential settings does not
-require programs to stop at branches nor use extra security levels to indicate
-mutation of labels. Austin and Flanagan propose a \emph{privatization} operation
-to boost the permissiveness of {\pu}.  However, it is not clear how such
-technique generalizes to arbitrary lattices.  
+(i.e. it rejects less suspicious programs). The discipline {\nsu} stops the
+execution on any attempt to change the label of a public variable inside a
+secret context. In contrast, {\pu} allows such changes but marking the altered
+variables so that the program cannot branch on them. Unfortunately, none of the
+mentioned work so far consider concurrency. Different from {\pu}, our approach
+for sequential settings does not require programs to stop at branches nor use
+extra security levels to indicate mutation of labels. Austin and Flanagan
+propose a \emph{privatization} operation to boost the permissiveness of {\pu}.
+It is not clear how such technique generalizes to arbitrary lattices. Moreover,
+the privatization operation can only enforce non-interference when output are
+suppressed after branching on a marked flow-sensitive reference. In contrast,
+our approach allows changes in flow-sensitive labels, branching on them, and
+performing outputs when safe, e.g., a {\toLabeledWith} block follow by writing 
+into a reference, which simulates an output in our attacker model. 
 
 %% Breeze
 Recently, Hritcu et al.~\citep{10.1109/SP.2013.10} propose a floating-label
