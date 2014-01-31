@@ -21,7 +21,7 @@ Figure~\ref{fig:fs-attack}. In this function, we assume that we have a
 version of |LIO| where |LIORef|s are flow-sensitive, so the
 |writeLIORef| operations in the conditionals can raise the label of
 the reference they assign to, if the current label is $H$. The
-function takes both a |public| and a |secret| reference as input,
+function takes both a |public| and a |secret| reference as parameters,
 which contain either 1 or 0. Then, the function creates a public
 reference |temp| with initial value 0, and assigns 1 to |public|.
 Note that, if the value of |secret| is 1, the first |writeLIORef| is
@@ -61,9 +61,9 @@ it as a partial leak; if there is a subsequent conditional branch on
 partially leaked data, the program stops. We adapt the
 permissive-upgrade idea to our floating-label model, which results in
 a slightly more permissive enforcement that allows the conditional
-branch. We believe that our enforcement is just as permissive as %% I don't like this sentence
-permissive-upgrades extended with dynamic insertion of privatization
-operations~\citep{?}.
+branch.
+
+
 
 We extend the formalization of |LIO| to include both flow-insensitive
 and flow-sensitive LIORefs. Figure~\ref{fig:fs-exts-syntax} introduces
@@ -107,43 +107,66 @@ flow-insensitive variable. Rule $\textsc{LabelOf-FS}$ works by
 tainting the current label with the label of the reference being
 inspected, before returning this label.
 
-\begin{figure}[!ht] % semantics
+\begin{figure*}[!ht] % semantics
 \vspace*{-5pt}
 \small
 \begin{mathpar}
-\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{v} ]\and x\mbox{ fresh}}
-{\defRTS{E[\newRef{l}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{E[\returnLIO{(\LIORefRTS{l}{x})}]}}[\textsc{NewRef}]
+\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{\bot}{v} ]\and x\mbox{ fresh}}
+{\defRTS{E[\newRef{l}{t}]} \lto \wEnvRTS{\env}{\RTS'}{E[\returnLIO{(\LIORefRTS{l}{x})}]}}[\textsc{NewRef}]
 \and
-\inferrule{\env' = \env[\lbl\mapsto \env.\lbl \lub l] \and  \Lb{l}{v} = \RTS(x)}
-{\defRTS{E[\readRefFI{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FI}]
+\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and  \Lb{l}{u}{v} = \RTS(x)}
+{\defRTS{E[\readRefFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FI}]
 \and
-\inferrule{\env' = \env[\lbl\mapsto \env.\lbl \lub l] \\ \env' = \env[\fel\mapsto \env.\fel \lub l] \\  \Lb{l}{v} = \RTS(x)}
-{\defRTS{E[\readRefFS{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FS}]
+\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \\ \env'' = \neg u ? \env'[\fel\mapsto \env'.\lbl] : \env' \\  \Lb{l}{u}{v} = \RTS(x)}
+{\defRTS{E[\readRefFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FS}]
 \and
-\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{v} ] }
-{\defRTS{E[\writeRefFI{(\LIORefRTS{l}{x})}{v}]} \lto \\ \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FI}]
+\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{\bot}{v} ] }
+{\defRTS{E[\writeRefFI{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FI}]
 \and
-\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{v} ]}
-{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \\ \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
+\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{\bot}{v} ]}
+{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
+\and
+\inferrule{l \flows \env.\lbl \\ \Lb{l}{u}{\_} = \RTS(x) \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{u}{v} ]}
+{\defRTS{E[\writeRefFSI{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{E[\returnLIO{()}]}}[\textsc{WriteRef-FSI}]
+\and
+\inferrule{\env.\lbl\flows l \and l\flows l' \and \Lb{l}{u}{v} = \RTS(x) \and \RTS'=\RTS[x\mapsto\Lb{l'}{\top}{v}]}
+{\defRTS{E[\upgrade{(\LIORef{l}{x})}{l'}]} \lto \wEnvRTS{\env}{\RTS'}{E[\returnLIO{()}]}}[\textsc{Upgrade}]
 \and
 \inferrule{}
-{\defRTS{E[\labelOfFI{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env}{\RTS}{E[\returnLIO{l}]}}[\textsc{LabelOf-FI}]
+{\defRTS{E[\labelOfFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env}{\RTS}{E[\returnLIO{l}]}}[\textsc{LabelOf-FI}]
 \and
-\inferrule{l \flows \env.\clr \and \env' = \env[\lbl\mapsto\env.\lbl \lub l]}
-{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \\ \wEnvRTS{\env'}{\RTS}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
+\inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \env''= \neg u ? \env'[\fel\mapsto\env'.\lbl] : \env'}
+{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
 \end{mathpar}
 \caption{Semantics for references.\label{fig:fs-exts-semantics}}
 \vspace*{-5pt}
-\end{figure}
+\end{figure*}
 
 \begin{figure}[!ht] % semantics
 \vspace*{-5pt}
 \small
 \begin{mathpar}
-\inferrule{\env.\lbl \flows l \flows \env.\clr \\ \defRTS{t}\lto^*\wEnvRTS{\env'}{\RTS'}{\lioValp{t'}} \\ \env'' = \env[\lbl\mapsto\env.\lbl \lub \env'.\fel]}
-{\defRTS{E[\toLabeled{l}{t}]} \lto \\ \wEnvRTS{\env''}{\RTS'}{E[\returnLIO{(\Lb{l}{t'})}]}}[\textsc{toLabeled}]
+\inferrule{\env.\lbl \flows l \flows \env.\clr \\ \defRTS{t}\lto^*\wEnvRTS{\env'}{\RTS'}{\lioValp{t'}} \\ \env'' = \env[\lbl\mapsto\env.\lbl \lub \env'.\fel, \fel\mapsto\env'.\fel]}
+{\defRTS{E[\toLabeled{l}{t}]} \lto \\ \wEnvRTS{\env''}{\RTS'}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
 \end{mathpar}
 \caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
+\vspace*{-5pt}
+\end{figure}
+
+\begin{figure}
+\vspace*{-5pt}
+\begin{code}
+toLabeledWith :: Label l =>
+      l -> a -> (LIORef FSI l a -> LIO l b)
+  ->  LIO l (Labeled FS l b)
+toLabeledWith l def f =
+    do  y    <-  newLIORef l def
+        upgrade y l -- set the upgraded flag
+        ret  <-  toLabeled (f y)
+        writeLIORef y undefined
+        return ret
+\end{code}
+\caption{Definition of |toLabeledWith|.\label{fig:toLabeledWith-semantics}}
 \vspace*{-5pt}
 \end{figure}
 

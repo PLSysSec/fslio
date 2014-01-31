@@ -9,7 +9,7 @@
 
 % terms:
 \newcommand{\LbName}{\texttt{Lb}}
-\newcommand{\Lb}[2]{\LbName^\textrm{TCB}\ #1\ #2}
+\newcommand{\Lb}[3]{\LbName^\textrm{TCB}\ #1\ #2\ #3}
 \newcommand{\lioValp}[1]{(#1)^\texttt{\tiny LIO}}
 \newcommand{\true}{\texttt{true}}
 \newcommand{\false}{\texttt{false}}
@@ -44,9 +44,11 @@
 \newcommand{\writeRef}[2]{\writeRefName_\fs\ #1\ #2}
 \newcommand{\writeRefFI}[2]{\writeRefName_{\textrm{FI}}\ #1\ #2}
 \newcommand{\writeRefFS}[2]{\writeRefName_{\textrm{FS}}\ #1\ #2}
+\newcommand{\writeRefFSI}[2]{\writeRefName_{\textrm{FSI}}\ #1\ #2}
 \newcommand{\newRefName}{\texttt{newRef}}
 \newcommand{\readRefName}{\texttt{readRef}}
 \newcommand{\writeRefName}{\texttt{writeRef}}
+\newcommand{\upgrade}[2]{\texttt{upgrade}\ #1\ #2}
 \newcommand{\labelOf}[1]{\texttt{labelOf}_\fs\ #1}
 \newcommand{\labelOfFI}[1]{\texttt{labelOf}_{\textrm{FI}}\ #1}
 \newcommand{\labelOfFS}[1]{\texttt{labelOf}_{\textrm{FS}}\ #1}
@@ -65,7 +67,7 @@
 \newcommand{\wEnv}[2]{\langle #1, #2 \rangle}
 \newcommand{\defEnv}[1]{\wEnv{\env}{#1}}
 \newcommand{\store}{\phi}
-\newcommand{\fel}{\texttt{fel}}
+\newcommand{\fel}{\texttt{fsl}}
 \newcommand{\lbl}{\texttt{lbl}}
 \newcommand{\clr}{\texttt{clr}}
 
