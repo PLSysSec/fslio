@@ -9,7 +9,7 @@
 
 % terms:
 \newcommand{\LbName}{\texttt{Lb}}
-\newcommand{\Lb}[3]{\LbName^\textrm{TCB}\ #1\ #2\ #3}
+\newcommand{\Lb}[3]{\LbName^\textrm{TCB}\ #1\ #3} % careful! still taking 3 params
 \newcommand{\lioValp}[1]{(#1)^\texttt{\tiny LIO}}
 \newcommand{\true}{\texttt{true}}
 \newcommand{\false}{\texttt{false}}
@@ -73,8 +73,8 @@
 
 % runtime system
 \newcommand{\RTS}{\Sigma}
-\newcommand{\wEnvRTS}[3]{\langle #1, #2 \mid #3 \rangle}
-\newcommand{\defRTS}[1]{\wEnvRTS{\env}{\RTS}{#1}}
+\newcommand{\wEnvRTS}[4]{\langle #1, #2, #3 \mid #4 \rangle}
+\newcommand{\defRTS}[1]{\wEnvRTS{\env}{\RTS}{r}{#1}}
 \newcommand{\vtl}{\vartriangleleft}
 \newcommand{\vtr}{\vartriangleright}
 
