@@ -51,10 +51,26 @@ True|), will either be executed or not depending on a value at level |medium|.
 The fact of stopping thread B at different execution points, depending on
 |secretM|, constitutes a termination leak. 
 
-In order to address this attack, we can either remove shared state
-altogether, or use the \emph{no-sensitive-upgrades} policy. With
-\emph{no-sensitive-upgrades}, |shared_ref| in
-Figure~\ref{fig:fs-conc-attack} would not be upgraded by thread A, so
+In general terms, the attack shows that threads, with different floating-labels,
+might refer to the same shared flow-sensitive reference. If the reference is
+upgraded in one thread based on some confidential data, then it might taint the
+other ones when the reference is read. Such taints might then stop the execution
+of the threads, which consequently could exploit the termination covert channel.
+
+In order to address this attack, we can either remove shared state altogether,
+or use the \emph{no-sensitive-upgrades} policy without explicit or automatic
+upgrades. At the semantics level, restricting sharing is achieved when forking.
+
+\hl{Pablo, can you put the rule here avoiding sharing?}
+
+Once sharing is restricted, it is safe to upgrade flow-sensitive references as 
+we did for the sequential setting of LIO. 
+
+\hl{Ale: Not sure about the next paragraph, is it the automatically upgrade what 
+does not work? I believe it is the upgrade, so no upgrade then of any kind}
+The strategy of {\nsu} avoid the attack in Figure~\ref{fig:fs-conc-attack}.  The
+reason for that is that |shared_ref| would not be \emph{automatically} upgraded
+by thread A. Consequently, command |upgrade share_ref medium| succeeds and so
 both threads would always run to completion, producing no leaks.
 
 
