@@ -73,20 +73,20 @@ systems can turn label changes into a covert channel~\citep{Russo:2010}.
 \end{wrapfigure}
 Figure \ref{fig:fsattackintro} illustrates the problem of enabling arbitrary
 label changes.  In the attack, variables |l| and |h| do not change their
-security levels |low| and |high|, respectively. In contrast, variable |t| can
+security levels---|low| and |high|, respectively. In contrast, variable |t| can
 change its security level to |high|. For purely dynamic monitors, where
 non-taken branches are not inspected, the attack succeed to leak information
 about |h|. More precisely, when |h| is true, the initial labels for |l| and |t|
 are |low| since they initially store constants (|l :=1 ; t := 0|).  Due to 
 the assignment |t := 1| inside the
-first |then|-branch, value of |t| changes its value to |1| and its label to
+first |then|-branch (which depends on |h|), the value of |t| changes to |1| and its label to
 |high|. The condition of the second branch is not fulfill and therefore 
 the monitor executes |publish(l)|, which produces the public event 
 |1|. On the other hand, when |h| is false, variable |t| is not relabeled to 
 |high|, i.e., the first |then|-branch is not taken. Instead, the second
 |then|-branch is executed. 
-The assignment |l := 0| does not change the label of |l|, but its value to 
-be |0|. Observe that the assignment is determined by public data (|t /= 1|)
+The assignment |l := 0| does not change the label of |l| but its value to 
+ |0|. Observe that the assignment is determined by public data (|t /= 1|)
 and the assigned value is a constant. Finally, the monitor executes
 |publish(l)|, which produces the public event |0|. As a result, the monitor 
 missed to catch the information leak about |h|.  
@@ -138,17 +138,17 @@ increase permissiveness when interacting with external databases~\citep{giffin:h
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
-In this paper, we adapt LIO to work with flow-sensitive objects.  For pure and
-immutable flow-sensitive values (e.g. integers or strings), we demand to taint
-the floating-label with the labels of the values being inspected---regardless if
-it is their label or content what is under scrutiny.  For mutable objects
-(e.g. references), we combine \nsu~\citep{Austin:Flanagan:PLAS10} together with
-a mechanism to automatically raise all mutable labels when tainting the
-floating-label. While secure, this mechanism facilitates label creep, i.e.,
-flow-sensitive mutable objects might end up with ``too high'' labels. To
-mitigate this problem, we extend a block-structured primitive in LIO (called
-|toLabeled|) to only raise declared flow-sensitive mutable objects. Access to
-undeclared flow-sensitive objects is forbidden within the block-structure.
+In this paper, we adapt LIO to work with flow-sensitive entities.  For pure and
+immutable flow-sensitive values (e.g. booleans or functions), we propose to
+taint the floating-label with the labels of the values being
+inspected---regardless if it is their labels or content what is under scrutiny.
+For mutable values, i.e., references, we combine
+\nsu~\citep{Austin:Flanagan:PLAS10} together with a mechanism to automatically
+raise all mutable labels when tainting the floating-label. While secure, this
+approach facilitates label creep, i.e., data might end up with ``too high''
+labels. To mitigate this problem, we propose a block-structured primitive in LIO
+which only raises the labels of declared flow-sensitive references, while
+forbidden the access to undeclared ones within the block.
 % using flow-sensitive entities without permanently tainting the floating label,
 % but enforcing their destruction after the execution of the block.
 %To guarantee
@@ -157,32 +157,30 @@ undeclared flow-sensitive objects is forbidden within the block-structure.
 % We
 %present two mechanisms to mitigate this problem: an explicitly change labels
 %w(inspired by \citep{Hedin13}), and a 
-
-
-We also explore the design space to work with flow-sensitive objects in presence
+Additionally, we explore the design space to work with flow-sensitive values in presence
 of concurrency.
 %On the other 
 %hand, in a concurrent setting, we simply adapt the {\nsu} policy to work with
 %LIO. 
 We argue, by showing an attack, that {\nsu} is the most
-permissive policy for scenarios where actions are forbidden based on threads'
+permissive policy for scenarios where actions are forbidden by the monitor based on threads'
 local data---an essential requirement to obtain performance and
 scalability. More
 concretely, the contribution of this paper are as follows.
 \begin{itemize}
 
-\item An extension to incorporate flow-sensitive objects in LIO. As a result,
+\item An extension to incorporate flow-sensitive values in LIO. As a result,
   not only increases LIO its permissiveness, but it also provides means for safely
-  combining flow-insensitive and flow-sensitive objects.
+  combining flow-insensitive and flow-sensitive entities. 
 
 \item An attack that nails down the complications of having flow-sensitive
-  objects in presence of concurrency.
+  values in presence of concurrency.
 
 \item Provably non-interference. Our formal results are developed for arbitrary
   security lattices. 
 
 \item An implementation of our ideas in Haskell, where programmers can write
-  routines \emph{parametric} on the flow-sensitivity of objects---a novelty for IFC
+  routines \emph{parametric} on the flow-sensitivity of data---a novelty for IFC
   tools. 
 \end{itemize}
 
