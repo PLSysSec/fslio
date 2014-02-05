@@ -5,26 +5,51 @@ concurrent context. We consider the concurrent version of |LIO|, which
 includes operations for creating threads and expressing communication
 among them.
 
+In a sequential setting, the attack in Figure~\ref{fig:fs-attack} is
+disabled by the enforcement presented in the previous section,
+allowing us to prove termination-insensitive
+non-interference. However, the concurrent version of |LIO| requires
+the property of \emph{termination-sensitive} non-interference, which
+cannot be guaranteed in the presence of a shared store among the
+threads.
+
+Figure~\ref{fig:fs-conc-attack} shows how to exploit the termination
+channel to leak information in this context. We assume that the
+threads are interleaved so that thread A's code runs to completion
+before thread B's code. We also assume the standard three-point
+lattice $L\flows M\flows H$. In thread A, we first read a secret at
+level $M$, thereby upgrading |shared_ref| to level $M$. Depending on
+the read value, we read a secret at level $H$, which upgrades
+|shared_ref| to level $H$. In thread B, we first try to upgrade
+|shared_ref| to level $M$, which will succeed if |secretM| was
+|False|, or fail otherwise, since |shared_ref| would be already
+$H$. This implies that the operation that follows the upgrade, which
+writes a value to a public reference at level $L$, will either be
+executed or not depending on a value at level $M$. 
+
+In order to address this attack, we can either remove shared state
+altogether, or use the \emph{no-sensitive-upgrades} policy. With
+\emph{no-sensitive-upgrades}, |shared_ref| in
+Figure~\ref{fig:fs-conc-attack} would not be upgraded by thread A, so
+both threads would always run to completion, producing no leaks.
+
 \begin{figure*}[!ht]
 \vspace*{-5pt}
-% \[
-% \begin{array}{lllll}
-% Thread 1 & & Thread 2 & & Thread 3 \\
+\begin{tabular}{cc}
+\textbf{Thread A} & \textbf{Thread B} \\
+\begin{minipage}{0.45\linewidth}
 \begin{code}
-attack secret public = 
-   do  r1 <- newLIORef L False 
-       r2 <- newLIORef L False
-       forkLIO $ do  v <- readLIORef secret
-                     if v
-                       then writeLIORef r1 True
-                       else writeLIORef r2 True
-       forkLIO $  do  v <- readLIORef r1
-                      writeLIORef public v
-       forkLIO $  do  v <- readLIORef r2
-                      writeLIORef public (not v)
+do  v <- readLIORef secretM
+    when v (readLIORef secretH)
+\end{code}  
+\end{minipage} $\mid\!\mid$ &
+\begin{minipage}{0.5\linewidth}
+\begin{code}
+do  upgrade shared_ref M
+    writeLIORef public True
 \end{code}
-% \end{array}
-% \]
-\caption{Flow-sensitive attack in a concurrent setting.\label{fig:fs-conc-attack}}
+\end{minipage}
+\end{tabular}
+\caption{Flow-sensitive attack in a concurrent setting exploiting the termination channel.\label{fig:fs-conc-attack}}
 \vspace*{-5pt}
 \end{figure*}
