@@ -105,7 +105,7 @@ where |s  ::=  S  divisor I|.\label{fig:fs-exts-syntax}}
 
 We also define the upgrade operator $\uparrow$ as follows:
 \begin{code}
-  upgradeM m l' r = m { x mapsto (upgradeL (m(x)) l') | x element dom(m) or r}
+  upgradeM m l' r = m { a mapsto (upgradeL (m(a)) l') | a element dom(m) or r}
 \end{code}
 \begin{code}
   upgradeL ((LabeledTCB l t)) l' = LabeledTCB l'' t where denot(l'' = l lub l')
