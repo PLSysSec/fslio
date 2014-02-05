@@ -1,0 +1,30 @@
+\section{Concurrency}
+
+In this section we describe our flow-sensitivity extensions in a
+concurrent context. We consider the concurrent version of |LIO|, which
+includes operations for creating threads and expressing communication
+among them.
+
+\begin{figure*}[!ht]
+\vspace*{-5pt}
+% \[
+% \begin{array}{lllll}
+% Thread 1 & & Thread 2 & & Thread 3 \\
+\begin{code}
+attack secret public = 
+   do  r1 <- newLIORef L False 
+       r2 <- newLIORef L False
+       forkLIO $ do  v <- readLIORef secret
+                     if v
+                       then writeLIORef r1 True
+                       else writeLIORef r2 True
+       forkLIO $  do  v <- readLIORef r1
+                      writeLIORef public v
+       forkLIO $  do  v <- readLIORef r2
+                      writeLIORef public (not v)
+\end{code}
+% \end{array}
+% \]
+\caption{Flow-sensitive attack in a concurrent setting.\label{fig:fs-conc-attack}}
+\vspace*{-5pt}
+\end{figure*}
