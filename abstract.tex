@@ -1,41 +1,35 @@
 \begin{abstract}
 Flow-sensitive analysis for information-flow control (IFC) allow to change the
-security annotations provided to data structures (e.g. variables). This feature
-is beneficial for several reasons: it often boosts permissiveness, reduce the
-burden of explicit annotations, and enables the reuse of single-threaded data
-structures. In a purely dynamic setting, although attractive, changes on labels
-can become a covert-channel capable to leak secrets at a high rate. Existing
-language-based solutions cover sequential languages, where it is forbidden to
-either change the labels of certain flow-sensitive variables or branch on them.
-We present an extension for LIO---a floating-label system based on ideas from
-the operating system domain---which is capable to safely handle flow-sensitive
-and flow-insensitive mutable references. Our approach allows both arbitrary
-label changes subject to the structure of the security lattice (e.g. no
-relabeling of secrets as public data) and branches on altered flow-sensitive
-variables.  Differently from mainstream IFC tools, LIO allows to query the
-security labels associated to entities. This feature becomes particularly
-important to secure in presence of flow-sensitivity. In addition, we explore the
-solution space for secure label changes in presence of concurrency. We present
-an attack which suggest that \emph{{\nsu}} is the most permissive
-discipline for label changes in the concurrent version of LIO, where
-execution is stopped only based on threads’ local data---an essential
-requirement to obtain performance and scalability.
+security annotations associated to data structures. This feature is beneficial for
+several reasons: it often boosts permissiveness, reduce the burden of explicit
+annotations, and enables the reuse of single-threaded data structures. In a
+purely dynamic setting, although attractive, changes on labels can become a
+covert-channel capable to leak secrets at a high rate. Existing language-based
+solutions cover sequential languages, where it is forbidden to either change the
+labels of certain flow-sensitive variables or branch on them.  We present an
+extension for LIO---a floating-label system based on ideas from the operating
+system domain---which unifies the treatment of flow-sensitive and
+flow-insensitive mutable references. Our approach allows both arbitrary label
+changes subject to the structure of the security lattice (e.g. no relabeling of
+secrets as public data) and branches on altered flow-sensitive variables.
+% Differently from mainstream IFC tools, {\LIO} allows to query the security
+% labels associated to entities. 
+% This feature becomes particularly important to
+% secure in presence of flow-sensitive entities.
+In addition, we explore the applicability of our extension for concurrent
+systems. We show, by an attack, that \emph{{\nsu}} is the most suitable
+discipline for label changes where execution is stopped only based on threads’
+local data---an essential requirement to obtain performance and scalability.
+
 \end{abstract}
-
-
-
-
-
-
-  
-
-
-
 
 % Local Variables:
 % TeX-master: "main.ltx"
 % TeX-command-default: "Make"
 % End:
+
+
+
  
 
 
