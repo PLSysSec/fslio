@@ -69,8 +69,9 @@ the term under evaluation.
 
 
 \begin{code}
-P ::= P t | fix P | if P then t else t | P oplus t | v oplus P
-E ::= []| P | E >>= t 
+Ep  ::= Ep t | fix Ep | if Ep then t else t 
+      | Ep oplus t | v oplus Ep
+E  ::= []| Ep | E >>= t 
 \end{code}
 
 \Red{
