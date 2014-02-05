@@ -1,0 +1,82 @@
+\section{Brief introduction to LIO}
+\label{sec:background}
+
+LIO is a language-level IFC system, implemented as a Haskell
+library.
+%
+Specifically, LIO provides programmers with a new monad, called |LIO|,
+that is similar to---and is intended to be used in place of---the
+standard Haskell |IO| monad, but additionally monitors and controls
+the flow of information.
+%
+The LIO library provides various practical features (e.g., mutable
+references and threads) as combinators in this monad.
+
+\Red{TODO: describe LIO monad and current label}
+
+%
+Below we describe the semantics of LIO as an extended simply-typed,
+call-by-name $\lambda$-calculus, called \lio, parametric in the label
+type |lattice|.
+
+The formal syntax of the core \lio{} calculus is given in
+Fig.~\ref{fig:language:base}.
+%
+Syntactic categories |v|, |t|, and |tau| represent values, terms, and
+types, respectively.
+%
+Values include standard primitives (Booleans, unit,
+and $\lambda$-abstractions) and terminals corresponding to labels
+(|lattice|) and monadic values (|LIOTCB tau|).\footnote{
+We restrict our formalization to computations implemented in the |LIO|
+monad and only consider Haskell features relevant to IFC, similar to
+the presentation of LIO in~\tocite{jfptechreport}.
+}
+%
+Terms constitute standard constructs (values, variables |x|, function
+application, the |fix| operator, and conditionals), terminals
+corresponding to label operations (|t oplus t|), standard monadic
+operators (|return t| and |t >>= t|), and |getLabel|, describe below.
+%
+Types consist of Booleans, unit, function types, labels, and |LIO|
+computations; since the \lio{} type system is standard, we do not
+discuss it further.
+
+\begin{figure}
+\centering
+%format Values  = "\mathrm{Values}"
+%format Terms   = "\mathrm{Terms}"
+%format Types   = "\mathrm{Types}"
+%format LOps    = "\mathrm{Ops}_"lattice
+\begin{code}
+Values  v      ::=  true | false | () | \x.t | lattice | LIOTCB t
+Terms   t      ::=  v | x | t t | fix t | if t then t else t
+                 |  t oplus t | return t | t >>= t | getLabel
+Types   tau    ::=  Bool | () | tau -> tau | lattice | LIO tau  
+LOps    oplus  ::=  canFlowTo | lub | glb
+\end{code}
+\caption{Base \lio{} syntactic categories.
+\label{fig:language:base}}
+\end{figure}
+
+An LIO program is a \emph{configuration} of the form
+|conf lcurr m t|, where |lcurr| is the current label, |m|
+is the memory store, and |t| is
+the term under evaluation.
+%
+(We note that for a program to be valid | :- t : LIO tau|.)
+
+
+
+\begin{code}
+P ::= P t | fix P | if P then t else t | P oplus t | v oplus P
+E ::= []| P | E >>= t 
+\end{code}
+
+\Red{
+Maybe useful somewhere else:
+The design constraints imposed by the library approach has led to a
+novel point in the design space of language-level IFC systems---when
+compared to more traditional IFC systems---that incorporates ideas
+from previous IFC operating systems.
+}

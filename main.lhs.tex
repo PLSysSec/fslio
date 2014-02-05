@@ -59,16 +59,10 @@
 %\usepackage[square,comma,numbers,sort&compress,sectionbib]{natbib}
 \usepackage[square,comma,sectionbib]{natbib}
 
-\newcommand{\toLabeledWith}{|toLabeledWith|}
-\newcommand{\forkLIO}{|forkLIO|}
-\newcommand{\LIO}{|LIO|}
-\newcommand{\high}{\ensuremath{H}}
-\newcommand{\low}{\ensuremath{L}}
-\newcommand{\canflow}{\ensuremath{\sqsubseteq}}
 \newcommand{\nsu}{{no sensitive-upgrade}}
 \newcommand{\pu}{{permissive-upgrade}}
 
-\input{notation}
+%include notation.jfp.tex
 
 \begin{document}
 
@@ -97,26 +91,31 @@
 
 \maketitle
 
-\begin{abstract}
-\input{abstract}
-\end{abstract}
+%include abstract.tex
 
-\input{intro} % 1 1/2 Ale 
+%include intro.tex
+% 1 1/2 Ale 
 
-\input{background} % 2 1/2 Pages (Deian) explain LIO with semantics, style like in JFP
+%include background.tex
+% 2 1/2 Pages (Deian) explain LIO with semantics, style like in JFP
 
-%include flow-sensitive.tex
+%% include flow-sensitive.tex
 % 2 Pages (Pablo/Ale) explain sequential 
 
-\input{concurrency} % 1 Page (Pablo/Ale), attack and discussion 
+%include concurrency.tex 
+% 1 Page (Pablo/Ale), attack and discussion 
 
-\input{implementation} % 1 Page (Pablo/Ale)
+%include implementation.tex
+  % 1 Page (Pablo/Ale)
 
-\input{soundness} % 2 Pages (Pablo/Ale)
+%include soundness.tex
+% 2 Pages (Pablo/Ale)
 
-\input{related} % 1 Page (Ale) 
+%%include related.tex
+% 1 Page (Ale) 
 
-\input{conclusion} % 1/2 Page Total so far: 11 1/2
+%include conclusion.tex
+% 1/2 Page Total so far: 11 1/2
 
 
 
