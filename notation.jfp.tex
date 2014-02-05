@@ -34,13 +34,8 @@
 
 % arrows:
 \newcommand{\lto}{\longrightarrow}
-%format --> = "\overset{0}{\lto}"
-%format @--> = "\overset{n}{\lto}"
-%format @@--> = "\overset{n+1}{\lto}"
-%format lto_0 = -->
-%format lto_n = @-->
-%format ==> = "\overset{\;\;\;\;0\;\;*}{\lto}"
-%format @==> = "\overset{\;\;\;\;n\;\;*}{\lto}"
+%format --> = "\lto"
+%format ==> = "\lto^*"
 
 %format ~> = "\leadsto"
 %format ~>* = ~>"^*"
@@ -165,6 +160,12 @@
 %format m1
 %format m2
 
+%format c = "\Sigma"
+%format c'
+%format c''
+%format c1
+%format c2
+
 %format k'
 %format k''
 %format k1
@@ -201,7 +202,7 @@
 
 %format (denot (a)) = "\llbracket " a "\rrbracket_"lattice
 %format (denot_2 (a)) = "\llbracket " a "\rrbracket_{"lattice2"}"
-%format conf (l) (m) (t) = "\conf{"l"}{"m"}{"t"}"
+%format conf (c) (t) = "\conf{"c"}{"t"}"
 %format fresh (a) = "\fresh{"a"}"
 %format update (m) (a) (t) = "\update{"m"}{"a"}{"t"}"
 
@@ -275,7 +276,7 @@
 
 
 %%%
-\newcommand{\conf}[3]{\langle #1, #2 |divisor| #3\rangle}
+\newcommand{\conf}[2]{\langle #1,  #2\rangle}
 
 
 %%

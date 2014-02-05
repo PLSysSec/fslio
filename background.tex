@@ -35,7 +35,7 @@ the presentation of LIO in~\tocite{jfptechreport}.
 %
 Terms constitute standard constructs (values, variables |x|, function
 application, the |fix| operator, and conditionals), terminals
-corresponding to label operations (|t oplus t|), standard monadic
+corresponding to label operations (|t lop t|), standard monadic
 operators (|return t| and |t >>= t|), and |getLabel|, describe below.
 %
 Types consist of Booleans, unit, function types, labels, and |LIO|
@@ -49,28 +49,81 @@ discuss it further.
 %format Types   = "\mathrm{Types}"
 %format LOps    = "\mathrm{Ops}_"lattice
 \begin{code}
-Values  v      ::=  true | false | () | \x.t | lattice | LIOTCB t
-Terms   t      ::=  v | x | t t | fix t | if t then t else t
-                 |  t oplus t | return t | t >>= t | getLabel
-Types   tau    ::=  Bool | () | tau -> tau | lattice | LIO tau  
-LOps    oplus  ::=  canFlowTo | lub | glb
+Values  v    ::=  true | false | () | \x.t | lattice | LIOTCB t
+Terms   t    ::=  v | x | t t | fix t | if t then t else t
+               |  t lop t | return t | t >>= t | getLabel
+Types   tau  ::=  Bool | () | tau -> tau | lattice | LIO tau  
+LOps    lop  ::=  canFlowTo | lub | glb
 \end{code}
 \caption{Base \lio{} syntactic categories.
 \label{fig:language:base}}
 \end{figure}
 
-An LIO program is a \emph{configuration} of the form
-|conf lcurr m t|, where |lcurr| is the current label, |m|
-is the memory store, and |t| is
-the term under evaluation.
+An LIO program is a \emph{configuration} of the form |conf c t|, where
+|t| is the monadic term under evaluation, such that |:- t : LIO tau|,
+and |c| is state associated with the computation.
 %
-(We note that for a program to be valid | :- t : LIO tau|.)
+The state |c| is a tuple that contains both the current label |lcurr|
+and memory store |m|, i.e., |c = (lcurr, m, ...)|.
+%
+
+\begin{figure}[ht]
+\begin{mathpar}
+\inferrule
+{ |conf c t --> conf c' t'| }
+{ |conf c (E[t]) --> conf c' (E[t'])| }
+\and
+\inferrule
+{ |Ep[t] ~> Ep[t']| }
+{ |conf c (Ep[t]) --> conf c (Ep[t'])| }
+\and
+\inferrule
+{ |t ~> t'| }
+{ |Ep[t] ~> Ep[t']| }
+\end{mathpar}
+\caption{Evaluation relations}
+\end{figure}
+
+
+\begin{figure}[t] % sos:base
+\begin{mathpar}
+\inferrule[app]
+{ } { |Ep[(\x.t1) t2] ~> Ep[{ t2 / x } t1]| }
+\and
+\inferrule[fix]
+{ } { |Ep[fix (\x.t)] ~> Ep[{fix (\x.t) / x } t|] }
+\and
+\inferrule[ifTrue]
+{ } { |Ep[if true then t2 else t3] ~> Ep[t2]| }
+\and
+\inferrule[ifFalse]
+{ } { |Ep[if false then t2 else t3] ~> Ep[t3]| }
+\and
+\inferrule[lOp]
+{ | denot ( l3 = l1 lop l2 ) | }
+{ |Ep[l1 lop l2] ~> Ep[l3]| }
+\and
+\inferrule[return]
+{ } { |conf c (return t) --> conf c (LIOTCB t)| }
+\and
+\inferrule[bind]
+{ }
+{ |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (t2 t1)| }
+\and
+\inferrule[getLabel]
+{ |c = (lcurr, ...)|  }
+{
+|conf c (E[getLabel]) --> conf c (E[return lcurr])|
+}
+\end{mathpar}
+\caption{Reduction rules for base \lio.}
+\end{figure}
 
 
 
 \begin{code}
 Ep  ::= Ep t | fix Ep | if Ep then t else t 
-      | Ep oplus t | v oplus Ep
+      | Ep lop t | v lop Ep
 E  ::= []| Ep | E >>= t 
 \end{code}
 
