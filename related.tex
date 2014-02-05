@@ -12,23 +12,61 @@ Flanagan~\citep{Austin:Flanagan:PLAS10} provide the label changes policies
 (i.e. it rejects less suspicious programs). The discipline {\nsu} stops the
 execution on any attempt to change the label of a public variable inside a
 secret context. In contrast, {\pu} allows such changes but marking the altered
-variables so that the program cannot branch on them. Unfortunately, none of the
-mentioned work so far consider concurrency. Different from {\pu}, our approach
-for sequential settings does not require programs to stop at branches nor use
-extra security levels to indicate mutation of labels. Austin and Flanagan
-propose a \emph{privatization} operation to boost the permissiveness of {\pu}.
-It is not clear how such technique generalizes to arbitrary lattices. Moreover,
-the privatization operation can only enforce non-interference when output are
-suppressed after branching on a marked flow-sensitive reference. In contrast,
-our approach allows changes in flow-sensitive labels, branching on them, and
-performing outputs when safe, e.g., a {\toLabeledWith} block follow by writing 
-into a reference, which simulates an output in our attacker model. 
+variables so that the program cannot branch on them. The marking is changing the
+security label of the variables by |marked|, where |low canFlowTo high canFlowTo
+marked|.  Austin and Flanagan propose a \emph{privatization} operation to boost
+the permissiveness of {\pu}.  It is not clear how this technique generalizes to
+arbitrary lattices. Moreover, the privatization operation can only enforce
+non-interference when output are suppressed after branching on a marked
+flow-sensitive reference. Unfortunately, none of the mentioned work so far
+consider concurrency.
+
+%Different from {\pu}, our approach
+%for sequential settings does not require programs to stop at branches nor use
+%extra security levels to indicate mutation of labels. 
+It is difficult to compare the permissiveness of {\nsu} and {\pu} with our
+sequential approach. In some cases, our mechanism allows changes in
+flow-sensitive labels, branching on them, and performing outputs when
+safe. Therefore, it seems to be more permissive.  For instance, consider the
+following piece of code.
+\hspace{-10pt}
+\begin{code}
+do  writeLIORef tmp 0
+    toLabeled [tmp] H $ 
+              do  x <- readLIORef secret 
+                  when (x > 0) $ writeLIORef tmp (2*x)
+    toLabeled [tmp] H $ do  
+              do  r <- readLIORef tmp 
+                  when (r > 0) $ writeLIORef secret r
+    writeLIORef public 1
+\end{code}
+The initial label for |tmp| is |low|. Observe that all the runs of this program
+are accepted by our enforcement.  In contrast, the discipline {\nsu} would have
+stopped the code in the line |writeLIORef temp (2*x)| (i.e. when changing the
+label of a |low| reference in a high context). The policy {\pu} would have done
+at |when (r > 0) $ writeLIORef secret r| (i.e. when branching on the content of
+|temp|).  On the other hand, there are cases where our approach is more
+conservative. Specifically, it might occur that not all the references appearing
+in the list given to |toLabeled| are modified in every run.  To illustrate that,
+we consider the following piece of code.
+\begin{code}
+do  writeLIORef tmp 0
+    toLabeled [tmp] H $ readLIORef secret
+    x <- readLIORef tmp 
+    writeLIORef public x 
+\end{code}
+As before, the initial label for |tmp| is |low|. Clearly, every run of this
+program gets rejected by our approach even tough it is secure. Observe that
+after the execution of |toLabeled|, reference |tmp| changes its label to |high|
+and no more public side-effects are allowed. The discipline {\nsu} and {\pu} do
+not reject this program. If the list given to |toLabeled| were empty, the program
+above would get  accepted by our approach. 
 
 %% Breeze
 Recently, Hritcu et al.~\citep{10.1109/SP.2013.10} propose a floating-label
 system called Breeze. It allows label changes in the current label (i.e. pc) and
-consider flow-insensitive objects. Given the design similarities with
-\LIO~\citep{stefan:lio}, we believe that our results could be easily adapted to
+consider flow-insensitive values. Given the design similarities with
+LIO~\citep{stefan:lio}, we believe that our results could be easily adapted to
 Breeze.
 
 %% JSFlow
@@ -36,12 +74,11 @@ In a web scenario, and focusing on reducing the number of rejected web pages,
 Hedin et al. \citep{Hedin13} recently develop JSFlow, a IFC flow-sensitive
 monitor for JavaScript. The monitor utilizes the label changing policy
 {\nsu}. To overcome some of the restrictions imposed by this discipline, the
-primitive \textbf{upgrade} is introduced to explicitly change labels. The
-flow-sensitive version of {\forkLIO} can be seen as an automatic application of
+primitive \textbf{upgrade} is introduced to explicitly change labels. Our
+extension to |toLabeled| can be seen as an automatic application of
 \textbf{upgrade} every time that the current label gets raised. Using testing,
 Birgisson et al.~\citep{Arnar2012} automatically insert instructions
-\textbf{upgrade} in order to reduce the number of runs with possible leaks due
-to label changes.
+\textbf{upgrade} to boost the permissiveness of {\nsu}. 
 
 
 
@@ -78,6 +115,6 @@ static checks in a flow-sensitive execution monitor.
 
 
 % Local Variables:
-% TeX-master: "main.ltx"
+% TeX-master: "main.lhs.tex"
 % TeX-command-default: "Make"
 % End:
