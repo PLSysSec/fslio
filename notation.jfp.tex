@@ -1,0 +1,266 @@
+
+%format true = True
+%format false = False
+%format unit = "()"
+
+%format /\ = "\land"
+%format :- = "\vdash"
+
+%format ttrue = "\mathbf{true}"
+%format ffalse = "\mathbf{false}"
+
+%format divisor = "\;|\;"
+%format inlinesep = "|"
+
+%format Alice = "\textrm{Alice}"
+%format Bob = "\textrm{Bob}"
+
+%format high = "\textbf{H}"
+%format low = "\textbf{L}"
+
+% label operation related:
+\newcommand{\flows}{\sqsubseteq}
+\newcommand{\lub}{\sqcup}
+\newcommand{\glb}{\sqcap}
+%format canFlowTo = "\flows"
+%format cantFlowTo = "\not\flows"
+%format canFlowTo_p
+%format canFlowTo_Alice
+%format lub = "\lub" 
+%format glb = "\glb"
+%format oplus = "\oplus"
+
+% arrows:
+\newcommand{\lto}{\longrightarrow}
+%format --> = "\overset{0}{\lto}"
+%format @--> = "\overset{n}{\lto}"
+%format @@--> = "\overset{n+1}{\lto}"
+%format lto_0 = -->
+%format lto_n = @-->
+%format ==> = "\overset{\;\;\;\;0\;\;*}{\lto}"
+%format @==> = "\overset{\;\;\;\;n\;\;*}{\lto}"
+
+%format ~> = "\leadsto"
+%format ~>* = ~>"^*"
+
+
+\newcommand{\erase}[2]{\varepsilon_{#1}(#2)}
+%format &~> =  ~>"_l"
+%format &~>* =  ~>*"_l"
+%format &--> = -->"_l"
+%format &==> = ==>"_l"
+%format &@--> = @-->"_l"
+%format &@==> = @==>"_l"
+%format &@@--> = @@-->"_l"
+%format (erase (l) (t)) = "\erase{"l"}{"t"}"
+%format hole = "\bullet"
+
+\newcommand{\safe}[1]{\varsigma({#1})}
+%format (safe (t)) = "\safe{"t"}"
+
+\newcommand{\lequiv}[1]{\approx_{#1}}
+%format &~ = "\approx_{"l"}"
+
+% lattice/label related
+\newcommand{\lattice}{\ensuremath{\ell}}
+%format lattice = "\lattice"
+%format lattice_2
+%format lattice_3
+%format lattice2
+%format lattice3
+
+\newcommand{\lcurr}{\ensuremath{l_{\textrm{cur}}}}
+%format lcurr = "\lcurr"
+%format lcurr'
+%format lcurr''
+\newcommand{\ccurr}{\ensuremath{c_{\textrm{cur}}}}
+%format ccurr = "\ccurr"
+%format ccurr'
+%format ccurr''
+
+%format l_A
+%format l_B
+%format l_AB
+%format l_c
+%format l_d
+%format l_e
+%format l_f
+%format l_Alice
+%format l_Bob
+%format l1
+%format l2
+%format l3
+%format li = l"_"i
+%format li' = l'"_"i
+
+%format p_Alice
+%format p_Bob
+
+%format LIOTCB = "LIO^{\Red{\textsf{{\tiny TCB}}}}"
+%format LabeledTCB = "Labeled^{\Red{\textsf{{\tiny TCB}}}}"
+%format LIORefTCB = "LIORef^\Red{\textsf{{\tiny TCB}}}"
+
+%format LIOTCBEx = "LIO_{X}^{\Red{\textsf{{\tiny TCB}}}}"
+%format LabeledTCBEx = "Labeled_{X}^{\Red{\textsf{{\tiny TCB}}}}"
+
+%format LIOTCB_b  = LIOTCB"_{"b"}"
+%format LIOTCB_b1 = LIOTCB"_{"b1"}"
+%format LIOTCB_b2 = LIOTCB"_{"b2"}"
+%format LIOTCB_bi = LIOTCB"_{"b"_"i"}"
+%format LIOTCB_b' = LIOTCB"_{"b'"}"
+%format LIOTCB_b'' = LIOTCB"_{"b''"}"
+
+%format LabeledTCB_b  = LabeledTCB"_{"b"}"
+%format LabeledTCB_b1 = LabeledTCB"_{"b1"}"
+%format LabeledTCB_b2 = LabeledTCB"_{"b2"}"
+%format LabeledTCB_bi = LabeledTCB"_{"b"_"i"}"
+%format LabeledTCB_b' = LabeledTCB"_{"b'"}"
+%format LabeledTCB_b'' = LabeledTCB"_{"b''"}"
+
+%format ex = "\xi"
+%format ifcFail = ex"_{\tiny IFC}"
+
+%format b1
+%format b2
+
+%format tau = "\tau"
+%format tau'
+%format tau_1
+%format tau_2
+%format tau_3
+%format tau1
+%format tau2
+%format tau3
+
+%format t'
+%format t''
+%format t_1
+%format t_2
+%format t_3
+%format t1
+%format ti = t"_"i
+%format ti' = t'"_"i
+%format t2
+%format t3
+%format t1'
+%format t2'
+%format t3'
+%format t1''
+%format t2''
+%format t3''
+
+%format m = "\mu"
+%format m'
+%format m''
+%format m1
+%format m2
+
+%format k'
+%format k''
+%format k1
+%format k2
+
+%format when = "\textbf{when}"
+%format unless = "\textbf{unless}"
+%format \_ = \ {-\!\!\!\!-}_
+
+%format toLabeled' = "toLabeled\ensuremath{^\star}"
+%format labelOf' = "labelOf\ensuremath{^\star}"
+
+%% language
+\newcommand{\Coloneqq}{::=} % txfonts
+%format ::=     = "\Coloneqq"
+
+%format fix      = "\mathbf{fix}"
+%format return   = "\mathbf{return}"
+%format getLabel = "\mathbf{getLabel}"
+%format .       = "."
+%format cdots   = "\cdots"
+%format cdot    = "\cdot"
+%format lop     = "\otimes"
+
+\newcommand{\dom}[1]{\ensuremath{{\textrm{dom}}(#1)}}
+\newcommand{\fresh}[1]{\ensuremath{\textrm{fresh}(#1)}}
+\newcommand{\update}[3]{\ensuremath{#1 [ #2 \mapsto #3 ]}}
+
+%format (denot (a)) = "\llbracket " a "\rrbracket_"lattice
+%format (denot_2 (a)) = "\llbracket " a "\rrbracket_{"lattice2"}"
+%format conf (l) (m) (t) = "\conf{"l"}{"m"}{"t"}"
+%format fresh (a) = "\fresh{"a"}"
+%format update (m) (a) (t) = "\update{"m"}{"a"}{"t"}"
+
+
+%values
+\newcommand{\true}{\textsf{true}}
+\newcommand{\false}{\textsf{false}}
+\newcommand{\unit}{\textsf{()}}
+\newcommand{\fix}[1]{\textsf{fix}\ #1}
+\newcommand{\Labeled}[3]{\textsf{Labeled}\ensuremath{^{#1}}\ #2\ #3}
+\newcommand{\LabeledX}[2]{\Labeled{\_}{#1}{#2}}
+\newcommand{\LabeledO}[2]{\Labeled{}{#1}{#2}}
+\newcommand{\LabeledF}[2]{\Labeled{\dagger}{#1}{#2}}
+\newcommand{\LIORef}[2]{\textsf{LIORef}\ #1\ #2}
+\newcommand{\LIO}[1]{{#1}^\textsf{LIO}}
+
+\newcommand{\Ex}{e}
+\newcommand{\Exception}[1]{{#1}^\textsf{LIOEx}}
+
+%termms
+\newcommand{\ifel}[3]{\textsf{if}\ #1\ \textsf{then}\ #2\ \textsf{else}\ #3}
+\newcommand{\join}[2]{#1 \lub #2}
+\newcommand{\meet}[2]{#1 \lub #2}
+\newcommand{\canFlowTo}[2]{#1 \flows #2}
+\newcommand{\return}[1]{\textsf{return}\ #1}
+\newcommand{\bindSymbol}{\ensuremath{\gg\!\!\!=}}
+%\newcommand{\bind}[2]{#1 \bindSymbol #2}
+\newcommand{\getLabel}{\textsf{getLabel}}
+\newcommand{\getClearance}{\textsf{getClearance}}
+\newcommand{\llabel}[2]{\textsf{label}\ #1\ #2}
+\newcommand{\labelOf}[1]{\textsf{labelOf}\ #1}
+\newcommand{\unlabel}[1]{\textsf{unlabel}\ #1}
+\newcommand{\toLabeled}[2]{\textsf{toLabeled}\ #1\ #2}
+\newcommand{\lowerClr}[1]{\textsf{lowerClearance}\ #1}
+\newcommand{\raiseLbl}[1]{\textsf{raiseLabel}\ #1}
+\newcommand{\labelOfLIORef}[1]{\textsf{labelOfLIORef}\ #1}
+\newcommand{\newLIORef}[2]{\textsf{newLIORef}\ #1\ #2}
+\newcommand{\readLIORef}[1]{\textsf{readLIORef}\ #1}
+\newcommand{\writeLIORef}[2]{\textsf{writeLIORef}\ #1\ #2}
+\newcommand{\throwLIO}[1]{\textsf{throwLIO}\ {#1}}
+\newcommand{\catchLIO}[2]{\textsf{catchLIO}\ #1\ #2}
+
+% types:
+\newcommand{\BoolT}{\textsf{Bool}}
+\newcommand{\unitT}{\textsf{()}}
+\newcommand{\LIOT}[1]{\textsf{LIO}\ #1}
+\newcommand{\LabelT}{\textsf{Label}}
+\newcommand{\LabeledT}[1]{\textsf{Labeled}\ #1}
+\newcommand{\LIORefT}[1]{\textsf{LIORef}\ #1}
+\newcommand{\ExceptionT}{\ensuremath{\mathsf{Exception}}}
+
+%memory
+\newcommand{\act}{k}
+
+%
+
+\newcommand{\ruleref}[1]{(\textsc{#1})}
+
+
+
+
+
+% term erasure
+%\newcommand{\hole}{\bullet}
+%\newcommand{\eraseName}{\varepsilon}
+%\newcommand{\erase}[2]{\eraseName_{#1}(#2)}
+
+
+\newcommand{\coq}{\ensuremath{\star}}
+\newcommand{\nocoq}{\textrm{\ding{45}}}
+
+
+%%%
+\newcommand{\conf}[3]{\langle #1, #2 |divisor| #3\rangle}
+
+
+%%
+\newcommand{\lio}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice|}}}

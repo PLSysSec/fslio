@@ -1,0 +1,8 @@
+- Use |LIO| when referring to the LIO monad or LIO types
+- Use LIO (no emphasis) when referring to the LIO system
+- Use ~ before a \cite; make sure that it's blah~\cite{blah} not blah
+  ~\cite{blah} though
+- When using --- there should not be any space on the left or right
+  (nor should the right hand side be followed by a , or .)
+- Put notational stuff in the correpsonding file; main is too
+  cluttered
