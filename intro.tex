@@ -27,8 +27,8 @@ motivated by (i) the permissiveness of dynamic techniques over static
 ones~\citep{Sabelfeld:Russo:PSI09}, and (ii) the simplicity for treating notions
 like dynamic code evaluation---a feature commonly present in modern scripting
 languages. To fulfill confidentiality demands, IFC monitors maintain a
-mapping from variables to security labels~\citep{myers:dlm,Stefan:2011}.  For
-simplicity of exposition, we consider only two labels: |high| (high), which
+mapping from variables to security labels~\citep{myers:dlm,Stefan:2011}.  
+For simplicity of exposition, we consider only two labels: |high| (high), which
 denotes secrets, and |low| (low), which denotes public data. The partial ordering
 |low canFlowTo high| and |high cantFlowTo low| expresses that information
 can only flow from public data into secret entities.
@@ -36,16 +36,16 @@ can only flow from public data into secret entities.
 %% Treatment of variables 
 %% Definition flow-sensitive, flow-insensitive 
 One of the facets to IFC analysis lies in the treatment of
-variables~\citep{Hunt:2006}. Some analyzes, called
-\emph{flow-insensitive}, forbid variables to change its security
-labels at execution time, i.e., labels are treated as
-\emph{immutable}. In contrast, \emph{flow-sensitive} enforcements
-admit changes on labels to reflect the confidentiality of the stored
-data, i.e., labels are considered as \emph{mutable}. For instance,
-assuming secret variable |h| and function |publish(v)|, which produce
-a public event of value |v|, the program |P = h := 0 ; publish(h)| is
-accepted by such an enforcement since the label associated to |h|
-changed to |low| after the first assignment (|h := 0|).
+variables~\citep{Hunt:2006}. Some analyzes, called \emph{flow-insensitive},
+forbid variables to change its security labels at execution time, i.e., labels
+are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} enforcements
+admit changes on labels to reflect the confidentiality of the stored data, i.e.,
+labels are considered as \emph{mutable}. For instance, assuming variable |h|,
+with security level |high|, variable |l|, with security levels |low|, and
+function |publish(v)|, which produces a public event of value |v|, the program
+|P = h := l ; publish(h)| is accepted by such an enforcement. The reason for
+that is the change of |h|'s label, which becomes |low| after
+the assignment (|h := l|).
 
 %Although static flow-sensitive and flow-insensitive analysis are
 %equivalent in expressiveness (module code rewriting)~\citep{Hunt:2006}, the 
@@ -58,9 +58,40 @@ scarce resources, for instance CPU registers, it is not feasible to think that
 they will be assigned a fixed security label throughout program
 execution~\citep{BonelliCM05}. More importantly, flow-sensitivity analyses often
 boost permissiveness by leveraging the changes on labels to reduce the number of
-rejected programs (recall program $P$ above). Unfortunately, purely dynamic IFC
-systems can turn label changes into a covert channel~\citep{Russo:2010}. To
-close it, there exists mainly three different proposals:
+rejected programs (recall program $P$ above). 
+
+
+%% Problems with Flow-sensitivity and purely dynamic IFC
+Unfortunately, purely dynamic IFC
+systems can turn label changes into a covert channel~\citep{Russo:2010}. 
+\begin{wrapfigure}{r}{0.5\columnwidth}
+|l := 1 ; t := 0 ;| \\
+|if h then t := 1;| \\
+|if t /= 1 then l := 0| \\
+|publish(l)| 
+\caption{\small\label{fig:fsattackintro} Flow-sensitive attack}
+\end{wrapfigure}
+Figure \ref{fig:fsattackintro} illustrates the problem of enabling arbitrary
+label changes.  In the attack, variables |l| and |h| do not change their
+security levels |low| and |high|, respectively. In contrast, variable |t| can
+change its security level to |high|. For purely dynamic monitors, where
+non-taken branches are not inspected, the attack succeed to leak information
+about |h|. More precisely, when |h| is true, the initial labels for |l| and |t|
+are |low| since they initially store constants (|l :=1 ; t := 0|).  Due to 
+the assignment |t := 1| inside the
+first |then|-branch, value of |t| changes its value to |1| and its label to
+|high|. The condition of the second branch is not fulfill and therefore 
+the monitor executes |publish(l)|, which produces the public event 
+|1|. On the other hand, when |h| is false, variable |t| is not relabeled to 
+|high|, i.e., the first |then|-branch is not taken. Instead, the second
+|then|-branch is executed. 
+The assignment |l := 0| does not change the label of |l|, but its value to 
+be |0|. Observe that the assignment is determined by public data (|t /= 1|)
+and the assigned value is a constant. Finally, the monitor executes
+|publish(l)|, which produces the public event |0|. As a result, the monitor 
+missed to catch the information leak about |h|.  
+
+To close this covert channel, there exists mainly three different proposals:
 incorporate some static analysis/information into the execution
 monitor~\citep{Russo:2010,stefan:lio,10.1109/SP.2013.10}, forbid certain label
 changes ---a policy known as \emph{no-sensitive
@@ -71,7 +102,7 @@ for sequential programming languages.
 
 
 %% Operating system community
-Before the apparition of language-based techniques for IFC, the operating system
+Before the time of language-based techniques for IFC, the operating system
 community has traditionally handle the problem inherent to combine mutable
 labels and purely dynamic monitors. Modern examples of that are the operating
 systems Asbestos~\citep{Efstathopoulos:2005}, HiStar~\citep{zeldovich:histar},
@@ -101,48 +132,65 @@ reading sensitive data. This action can be seen as raising the program counter
 systems~\citep{sabelfeld:language-based-iflow} or as tainting in secure OS.  In
 this light, it is not surprising that LIO treats objects (e.g. references,
 synchronization variables, etc.) as flow-insensitive entities. Different from
-other IFC tools~\citep{jif,FlowCaml,Hedin13}, LIO utilizes public labels and
-allows programs to query objects' labels without affecting the
-floating-label---a useful feature to increase permissiveness when interacting
-with external databases~\citep{giffin:hails}.
+other IFC tools~\citep{jif,FlowCaml,Hedin13}, LIO allows programs to query
+objects' labels without affecting the floating-label---a useful feature to
+increase permissiveness when interacting with external databases~\citep{giffin:hails}.
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
-In this paper, we adapt LIO to work with flow-sensitive objects. To guarantee
-non-interference, we demand the floating-label to get permanently tainted with
-the label corresponding to the flow-sensitive objects being
-inspected---regardless if it is their label or content what is under
-scrutiny. While secure and novel, this mechanism facilitates label creep. We
-present two mechanisms to mitigate this problem: an explicitly change labels
-(inspired by \citep{Hedin13}), and a block-structured instruction which allows
-using flow-sensitive entities without permanently tainting the floating label,
-but enforcing their destruction after the execution of the block.  On the other
-hand, in a concurrent setting, we simply adapt the {\nsu} policy to work with
-LIO. We argue, by showing an attack, that no-sensitive-upgrades is the most
+In this paper, we adapt LIO to work with flow-sensitive objects.  For pure and
+immutable flow-sensitive values (e.g. integers or strings), we demand to taint
+the floating-label with the labels of the values being inspected---regardless if
+it is their label or content what is under scrutiny.  For mutable objects
+(e.g. references), we combine \nsu~\citep{Austin:Flanagan:PLAS10} together with
+a mechanism to automatically raise all mutable labels when tainting the
+floating-label. While secure, this mechanism facilitates label creep, i.e.,
+flow-sensitive mutable objects might end up with ``too high'' labels. To
+mitigate this problem, we extend a block-structured primitive in LIO (called
+|toLabeled|) to only raise declared flow-sensitive mutable objects. Access to
+undeclared flow-sensitive objects is forbidden within the block-structure.
+% using flow-sensitive entities without permanently tainting the floating label,
+% but enforcing their destruction after the execution of the block.
+%To guarantee
+%non-interference, we demand the floating-label to get permanently tainted with
+%the label corresponding to the flow-sensitive objects  
+% We
+%present two mechanisms to mitigate this problem: an explicitly change labels
+%w(inspired by \citep{Hedin13}), and a 
+
+
+We also explore the design space to work with flow-sensitive objects in presence
+of concurrency.
+%On the other 
+%hand, in a concurrent setting, we simply adapt the {\nsu} policy to work with
+%LIO. 
+We argue, by showing an attack, that {\nsu} is the most
 permissive policy for scenarios where actions are forbidden based on threads'
 local data---an essential requirement to obtain performance and
-scalability. Although developed for LIO, we believe that our approaches might
-apply to other language-based floating-label
-systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as IFC OS work.  More
+scalability. More
 concretely, the contribution of this paper are as follows.
 \begin{itemize}
 
 \item An extension to incorporate flow-sensitive objects in LIO. As a result,
-  not only increase LIO its permissiveness, but it provides means for safely
+  not only increases LIO its permissiveness, but it also provides means for safely
   combining flow-insensitive and flow-sensitive objects.
-
 
 \item An attack that nails down the complications of having flow-sensitive
   objects in presence of concurrency.
 
-\item Provably non-interference. 
+\item Provably non-interference. Our formal results are developed for arbitrary
+  security lattices. 
 
 \item An implementation of our ideas in Haskell, where programmers can write
   routines \emph{parametric} on the flow-sensitivity of objects---a novelty for IFC
   tools. 
 \end{itemize}
 
+Although developed for LIO, we believe that our approaches for the sequential
+and concurrent settings might be applied to other language-based floating-label
+systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as IFC OS work.
+
 % Local Variables:
-% TeX-master: "main.ltx"
+% TeX-master: "main.tex"
 % TeX-command-default: "Make"
 % End:
