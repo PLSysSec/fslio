@@ -249,7 +249,7 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 {|c = (lcurr, mI, mS)|\\
  |lcurr canFlowTo l|\\
  |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
- |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
+ |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS') (LIOTCB t')|\\
  |lcurr' canFlowTo l|\\
  |c''' = (lcurr, mI', mS'' merge mS)|
 }
