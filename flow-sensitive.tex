@@ -1,4 +1,5 @@
 \section{Flow-sensitivity extensions}
+\label{sec:flow-sensitive}
 
 Previous versions of |LIO| support mutable references (LIORefs) with a
 fixed label, which is preserved throughout the computation. These
@@ -43,10 +44,12 @@ through this attack, without using the termination channel.
 attack public secret = 
   do  temp    <- newLIORef L 0
       writeLIORef public 1
-      toLabeled H $ do  x <- readLIORef secret
-                        when (x == 1) (writeLIORef temp 1)
-      toLabeled H $ do  c <- readLIORef temp
-                        when (c /= 1) (writeLIORef public 0)
+      toLabeled H $ do
+        x <- readLIORef secret
+        when (x == 1) (writeLIORef temp 1)
+      toLabeled H $ do
+        c <- readLIORef temp
+        when (c /= 1) (writeLIORef public 0)
 \end{code}
 \caption{Potential flow-sensitivity attack in |LIO|.\label{fig:fs-attack}}
 \vspace*{-5pt}
@@ -69,31 +72,13 @@ the syntax for values, terms and types that we require in order to
 account for both flow-sensitive and flow-insensitive references.
 
 \begin{figure}[!ht] % syntax
-%%-deian-\vspace*{-5pt}
-%%-deian-\begin{align*}
-%%-deian-\textrm{Value:}   && v    \Coloneqq~ &
-%%-deian-                                 \LIORefRTS{l}{t}
-%%-deian-                           \ \mid\  \Lb{l}{u}{t} \\
-%%-deian-\textrm{Term:}    && t    \Coloneqq~ &
-%%-deian-                             \newRef{l}{t}
-%%-deian-                           \mid  \writeRef{t}{t} \\
-%%-deian-                  && &     \mid  \readRef{t}
-%%-deian-                           \mid  \labelOf{t} \\
-%%-deian-                  && &     \mid  \upgrade{t}{t} \\
-%%-deian-\textrm{Type:}    && \tau \Coloneqq~& 
-%%-deian-                          \LIORef{\ell}{\tau} \\
-%%-deian-\end{align*}
 \centering
-%format Values  = "\mathrm{Values}"
-%format Terms   = "\mathrm{Terms}"
-%format Types   = "\mathrm{Types}"
-%format Sensitivity = "\mathrm{Sensitivity}"
 \begin{code}
-v   ::= cdots  | LIORefTCB I t| LIORefTCB S v t
-t   ::= cdots  | newRef s t t | writeRef s t t 
-               | readRef s t | upgrade t t
-               | labelOfR s t
-tau ::= cdots  | LIORef s tau
+v    ::= cdots  | LIORefTCB I t| LIORefTCB S v t
+t    ::= cdots  | newRef s t t | writeRef s t t 
+                | readRef s t | upgrade t t
+                | labelOfR s t
+tau  ::= cdots  | LIORef s tau
 
 
 Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t 
@@ -101,7 +86,7 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t
                 | labelOfR s Ep
 \end{code}
 \caption{Formal syntax for values, terms, and types,
-where |s  ::=  S  divisor I|.\label{fig:fs-exts-syntax}}
+where |s  ::=  S inlinesep I|.\label{fig:fs-exts-syntax}}
 \vspace*{-5pt}
 \end{figure} 
 
@@ -197,7 +182,7 @@ variable in |r| has had its label upgraded to |l lub l'|.
   |lcurr canFlowTo l|\\
   |c' = (lcurr, mI, mS[a mapsto LabeledTCB l t])|
 }
-{ |conf () (E[newRef S l t]) --> conf c' (E[return (LIORefTCB S a)])| }
+{ |conf c (E[newRef S l t]) --> conf c' (E[return (LIORefTCB S a)])| }
 { |fresh a| }
 
 \and
@@ -232,11 +217,12 @@ variable in |r| has had its label upgraded to |l lub l'|.
 
 \and
 
-\inferrule[upgrade]
+\inferrule[upgradeRef]
 { |c = (lcurr, mI, mS)|\\
-  |c' = (lcurr, mI, upgradeM mS l {a})|
+  |conf c (upgrade (mS(a)) (l lub lcurr)) ==> conf c (LIOTCB v)|\\
+  |c' = (lcurr, mI, mS[a mapsto v])|
 }
-{ |conf c (E[upgrade (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
+{ |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
 
 %%-deian-\inferrule{\env.\lbl\flows l \and l\flows l' \and \RTS'=\RTS\uparrow^{l'} \{x\}}
 %%-deian-{\defRTS{E[\upgrade{(\LIORef{l}{x})}{l'}]} \lto \wEnvRTS{\env}{\RTS'}{r}{E[\returnLIO{()}]}}[\textsc{Upgrade}]
@@ -270,7 +256,7 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \inferrule[toLabeled]
 {|c = (lcurr, mI, mS)|\\
  |lcurr canFlowTo l|\\
- |mS' = {a mapsto mS(a) divisor a element dom mS and addrs(v) }|\\
+ |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
  |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
  |lcurr' canFlowTo l|\\
  |c''' = (lcurr, mI', mS'' merge mS)|

@@ -119,13 +119,71 @@ memory stores, etc. i.e., |c = (lcurr, ...)|.
 \caption{Reduction rules for base \lio.}
 \end{figure}
 
-
-
 \begin{code}
 Ep  ::= Ep t | fix Ep | if Ep then t else t 
       | Ep lop t | v lop Ep
 E  ::= []| Ep | E >>= t 
 \end{code}
+
+\subsection{Labeled values}
+
+\begin{code}
+v    ::= cdots  | LabeledTCB l t
+t    ::= cdots  | label t t | unlabel t | labelOf t
+                | upgrade t t
+tau  ::= cdots  | Labeled tau
+
+Ep   ::= cdots  | label Ep t | unlabel Ep | labelOf Ep
+                | upgrade Ep t | upgrade v Ep
+\end{code}
+
+\begin{figure}[t] % labeled
+\begin{mathpar}
+\inferrule[label]
+{ |c = (lcurr, ...)|\\
+  |lcurr canFlowTo l ~> true| 
+}
+{
+|conf c (E[label l t]) --> conf c (E[return (LabeledTCB l t)])|
+}
+\and
+
+\inferrule[unlabel]
+{ |c = (lcurr, ...)|\\
+  |lcurr lub l ~> lcurr'|\\
+  |c' = (lcurr', ...)|
+}
+{
+|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[return t])|
+}
+\and
+\inferrule[labelOf]
+{ }
+{ |Ep[labelOf (LabeledTCB l t)] ~> Ep[l]| }
+\and
+\inferrule[upgrade]
+{ |c = (lcurr, ...)|\\
+  |t' = lcurr lub l lub l'|}
+{ |conf c (E[upgrade (LabeledTCB l t) l']) --> conf c (E[label t' t])| }
+\end{mathpar}
+\caption{Semantics for labeled values\label{fig:sos:labeled}.}
+\end{figure}
+
+Note that with |toLabeled| we can define |upgrade| as follows:
+\begin{code}
+upgrade t1 t2 @= getLabel >>= \l.
+  toLabeled (labelOf t1 lub l lub t2) (unlabel t1)
+\end{code}
+Unfortunately, because |toLabeled| needs to be modified to accomodate
+for flow-sensitive references and so we provide |upgrade| as a
+primitive.\footnote{
+In section~\ref{sec:flow-sensitive}, we define an alternative
+version of |toLabeled|, in terms of which we can define the
+upgrade function such that its semantics are equivalent to those
+given Figure~\ref{fig:sos:labeled}. This definition is:
+|upgrade t1 t2 @= getLabel >>= \l.
+  toLabeled' (labelOf t1 lub l lub t2) nil (unlabel t1)|
+}
 
 \Red{
 Maybe useful somewhere else:

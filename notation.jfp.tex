@@ -92,8 +92,8 @@
 
 %format LIOTCB = "LIO^{\Red{\textsf{{\tiny TCB}}}}"
 %format LabeledTCB = "Lb^{\Red{\textsf{{\tiny TCB}}}}"
-%format LIORefTCB (s) = "LIORef^{\Red{\textsf{{\tiny TCB}}}}_{"s"}"
-%format LIORef(s) = "LIORef_{"s"}"
+%format LIORefTCB (s) = "Ref^{\Red{\textsf{{\tiny TCB}}}}_{"s"}"
+%format LIORef(s) = "Ref_{"s"}"
 
 %format LIOTCBEx = "LIO_{X}^{\Red{\textsf{{\tiny TCB}}}}"
 %format LabeledTCBEx = "Lb_{X}^{\Red{\textsf{{\tiny TCB}}}}"
@@ -115,8 +115,10 @@
 %format newRef (s)   = "\textbf{newRef}_{"s"}"
 %format writeRef (s) = "\textbf{writeRef}_{"s"}"
 %format readRef (s) = "\textbf{readRef}_{"s"}"
-%format labelOfR (s) = "\textbf{labelOf}_{"s"}"
+%format labelOf = "\textbf{labelOf}"
+%format labelOfR (s) = labelOf"_{"s"}"
 %format upgrade = "\textbf{upgrade}"
+%format upgradeR = "\textbf{upgrade}_"S
 %format label = "\textbf{label}"
 %format unlabel = "\textbf{unlabel}"
 %format toLabeled = "\textbf{toLabeled}"
@@ -310,7 +312,7 @@
 
 
 %%%
-\newcommand{\conf}[2]{\langle #1 |divisor| #2\rangle}
+\newcommand{\conf}[2]{\langle #1 |inlinesep| #2\rangle}
 
 
 %%
