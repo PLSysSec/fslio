@@ -138,17 +138,32 @@ increase permissiveness when interacting with external databases~\citep{giffin:h
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
-In this paper, we adapt LIO to work with flow-sensitive entities.  For pure and
-immutable flow-sensitive values (e.g. booleans or functions), we propose to
-taint the floating-label with the labels of the values being
-inspected---regardless if it is their labels or content what is under scrutiny.
-For mutable values, i.e., references, we combine
-\nsu~\citep{Austin:Flanagan:PLAS10} together with a mechanism to automatically
-raise all mutable labels when tainting the floating-label. While secure, this
-approach facilitates label creep, i.e., data might end up with ``too high''
-labels. To mitigate this problem, we propose a block-structured primitive in LIO
-which only raises the labels of declared flow-sensitive references, while
-forbidden the access to undeclared ones within the block.
+In this paper, we adapt LIO to work with flow-sensitive entities.  
+%For pure and
+%immutable flow-sensitive values (e.g. booleans or functions), we propose to
+%taint the floating-label with the labels of the values being
+%inspected---regardless if it is their labels or content what is under scrutiny.
+We present a calculus which treats almost uniformly flow-insensitive and
+flow-sensitive mutable references. The novelty in the calculus is to consider
+the labels as being composed of two elements: a label describing the
+confidentiality of the stored value, and another label, called \emph{the label
+  on the label}, which describes the confidentiality of the value's
+label. Having this model, we forbid to change a label of a reference if
+\emph{the label on the label is below the floating-label} (similar to the {\nsu}
+discipline~\citep{Austin:Flanagan:PLAS10}). Inspired by~\citep{Hedin13}, we add
+an instruction capable to upgrade labels under certain safe conditions. However,
+different from Hedin et al., our upgrade operation \emph{does not
+  fail}. Instead, it taints the floating-label with the label on the label
+regardless the success of the operation. This different is crucial to scale our
+approach for concurrency, where the termination channel should not be
+neglected~\citep{stefan:addressing-covert}. To reduce the programmer's burden to
+introduce upgrade annotations, the calculus provides means for automatically
+upgrade references at safe points, i.e., when the floating-label gets tainted.
+While secure, this feature facilitates label creep, i.e., all flow-sensitive
+references might end up with ``too high'' labels. To address that, we
+propose a block-structured primitive which only upgrades the labels of
+declared flow-sensitive references, while forbidden the access to undeclared
+ones.
 % using flow-sensitive entities without permanently tainting the floating label,
 % but enforcing their destruction after the execution of the block.
 %To guarantee
@@ -157,31 +172,31 @@ forbidden the access to undeclared ones within the block.
 % We
 %present two mechanisms to mitigate this problem: an explicitly change labels
 %w(inspired by \citep{Hedin13}), and a 
-Additionally, we explore the design space to work with flow-sensitive values in presence
-of concurrency.
 %On the other 
 %hand, in a concurrent setting, we simply adapt the {\nsu} policy to work with
 %LIO. 
-We argue, by showing an attack, that {\nsu} is the most
-permissive policy for scenarios where actions are forbidden by the monitor based on threads'
-local data---an essential requirement to obtain performance and
-scalability. More
-concretely, the contribution of this paper are as follows.
+% We argue, by showing an attack, that {\nsu} is the most
+% permissive policy for scenarios where actions are forbidden by the monitor based on threads'
+% local data---an essential requirement to obtain performance and
+% scalability.
+More concretely, the contribution of this paper are as follows.
 \begin{itemize}
 
-\item An extension to incorporate flow-sensitive values in LIO. As a result,
+\item An extension to incorporate flow-sensitive entities in LIO. As a result,
   not only increases LIO its permissiveness, but it also provides means for safely
-  combining flow-insensitive and flow-sensitive entities. 
+  combining flow-insensitive and flow-sensitive references. 
 
-\item An attack that nails down the complications of having flow-sensitive
-  values in presence of concurrency.
+\item An uniform mechanisms to treat flow-insensitive and flow-sensitive
+  references in either a sequential or concurrent setting. To the best of our
+  knowledge, we are the first ones to analyze the challenges of purely dynamic
+  monitors with flow-sensitive references in presence of concurrency.
 
 \item Provably non-interference. Our formal results are developed for arbitrary
   security lattices. 
 
-\item An implementation of our ideas in Haskell, where programmers can write
-  routines \emph{parametric} on the flow-sensitivity of data---a novelty for IFC
-  tools. 
+% \item An implementation of our ideas in Haskell, where programmers can write
+%   routines \emph{parametric} on the flow-sensitivity of data---a novelty for IFC
+%   tools. 
 \end{itemize}
 
 Although developed for LIO, we believe that our approaches for the sequential
