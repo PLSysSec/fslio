@@ -89,14 +89,16 @@ account for both flow-sensitive and flow-insensitive references.
 %format Types   = "\mathrm{Types}"
 %format Sensitivity = "\mathrm{Sensitivity}"
 \begin{code}
-v   ::= cdots  | LIORefTCB s v t
+v   ::= cdots  | LIORefTCB I t| LIORefTCB S v t
 t   ::= cdots  | newRef s t t | writeRef s t t 
                | readRef s t | upgrade t t
+               | labelOfR s t
 tau ::= cdots  | LIORef s tau
 
 
 Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t 
                 | readRef s Ep | upgrade Ep t | upgrade v Ep
+                | labelOfR s Ep
 \end{code}
 \caption{Formal syntax for values, terms, and types,
 where |s  ::=  S  divisor I|.\label{fig:fs-exts-syntax}}
@@ -105,128 +107,202 @@ where |s  ::=  S  divisor I|.\label{fig:fs-exts-syntax}}
 
 We also define the upgrade operator $\uparrow$ as follows:
 \begin{code}
-  upgradeM m l' r = m { a mapsto (upgradeL (m(a)) l') | a element dom(m) or r}
+upgradeM m l' r = { a mapsto (upgradeL (m(a)) l') | a element dom m and r} merge m
 \end{code}
 \begin{code}
   upgradeL ((LabeledTCB l t)) l' = LabeledTCB l'' t where denot(l'' = l lub l')
 \end{code}
-%LabeledTCB (l' lub l) e 
-%\[
-%\begin{array}{ll}
-%\RTS\uparrow^{l'} r = \RTS \oplus \{ &x\mapsto \Lb{l'}{u}{v} \mid x \in \mbox{dom}(\RTS)\cap r, \\
-% &\Lb{l}{u}{v} = \RTS(x), l\flows l'\; \}
-%\end{array}
-%\]
 
-%%-deian-The expression $f\oplus g$ overrides every binding $x\mapsto y$ in $f$, where
-%%-deian-$x\in \mbox{dom}(g)$, with the binding $x\mapsto g(x)$, leaving the rest intact.
-%%-deian-
-%%-deian-The store $\RTS\uparrow^{l'} r$ has the same
-%%-deian-bindings as $\RTS$, where each variable in $r$ has had its label
-%%-deian-upgraded to $l'$, provided that the original label was below $l'$.
-%%-deian-
-%%-deian-% Figure~\ref{fig:fs-exts-semantics} introduces the semantics for LIORef
-%%-deian-% operations. Rule $\textsc{NewRef}$ creates a new LIORef with a given
-%%-deian-% initial label and value, adding it to the mutable reference store
-%%-deian-% $\RTS$. The following rules come in two versions, one for
-%%-deian-% flow-insensitive variables and another one for flow-sensitive ones,
-%%-deian-% marked as $\textsc{FI}$ and $\textsc{FS}$ respectively. Rules
-%%-deian-% $\textsc{ReadRef-FI}$, $\textsc{WriteRef-FI}$ and
-%%-deian-% $\textsc{LabelOf-FI}$ are exactly like in previous versions of the
-%%-deian-% library. In rule $\textsc{ReadRef-FS}$, in addition to the usual
-%%-deian-% tainting of the current label $\env.\lbl$, we have a taint on
-%%-deian-% $\env.\fel$, which is used to keep track of the taint caused by
-%%-deian-% flow-sensitive variables within |toLabeled| blocks. Rule
-%%-deian-% $\textsc{WriteRef-FS}$ causes the label in the flow-sensitive
-%%-deian-% reference to be replaced by the current label, allowing operations
-%%-deian-% that would otherwise trigger a security violation exception on a
-%%-deian-% flow-insensitive variable. Rule $\textsc{LabelOf-FS}$ works by
-%%-deian-% tainting the current label with the label of the reference being
-%%-deian-% inspected, before returning this label.
-%%-deian-
-%%-deian-%
-%%-deian-% ReadRef and LabelOf rules that propagate the taint outside toLabeled
-%%-deian-%
-%%-deian-% \inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \\ \env'' = \neg u ? \env'[\fel\mapsto \env'.\lbl] : \env' \\  \Lb{l}{u}{v} = \RTS(x)}
-%%-deian-% {\defRTS{E[\readRefFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FS}]
-%%-deian-% \and
-%%-deian-% \inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \env''= \neg u ? \env'[\fel\mapsto\env'.\lbl] : \env'}
-%%-deian-% {\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
-%%-deian-
-%%-deian-
-%%-deian-\begin{figure*}[!ht] % semantics
-%%-deian-\vspace*{-5pt}
-%%-deian-\small
-%%-deian-\begin{mathpar}
-%%-deian-\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{\bot}{v} ]\and x\mbox{ fresh}}
-%%-deian-{\defRTS{E[\newRef{l}{t}]} \lto \wEnvRTS{\env}{\RTS'}{x\vtl r}{E[\returnLIO{(\LIORefRTS{l}{x})}]}}[\textsc{NewRef}]
-%%-deian-%\and
-%%-deian-% \inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and  \Lb{l}{u}{v} = \RTS(x)}
-%%-deian-% {\defRTS{E[\readRefFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FI}]
-%%-deian-\and
-%%-deian-\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r \\  \Lb{l}{u}{v} = \RTS(x)}
-%%-deian-{\defRTS{E[\readRef{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{v}]}}[\textsc{ReadRef}]
-%%-deian-\and
-%%-deian-\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{\bot}{v} ] }
-%%-deian-{\defRTS{E[\writeRefFI{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FI}]
-%%-deian-\and
-%%-deian-\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{\bot}{v} ] \and x \in r}
-%%-deian-{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
-%%-deian-\and
-%%-deian-% \inferrule{l \flows \env.\lbl \\ \Lb{l}{u}{\_} = \RTS(x) \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{u}{v} ]}
-%%-deian-% {\defRTS{E[\writeRefFSI{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FSI}]
-%%-deian-% \and
+The expression |m1 merge m2| merges the two stores, using elements
+from |m1| to override those of |m2|.
+
+The store |upgradeM m l' r|  has the same bindings as |m|, where each
+variable in |r| has had its label upgraded to |l lub l'|.
+
+% Figure~\ref{fig:fs-exts-semantics} introduces the semantics for LIORef
+% operations. Rule $\textsc{NewRef}$ creates a new LIORef with a given
+% initial label and value, adding it to the mutable reference store
+% $\RTS$. The following rules come in two versions, one for
+% flow-insensitive variables and another one for flow-sensitive ones,
+% marked as $\textsc{FI}$ and $\textsc{FS}$ respectively. Rules
+% $\textsc{ReadRef-FI}$, $\textsc{WriteRef-FI}$ and
+% $\textsc{LabelOf-FI}$ are exactly like in previous versions of the
+% library. In rule $\textsc{ReadRef-FS}$, in addition to the usual
+% tainting of the current label $\env.\lbl$, we have a taint on
+% $\env.\fel$, which is used to keep track of the taint caused by
+% flow-sensitive variables within |toLabeled| blocks. Rule
+% $\textsc{WriteRef-FS}$ causes the label in the flow-sensitive
+% reference to be replaced by the current label, allowing operations
+% that would otherwise trigger a security violation exception on a
+% flow-insensitive variable. Rule $\textsc{LabelOf-FS}$ works by
+% tainting the current label with the label of the reference being
+% inspected, before returning this label.
+
+%
+% ReadRef and LabelOf rules that propagate the taint outside toLabeled
+%
+% \inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \\ \env'' = \neg u ? \env'[\fel\mapsto \env'.\lbl] : \env' \\  \Lb{l}{u}{v} = \RTS(x)}
+% {\defRTS{E[\readRefFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FS}]
+% \and
+% \inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \env''= \neg u ? \env'[\fel\mapsto\env'.\lbl] : \env'}
+% {\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
+
+
+\begin{figure}[!ht] % semantics
+\small
+\begin{mathpar}
+\inferrule[newRef-I]
+{ |c = (lcurr, mI, ...)|\\
+  |lcurr canFlowTo l|\\
+  |c' = (lcurr, mI[a mapsto LabeledTCB l t], ...)|
+}
+{ |conf c (E[newRef I l t]) --> conf c' (E[return (LIORefTCB I l a)])| }
+{ |fresh a| }
+
+\and
+\inferrule[readRef-I]
+{ |c = (lcurr, mI, ...)| }
+{ |conf c (E[readRef I (LIORefTCB I l a)]) --> conf c (E[unlabel mI(a)])| }
+
+%%\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and  \Lb{l}{u}{v} = \RTS(x)}
+%%{\defRTS{E[\readRefFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FI}]
+
+\and
+
+\inferrule[writeRef-I]
+{ |c = (lcurr, mI, ...)|\\
+  |lcurr canFlowTo l|\\
+  |c' = (lcurr, mI[a mapsto LabeledTCB l t], ...)|
+}
+{ |conf c (E[writeRef I (LIORefTCB I l a) t]) --> conf c' (E[return ()])| }
+%%\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{\bot}{v} ] }
+%%{\defRTS{E[\writeRefFI{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FI}]
+
+
+\and
+
+\inferrule[labelOf-I]
+{ }
+{ |Ep[labelOfR I (LIORefTCB I l a) t] ~> Ep[l]| }
+
+%%\inferrule{}
+%%{\defRTS{E[\labelOfFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FI}]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Flow sensitive references:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\and
+\inferrule[newRef-S]
+{ |c = (lcurr, mI, mS)|\\
+  |lcurr canFlowTo l|\\
+  |c' = (lcurr, mI, mS[a mapsto LabeledTCB l t])|
+}
+{ |conf () (E[newRef S l t]) --> conf c' (E[return (LIORefTCB S a)])| }
+{ |fresh a| }
+
+\and
+\inferrule[readRef-S]
+{ |c = (lcurr, mI, mS)| }
+{ |conf c (E[readRef S (LIORefTCB S a)]) --> conf c (E[unlabel mS(a)])| }
+%%\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r \\  \Lb{l}{u}{v} = \RTS(x)}
+%%{\defRTS{E[\readRef{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{v}]}}[\textsc{ReadRef}]
+
+\and
+
+\inferrule[writeRef-S]
+{ |c = (lcurr, mI, mS)|\\
+  |c' = (lcurr, mI, mS[a mapsto LabeledTCB lcurr t])|
+}
+{ |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[return ()])| }
+
+%%\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{\bot}{v} ] \and x \in r}
+%%{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
+
+\and
+
+\inferrule[labelOf-S]
+{ |c = (lcurr, mI, mS)|\\
+  |mS(a) = LabeledTCB l t|
+}
+{ |conf c (E[labelOfR S (LIORefTCB S a) t]) --> conf c (E[unlabel (LabeledTCB l l)])|}
+
+%%\inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r }
+%%{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
+
+
+\and
+
+\inferrule[upgrade]
+{ |c = (lcurr, mI, mS)|\\
+  |c' = (lcurr, mI, upgradeM mS l {a})|
+}
+{ |conf c (E[upgrade (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
+
 %%-deian-\inferrule{\env.\lbl\flows l \and l\flows l' \and \RTS'=\RTS\uparrow^{l'} \{x\}}
 %%-deian-{\defRTS{E[\upgrade{(\LIORef{l}{x})}{l'}]} \lto \wEnvRTS{\env}{\RTS'}{r}{E[\returnLIO{()}]}}[\textsc{Upgrade}]
-%%-deian-\and
-%%-deian-\inferrule{}
-%%-deian-{\defRTS{E[\labelOfFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FI}]
-%%-deian-\and
-%%-deian-\inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r }
-%%-deian-{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
-%%-deian-\end{mathpar}
-%%-deian-\caption{Semantics for references.\label{fig:fs-exts-semantics}}
-%%-deian-\vspace*{-5pt}
-%%-deian-\end{figure*}
-%%-deian-
-%%-deian-%
-%%-deian-% ToLabeled rule that propagates FS taints
-%%-deian-%
-%%-deian-% \inferrule{\env.\lbl \flows l \flows \env.\clr \\ \eEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} \\ \env'' = \env[\lbl\mapsto\env.\lbl \lub \env'.\fel, \fel\mapsto\env'.\fel]}
-%%-deian-% {\defRTS{E[\toLabeled{l}{t}]} \lto \\ \wEnvRTS{\env''}{\RTS'}{r}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
-%%-deian-
-%%-deian-
-%%-deian-\begin{figure}[!ht] % semantics
-%%-deian-\vspace*{-5pt}
-%%-deian-\small
-%%-deian-\begin{mathpar}
-%%-deian-\inferrule{\env.\lbl \flows l \flows \env.\clr \and r' \subseteq r \\ \wEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} }
-%%-deian-{\defRTS{E[\toLabeled{l\ r'}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{r\cup r''}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
-%%-deian-\end{mathpar}
-%%-deian-\caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
-%%-deian-\vspace*{-5pt}
-%%-deian-\end{figure}
-%%-deian-
-%%-deian-\begin{figure}
-%%-deian-\vspace*{-5pt}
-%%-deian-\begin{code}
-%%-deian-toLabeledWith :: Label l =>
-%%-deian-      l -> a -> (LIORef FS l a -> LIO l b)
-%%-deian-  ->  LIO l (Labeled FS l b)
-%%-deian-toLabeledWith l def f =
-%%-deian-    do  y    <-  newLIORef l def
-%%-deian-        upgrade y l -- set the upgraded flag
-%%-deian-        ret  <-  toLabeled [y] (f y)
-%%-deian-        destroyLIORef y
-%%-deian-        return ret
-%%-deian-\end{code}
-%%-deian-\caption{Definition of |toLabeledWith|.\label{fig:toLabeledWith-semantics}}
-%%-deian-\vspace*{-5pt}
-%%-deian-\end{figure}
-%%-deian-
-%%-deian-% Figure~\ref{fig:toLabeled-semantics} shows the reduction rule for
-%%-deian-% |toLabeled| operations. In this rule, we see that the $\env.\fel$
-%%-deian-% label is used to taint the current label after the |toLabeled|
-%%-deian-% operation is complete. This allows any partially-leaked information
-%%-deian-% (due to flow-sensitive references) to be taken into account in future
-%%-deian-% label checks.
+
+
+\end{mathpar}
+\caption{Semantics for references.\label{fig:fs-exts-semantics}}
+\end{figure}
+
+%
+% ToLabeled rule that propagates FS taints
+%
+% \inferrule{\env.\lbl \flows l \flows \env.\clr \\ \eEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} \\ \env'' = \env[\lbl\mapsto\env.\lbl \lub \env'.\fel, \fel\mapsto\env'.\fel]}
+% {\defRTS{E[\toLabeled{l}{t}]} \lto \\ \wEnvRTS{\env''}{\RTS'}{r}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
+
+
+\begin{figure}[!ht] % semantics
+\vspace*{-5pt}
+\begin{code}
+v    ::= cdots  | set (v, ...) | nil
+t    ::= cdots  | set (t, ...) | toLabeled' t t t
+tau  ::= cdots  | set (tau, ...)
+     
+Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...)
+                | toLabeled' Ep t t | toLabeled' v Ep t
+
+addrs (nil)                                       @= emptyset
+addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
+\end{code}
+\begin{mathpar}
+\inferrule[toLabeled]
+{|c = (lcurr, mI, mS)|\\
+ |lcurr canFlowTo l|\\
+ |mS' = {a mapsto mS(a) divisor a element dom mS and addrs(v) }|\\
+ |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
+ |lcurr' canFlowTo l|\\
+ |c''' = (lcurr, mI', mS'' merge mS)|
+}
+{|conf c (E[toLabeled' l v t]) --> conf c''' (E[label l t']|}
+%%\inferrule{\env.\lbl \flows l \flows \env.\clr \and r' \subseteq r \\ \wEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} }
+%%{\defRTS{E[\toLabeled{l\ r'}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{r\cup r''}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
+\end{mathpar}
+\caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
+\vspace*{-5pt}
+\end{figure}
+
+\begin{figure}
+\vspace*{-5pt}
+\begin{code}
+toLabeledWith :: Label l =>
+      l -> a -> (LIORef FS l a -> LIO l b)
+  ->  LIO l (Labeled FS l b)
+toLabeledWith l def f =
+    do  y    <-  newLIORef l def
+        upgrade y l -- set the upgraded flag
+        ret  <-  toLabeled [y] (f y)
+        destroyLIORef y
+        return ret
+\end{code}
+\caption{Definition of |toLabeledWith|.\label{fig:toLabeledWith-semantics}}
+\vspace*{-5pt}
+\end{figure}
+
+% Figure~\ref{fig:toLabeled-semantics} shows the reduction rule for
+% |toLabeled| operations. In this rule, we see that the $\env.\fel$
+% label is used to taint the current label after the |toLabeled|
+% operation is complete. This allows any partially-leaked information
+% (due to flow-sensitive references) to be taken into account in future
+% label checks.

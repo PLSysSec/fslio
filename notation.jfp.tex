@@ -46,9 +46,6 @@
 %format &~>* =  ~>*"_l"
 %format &--> = -->"_l"
 %format &==> = ==>"_l"
-%format &@--> = @-->"_l"
-%format &@==> = @==>"_l"
-%format &@@--> = @@-->"_l"
 %format (erase (l) (t)) = "\erase{"l"}{"t"}"
 %format hole = "\bullet"
 
@@ -118,9 +115,17 @@
 %format newRef (s)   = "\textbf{newRef}_{"s"}"
 %format writeRef (s) = "\textbf{writeRef}_{"s"}"
 %format readRef (s) = "\textbf{readRef}_{"s"}"
+%format labelOfR (s) = "\textbf{labelOf}_{"s"}"
 %format upgrade = "\textbf{upgrade}"
-%format upgradeM (m) (l) = m"\uparrow^{"l"}"
+%format label = "\textbf{label}"
+%format unlabel = "\textbf{unlabel}"
+%format toLabeled = "\textbf{toLabeled}"
+%format toLabeled'
+%format upgradeM (m) (l) (r) = m"\uparrow^{"l"}\!"r
 %format upgradeL (t) (l) = t"\Uparrow^{"l"}"
+%format nil = "\epsilon"
+%format emptyset = "\emptyset"
+%format @= = "\equiv"
 
 %format ex = "\xi"
 %format ifcFail = ex"_{\tiny IFC}"
@@ -154,15 +159,37 @@
 %format t2''
 %format t3''
 
+%format S = "\textsc{fs}"
+%format I = "\textsc{fi}"
+
 %format m = "\mu"
 %format m'
 %format m''
 %format m1
 %format m2
 
+%format mI = "\mu_"I
+%format mI'
+%format mI''
+%format mI1
+%format mI2
+
+%format mS = "\mu_"S
+%format mS'
+%format mS''
+%format mS1
+%format mS2
+
+%format ms = "\mu_s"
+%format ms'
+%format ms''
+%format ms1
+%format ms2
+
 %format c = "\Sigma"
 %format c'
 %format c''
+%format c'''
 %format c1
 %format c2
 
@@ -171,12 +198,17 @@
 %format k1
 %format k2
 
+%format a'
+%format a''
+%format a1
+%format a2
+
 %format when = "\textbf{when}"
 %format unless = "\textbf{unless}"
 %format \_ = \ {-\!\!\!\!-}_
 
-%format toLabeled' = "toLabeled\ensuremath{^\star}"
-%format labelOf' = "labelOf\ensuremath{^\star}"
+%format set (s) ="\overline{{"s"}}"
+
 
 %% language
 \newcommand{\Coloneqq}{::=} % txfonts
@@ -192,15 +224,17 @@
 %format mapsto  = "\mapsto"
 %format element = "\in"
 %format dom     = "\textrm{dom}"
-%format or      = "\cap"
+%format and     = "\cap"
+%format or      = "\cup"
+%format merge   = "\curlyvee"
 %format Ep      = E"_p"
 
 
-\newcommand{\dom}[1]{\ensuremath{{\textrm{dom}}(#1)}}
+\newcommand{\dom}[1]{\ensuremath{{\textrm{dom}} #1}}
 \newcommand{\fresh}[1]{\ensuremath{\textrm{fresh}(#1)}}
 \newcommand{\update}[3]{\ensuremath{#1 [ #2 \mapsto #3 ]}}
 
-%format (denot (a)) = "\llbracket " a "\rrbracket_"lattice
+%format (denot (a)) = "\llbracket " a "\rrbracket"
 %format (denot_2 (a)) = "\llbracket " a "\rrbracket_{"lattice2"}"
 %format conf (c) (t) = "\conf{"c"}{"t"}"
 %format fresh (a) = "\fresh{"a"}"
@@ -276,7 +310,7 @@
 
 
 %%%
-\newcommand{\conf}[2]{\langle #1,  #2\rangle}
+\newcommand{\conf}[2]{\langle #1 |divisor| #2\rangle}
 
 
 %%

@@ -63,8 +63,8 @@ An LIO program is a \emph{configuration} of the form |conf c t|, where
 |t| is the monadic term under evaluation, such that |:- t : LIO tau|,
 and |c| is state associated with the computation.
 %
-The state |c| is a tuple that contains both the current label |lcurr|
-and memory store |m|, i.e., |c = (lcurr, m, ...)|.
+The state |c| is a tuple that contains the current label |lcurr|
+memory stores, etc. i.e., |c = (lcurr, ...)|.
 %
 
 \begin{figure}[ht]
