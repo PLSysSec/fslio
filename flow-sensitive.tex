@@ -185,9 +185,11 @@ from |m1| to override those of |m2|.
 
 \inferrule[writeRef-S]
 { |c = (lcurr, mI, mS)|\\
-  |c' = (lcurr, mI, mS[a mapsto LabeledTCB lcurr t])|
+  | mS(a) = LabeledTCB l t|\\
+  | l lub lcurr ~>* l'|\\
+  |c' = (lcurr, mI, mS[a mapsto LabeledTCB l' t'])|
 }
-{ |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[return ()])| }
+{ |conf c (E[writeRef S (LIORefTCB S a) t']) --> conf c' (E[return ()])| }
 
 %%\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{\bot}{v} ] \and x \in r}
 %%{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
