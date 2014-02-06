@@ -210,6 +210,7 @@ from |m1| to override those of |m2|.
 
 \inferrule[upgradeRef]
 { |c = (lcurr, mI, mS)|\\
+  |lcurr canFlowTo labelOf mS(a) ~>* true|\\
   |conf c (upgrade (mS(a)) (l lub lcurr)) ==> conf c (LIOTCB v)|\\
   |c' = (lcurr, mI, mS[a mapsto v])|
 }
