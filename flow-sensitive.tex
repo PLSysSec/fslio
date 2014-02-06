@@ -90,19 +90,8 @@ where |s  ::=  S inlinesep I|.\label{fig:fs-exts-syntax}}
 \vspace*{-5pt}
 \end{figure} 
 
-We also define the upgrade operator $\uparrow$ as follows:
-\begin{code}
-upgradeM m l' r = { a mapsto (upgradeL (m(a)) l') | a element dom m and r} merge m
-\end{code}
-\begin{code}
-  upgradeL ((LabeledTCB l t)) l' = LabeledTCB l'' t where denot(l'' = l lub l')
-\end{code}
-
 The expression |m1 merge m2| merges the two stores, using elements
 from |m1| to override those of |m2|.
-
-The store |upgradeM m l' r|  has the same bindings as |m|, where each
-variable in |r| has had its label upgraded to |l lub l'|.
 
 % Figure~\ref{fig:fs-exts-semantics} introduces the semantics for LIORef
 % operations. Rule $\textsc{NewRef}$ creates a new LIORef with a given
@@ -266,7 +255,18 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 %%{\defRTS{E[\toLabeled{l\ r'}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{r\cup r''}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
 \end{mathpar}
 \caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
-\vspace*{-5pt}
+\end{figure}
+
+\begin{figure}
+\begin{mathpar}
+\inferrule[upgradeStore]
+{|c = (lcurr, mI, mS)|\\
+ |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
+ |t = upgradeR v1 lcurr >> ... >> upgradeR v_n lcurr|
+}
+{|conf c (E[upgradeM]) --> conf c (E[t])|}
+\end{mathpar}
+\caption{Semantics for |upgradeM|}
 \end{figure}
 
 \begin{figure}
