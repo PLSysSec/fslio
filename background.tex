@@ -133,6 +133,7 @@ memory stores, etc. i.e., |c = (lcurr, ...)|.
 %
 
 \begin{figure}[ht]
+\small
 \begin{mathpar}
 \inferrule
 { |conf c t --> conf c' t'| }
@@ -151,6 +152,7 @@ memory stores, etc. i.e., |c = (lcurr, ...)|.
 
 
 \begin{figure}[t] % sos:base
+\small
 \begin{mathpar}
 \inferrule[app]
 { } { |Ep[(\x.t1) t2] ~> Ep[{ t2 / x } t1]| }
@@ -203,6 +205,7 @@ Ep   ::= cdots  | label Ep t | unlabel Ep | labelOf Ep
 \end{code}
 
 \begin{figure}[t] % labeled
+\small
 \begin{mathpar}
 \inferrule[label]
 { |c = (lcurr, ...)|\\
@@ -257,3 +260,42 @@ novel point in the design space of language-level IFC systems---when
 compared to more traditional IFC systems---that incorporates ideas
 from previous IFC operating systems.
 }
+
+\begin{figure}[!ht]
+\small
+\begin{mathpar}
+\inferrule[newRef-|I|]
+{ |c = (lcurr, mI, ...)|\\
+  |lcurr canFlowTo l ~>* true|\\
+  |mI' = mI[a mapsto LabeledTCB l t]|\\
+  |c' = (lcurr, mI', ...)|
+}
+{ |conf c (E[newRef I l t]) --> conf c' (E[return (LIORefTCB I l a)])| }
+{ |fresh a| }
+
+\and
+
+\inferrule[readRef-|I|]
+{ |c = (lcurr, mI, ...)|
+}
+{ |conf c (E[readRef I (LIORefTCB I l a)]) --> conf c (E[unlabel mI(a)])| }
+
+
+\and
+\inferrule[writeRef-|I|]
+{ |c = (lcurr, mI, ...)|\\
+  |lcurr canFlowTo l ~>* true|\\
+  |mI' = mI[a mapsto LabeledTCB l t]|\\
+  |c' = (lcurr, mI', ...)|
+}
+{ |conf c (E[writeRef I (LIORefTCB I l a) t]) --> conf c' (E[return ()])| }
+
+
+\and
+
+\inferrule[labelOf-|I|]
+{ }
+{ |Ep[labelOfR I (LIORefTCB I l a)]) --> Ep[l]| }
+\end{mathpar}
+\caption{Semantics for flow-insensitive references\label{fig:sos:refs}.}
+\end{figure}

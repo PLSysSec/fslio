@@ -188,11 +188,11 @@ from |m1| to override those of |m2|.
 
 \and
 
-\inferrule[labelOf]
+\inferrule[labelOf-|S|]
 { |c = (lcurr, mI, mS)|\\
   |mS(a) = (l, LabeledTCB l' t)|
 }
-{ |conf c (E[labelOfR S (LIORefTCB S a) t]) --> conf c (E[unlabel (LabeledTCB f l')])|}
+{ |conf c (E[labelOfR S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB f l')])|}
 
 %%\inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r }
 %%{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
