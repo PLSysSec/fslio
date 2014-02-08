@@ -220,12 +220,12 @@ from |m1| to override those of |m2|.
 
 \begin{figure}
 \begin{code}
-newtype LIORefTCB S r = LIORefTCB S (LIORefTCB I r)
+newtype LIORefTCB S t = LIORefTCB S (LIORefTCB I t)
 
-wrap :: LIORef I l t -> LIORef S l t
+wrap :: LIORef I t -> LIORef S t
 wrap r @= LIORefTCB S r
 
-unwrap :: LIORef S l t -> LIORef I l t
+unwrap :: LIORef S t -> LIORef I t
 unwrap (LIORefTCB S r) @= r
 
 newRef S l t @= do
