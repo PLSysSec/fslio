@@ -36,6 +36,7 @@
 \newcommand{\ignore}[1]{}
 \newcommand{\Red}[1]{{\color{red} #1}}
 \newcommand{\Blue}[1]{{\color{blue} #1}}
+\newcommand{\concept}[1]{{\Blue{\bf #1:}}}
 \long\def\comment#1{}
 \newcommand{\tocite}[1]{\Red{[cite]}}
 \newcommand{\step}{\ensuremath{\triangleright}}
@@ -57,8 +58,8 @@
 \fi
 
 \usepackage{soul} % for highlighting
-%\usepackage[square,comma,numbers,sort&compress,sectionbib]{natbib}
-\usepackage[square,comma,sectionbib]{natbib}
+\usepackage[square,comma,numbers,sort&compress,sectionbib]{natbib}
+%\usepackage[square,comma,sectionbib]{natbib}
 
 \newcommand{\nsu}{{no sensitive-upgrade}}
 \newcommand{\pu}{{permissive-upgrade}}
@@ -127,7 +128,7 @@ This work was funded by the Swedish research agencies VR and STINT.
 }
 
 {\frenchspacing
-\bibliographystyle{abbrvnat}%plain}
+\bibliographystyle{plain}
 \bibliography{conferences,dm,local}
 }
 
