@@ -187,11 +187,11 @@ E   ::= []| Ep | E >>= t
 { |Ep[l1 lop l2] ~> Ep[v]| }
 \and
 \inferrule[return]
-{ } { |conf c (return t) --> conf c (LIOTCB t)| }
+{ } { |conf c (E[return t]) --> conf c (E[LIOTCB t])| }
 \and
 \inferrule[bind]
 { }
-{ |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (t2 t1)| }
+{ |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (E[t2 t1])| }
 \and
 \inferrule[getLabel]
 { |c = (lcurr, ...)|  }
