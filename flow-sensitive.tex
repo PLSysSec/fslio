@@ -125,46 +125,36 @@ from |m1| to override those of |m2|.
 \begin{figure}[!ht] % semantics
 \small
 \begin{mathpar}
-% \inferrule[newRef-I]
-% { |c = (lcurr, mI, ...)|\\
-%   |lcurr canFlowTo l|\\
-%   |c' = (lcurr, mI[a mapsto LabeledTCB l t], ...)|
-% }
-% { |conf c (E[newRef I l t]) --> conf c' (E[return (LIORefTCB I l a)])| }
-% { |fresh a| }
-\inferrule[newRef]
+\inferrule[newRef-|S|]
 { |c = (lcurr, mI, mS)|\\
-  |lcurr canFlowTo l|\\
-  |c' = c [ m_alpha mapsto m_alpha[a mapsto (lcurr, LabeledTCB l t)] ]|
+  |lcurr canFlowTo l ~>* true|\\
+  |mS' = mS[a mapsto (lcurr, LabeledTCB l t)]|\\
+  |c' = (lcurr, mI, mS')|
 }
-{ |conf c (E[newRef alpha l t]) --> conf c' (E[return (LIORefTCB alpha a)])| }
+{ |conf c (E[newRef S l t]) --> conf c' (E[return (LIORefTCB S a)])| }
 { |fresh a| }
 
+
 \and
 
-\inferrule[readRef]
+\inferrule[readRef-|S|]
 { |c = (lcurr, mI, mS)| \\
-  |(lf, LabeledTCB l v) = m_alpha(a) | }
-{ |conf c (E[readRef alpha (LIORefTCB alpha a)]) --> conf c (E[unlabel (LabeledTCB (lf lub l) v)])| }
+  |mS(a) = (l, LabeledTCB l' t)|\\
+  |l lub l' ~>* l''|
+}
+{ |conf c (E[readRef S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB l'' t)])| }
 
-% \and
-% \inferrule[readRef-I]
-% { |c = (lcurr, m)| \\ |(lf, v) = m(a)| }
-% { |conf c (E[readRef I (LIORefTCB I a)]) --> conf c (E[unlabel v])| }
-
-%%\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and  \Lb{l}{u}{v} = \RTS(x)}
-%%{\defRTS{E[\readRefFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FI}]
 
 \and
-\inferrule[writeRef]
+\inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
-  |(lf, LabeledTCB l x) = m_alpha(a) | \\
-  |lcurr canFlowTo l|\\
-  |c' = c [ m_alpha mapsto m_alpha[a mapsto (lf,LabeledTCB l t)] ]|
+  |mS(a) = (l, LabeledTCB l' t)| \\
+  |lcurr canFlowTo l ~>* true|\\
+  |lcurr canFlowTo l' ~>* true|\\
+  |mS' = mS[a mapsto (l, LabeledTCB l' t)]|\\
+  |c' = (lcurr, mI, mS')|
 }
-{ |conf c (E[writeRef alpha (LIORefTCB alpha a) t]) --> conf c' (E[return ()])| }
-%%\inferrule{\env.\lbl \flows l \flows \env.\clr \and \RTS' = \RTS[ x \mapsto \Lb{l}{\bot}{v} ] }
-%%{\defRTS{E[\writeRefFI{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FI}]
+{ |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[return ()])| }
 
 
 % \and
@@ -200,9 +190,9 @@ from |m1| to override those of |m2|.
 
 \inferrule[labelOf]
 { |c = (lcurr, mI, mS)|\\
-  |(lf, LabeledTCB l t) = m_alpha (a)|
+  |mS(a) = (l, LabeledTCB l' t)|
 }
-{ |conf c (E[labelOfR alpha (LIORefTCB alpha a) t]) --> conf c (E[unlabel (LabeledTCB lf l)])|}
+{ |conf c (E[labelOfR S (LIORefTCB S a) t]) --> conf c (E[unlabel (LabeledTCB f l')])|}
 
 %%\inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r }
 %%{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
@@ -212,11 +202,11 @@ from |m1| to override those of |m2|.
 
 \inferrule[upgradeRef]
 { |c = (lcurr, mI, mS)|\\
-%  |lcurr canFlowTo labelOf mS(a) ~>* true|\\
-  |(lf, v) = m_FS (a)| \\
-  |lcurr lub lf ~>* lcurr'| \\
-  |conf c (upgrade v (lf lub lcurr)) ==> conf c (LIOTCB v')|\\
-  |c' = c [ m_FS mapsto m_FS [ a mapsto (lf,v') ] ]|
+  |mS(a) = (l', v)|\\
+  |lcurr canFlowTo l' ~>* true| \\
+  |conf c (upgrade v l) ==> conf c (LIOTCB v')|\\
+  |mS' = mS [ a mapsto (l',v') ]|\\
+  |c' = (lcurr, mI, mS')|
 }
 { |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
 
@@ -226,6 +216,49 @@ from |m1| to override those of |m2|.
 
 \end{mathpar}
 \caption{Semantics for references.\label{fig:fs-exts-semantics}}
+\end{figure}
+
+\begin{figure}
+\begin{code}
+newtype LIORefTCB S r = LIORefTCB S (LIORefTCB I r)
+
+wrap :: LIORef I l t -> LIORef S l t
+wrap r @= LIORefTCB S r
+
+unwrap :: LIORef S l t -> LIORef I l t
+unwrap (LIORefTCB S r) @= r
+
+newRef S l t @= do
+  lcurr  <- getLabel
+  v      <- label l t
+  r      <- newRef I lcurr v
+  return (wrap r)
+
+
+readRef S r @= readRef I (unwrap r) >>= unlabel
+
+
+writeRef S r t @= let  r'  = unwrap r
+                       l   = labelOf r' in do
+  lcurr <- getLabel
+  when (lcurr canFlowTo l) $ toLabeled l $ do
+     v   <- readRef I r'
+     v'  <- label (labelOf v) t
+     writeRef r' v'
+
+
+labelOfR S r @= readRef I (unwrap r) >>= return . labelOf
+
+upgradeR r l @= let  r'  = unwrap r
+                     l'  = labelOf r' in do
+  lcurr <- getLabel
+  when (lcurr canFlowTo l') $ toLabeled l' $ do
+     v   <- readRef I r'
+     v'  <- upgrade v l
+     writeRef r' v'
+
+\end{code}
+\caption{Implementation for flow-sensitive references.\label{fig:fs-exts-semantics-impl}}
 \end{figure}
 
 %
