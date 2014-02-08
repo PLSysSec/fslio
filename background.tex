@@ -375,9 +375,33 @@ Since LIO has the invariant that a computation can only create or
 write to entities above the current label, we use |lcurr| when
 upgrading a labeled value.
 
+\concept{label creep}
+It is natural to ask how one would go about implementing |upgrade|,
+which simply raises the label of a explicitly labeled term, without
+inspecting the term, on top of LIO.
+%
+Intuitively, the term must be |unlabel|ed and then |label|ed with the
+join of the current label, existing label and new label.
+%
+However, |unlabel| raises the current label and, while the |label|
+will succeed in creating a new labeled value with the desired label,
+the semantics are not equivalent---the current label cannot be lowered
+since we now have (potentially) more sensitive data in scope!
+%
+This raising of the current label to a point where the computation can
+no longer perform useful tasks is known as \emph{label
+creep}~\cite{sabelfeld:language-based-iflow}.
+%
+Though label creep does not compromise security, since the current
+label still protects all data in lexical scope, it makes LIO overly
+restrictive.
+%
+In general, being able to perform computations on sensitive data
+without raising the current label is crucial to building practical
+applications.
+
 \concept{toLabeled}
 \hl{HERE}
-
 
 Note that with |toLabeled| we can define |upgrade| as follows:
 \begin{code}
@@ -394,6 +418,7 @@ given Figure~\ref{fig:sos:labeled}. This definition is:
 |upgrade t1 t2 @= getLabel >>= \l.
   toLabeled' (labelOf t1 lub l lub t2) nil (unlabel t1)|
 }
+
 
 \subsection{Labeled references}
 
