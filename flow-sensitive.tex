@@ -298,10 +298,11 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \end{figure}
 
 \begin{figure}
+\small
 \begin{mathpar}
 \inferrule[upgradeStore]
 {|c = (lcurr, mI, mS)|\\
- |refs(mS) = {a1, ..., a_n}|\\
+ |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
  |t = upgradeR (LIORefTCB S a1) lcurr >> ... >> upgradeR (LIORefTCB S a_n) lcurr|
 }
 {|conf c (E[upgradeM]) --> conf c (E[t])|}
