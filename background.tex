@@ -203,7 +203,6 @@ E   ::= []| Ep | E >>= t
 \end{figure}
 
 \concept{monad red}
-\hl{here}
 The reduction rules for monadic terms deserve some attention.
 %
 Rather than modeling state, such as the current label, are
@@ -306,6 +305,27 @@ given Figure~\ref{fig:sos:labeled}. This definition is:
 |upgrade t1 t2 @= getLabel >>= \l.
   toLabeled' (labelOf t1 lub l lub t2) nil (unlabel t1)|
 }
+
+\subsection{Labeled references}
+
+\begin{figure}[t] % syntax
+\centering
+\begin{code}
+v    ::= cdots  | LIORefTCB I v t| LIORefTCB S t
+t    ::= cdots  | newRef s t t | writeRef s t t 
+                | readRef s t | upgrade t t
+                | labelOfR s t
+tau  ::= cdots  | LIORef s tau
+
+
+Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t 
+                | readRef s Ep | upgrade Ep t | upgrade v Ep
+                | labelOfR s Ep
+\end{code}
+\caption{Formal syntax for values, terms, and types,
+where |s  ::=  S inlinesep I|.\label{fig:sos:ref-syntax}}
+\vspace*{-5pt}
+\end{figure} 
 
 \begin{figure}[!ht]
 \small

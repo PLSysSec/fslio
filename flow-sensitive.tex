@@ -71,25 +71,6 @@ and flow-sensitive LIORefs. Figure~\ref{fig:fs-exts-syntax} introduces
 the syntax for values, terms and types that we require in order to
 account for both flow-sensitive and flow-insensitive references.
 
-\begin{figure}[!ht] % syntax
-\centering
-\begin{code}
-v    ::= cdots  | LIORefTCB I t| LIORefTCB S v t
-t    ::= cdots  | newRef s t t | writeRef s t t 
-                | readRef s t | upgrade t t
-                | labelOfR s t
-tau  ::= cdots  | LIORef s tau
-
-
-Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t 
-                | readRef s Ep | upgrade Ep t | upgrade v Ep
-                | labelOfR s Ep
-\end{code}
-\caption{Formal syntax for values, terms, and types,
-where |s  ::=  S inlinesep I|.\label{fig:fs-exts-syntax}}
-\vspace*{-5pt}
-\end{figure} 
-
 The expression |m1 merge m2| merges the two stores, using elements
 from |m1| to override those of |m2|.
 
