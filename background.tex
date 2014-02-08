@@ -160,7 +160,7 @@ label-specific implementation of these lattice operators, as used in
 the premise of rule \ruleref{labelOp};
 %
 we use the meta-level partial function |denot cdot|, which maps terms
-to a values, to precisely capure this implementation detail.
+to a values, to precisely capture this implementation detail.
 
 \begin{figure}[t] % sos:base
 \small
@@ -204,39 +204,49 @@ E   ::= []| Ep | E >>= t
 
 \concept{monad red}
 \hl{here}
-The recution rules for monadic terms deserve some attention.
-
-\concept{configurations}
-An \lio{} program is a \emph{configuration} of the form |conf c t|,
-where |t| is the monadic term under evaluation, i.e., | G, c :- t :
-LIO tau| for some type environment |G|, and |c| is state associated
-with the computation.
+The reduction rules for monadic terms deserve some attention.
 %
-The state |c| is a tuple that contains the current label |lcurr|,
-among other objects (discussed in later), i.e., |c = (lcurr, ...)|.
+Rather than modeling state, such as the current label, are
+purely-functional monad layers, we take an operational and
+more-imperative approach by modeling state as a separate component.
 %
-The relation |conf lcurr ccurr m t  -->  conf lcurr' ccurr' m' t'|
-represents a single evaluation step from term |t|, with current label
-|lcurr|, current clearance |ccurr|, and memory |m|, to term |t'|, with
-current label |lcurr'|, current clearance |ccurr'|, and memory |m'|.
+Specifically, a top-level, i.e., computation is a \emph{configuration}
+of the form |conf c t|, where |t| is the monadic term and |c| is the
+state associated with the term.
 %
-We write |@-->*| for the reflexive and transitive closure of |@-->|.
+(Under this definition, \lio{} type-judgements have the form | G, c :-
+t : LIO tau|, where |G| is the usual type environment.)
 %
-For the moment, we ignore the clearance and memory in the
-configuration, and the subindexes in the transition relation.
+As a result of this encoding, the definition for |return| and |(>>=)|
+are trivial: the former simply reduces to a monadic value by wrapping
+the term with the |LIOTCB| constructor, while the latter evaluates the
+left-hand term and supplies the result to the right-hand term, as
+usual.
+ 
+Rule \ruleref{getLabel} defines our first and trivial LIO library
+function |getLabel| which retrieves the current label.
 %
-The reduction rules for the core |LIO| operations are given in
-Fig.~\ref{fig:sos:lio}.
+Recall that it is this label that protects all the values in scope.
 %
-The rules for |return| and |(>>=)| are trivial and standard---recall
-that all IFC checks are performed by individual |LIO| actions.
+However, since neither |return| nor |>>=| perform any security checks,
+all LIO functions must inspect the current label to enforce IFC.
 %
-Rule \ruleref{getLabel} defines the |LIO| library function for
-retrieving the underlying current label. 
-
-
+For example, we can define a |publish| function that writes the
+supplied value to a public channel in terms of a |publishTCB| function
+(that unafely writes any data to the channel) as follows:
+\begin{code}
+publish v = do  lcurr <- getLabel 
+                when (lcurr canFlowTo low) (publishTCB v)
+\end{code}
+Hence, if the current computation has read any sensitive data---and
+thus the current label is |high|---it cannot subsequently leak it with
+publish.\footnote{
+  As with other TCB functions, we assume that |publishTCB| is not part
+  of the surface syntax.
+}
 
 \subsection{Labeled values}
+\hl{HERE}
 
 \begin{code}
 v    ::= cdots  | LabeledTCB l t
