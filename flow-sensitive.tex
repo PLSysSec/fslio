@@ -105,6 +105,12 @@ from |m1| to override those of |m2|.
 
 \begin{figure}[!ht] % semantics
 \small
+\begin{code}
+v    ::= cdots  | LIORefTCB S t
+t    ::= cdots  | upgradeR t t 
+Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
+\end{code}
+
 \begin{mathpar}
 \inferrule[newRef-|S|]
 { |c = (lcurr, mI, mS)|\\

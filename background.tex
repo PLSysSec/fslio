@@ -232,7 +232,7 @@ all LIO functions must inspect the current label to enforce IFC.
 %
 For example, we can define a |publish| function that writes the
 supplied value to a public channel in terms of a |publishTCB| function
-(that unafely writes any data to the channel) as follows:
+(that unsafely writes any data to the channel) as follows:
 \begin{code}
 publish v = do  lcurr <- getLabel 
                 when (lcurr canFlowTo low) (publishTCB v)
@@ -245,20 +245,45 @@ publish.\footnote{
 }
 
 \subsection{Labeled values}
-\hl{HERE}
 
+\concept{|lcurr| is too coarse-grained}
+Using |lcurr| as the label on all terms in scope makes it trivial to
+reason about issues that have traditionally been hard to deal with in
+IFC system.
+%
+For example, LIO does not have to explicitly handle the implicit flows
+problem: branch conditions (which are are simply values of type
+|Bool|) are labeled |lcurr|, and thus any subsequent writes cannot leak
+the sensitive bit---the current label is used when governing all
+writes (even those in a branch).
+%
+Of course, this coarse-grained labeling approach has a severe: a piece
+of code cannot, for example, both write |medium| data to a channel
+labeled |medium| after writing |high| data to a |high| channel---once
+|high| data is read, the current label is raised to |high| thereby
+``over tainting'' |medium| data.
+ 
+\concept{labeled values}
+To address this limitation, LIO provides |Labeled| values, which, like
+language-based systems, can be used to associate an explicit label
+with a term, irrespective of the current label.
+%
+Intuitively, a term can be heterogeneously labeled by a label other
+than |lcurr| if we can ``transfer'' protection from the current label
+to this |Labeled| value (e.g., by ensuring that the protected value
+cannot be inspected in a (future) less-sensitive context).
+%
+To this end we extend \lio{} as shown in Figure~\ref{fig:sos:labeled}.
+\begin{figure}[ht] % labeled
+\small
 \begin{code}
 v    ::= cdots  | LabeledTCB l t
-t    ::= cdots  | label t t | unlabel t | labelOf t
-                | upgrade t t
+t    ::= cdots  | label t t | unlabel t | labelOf t | upgrade t t
 tau  ::= cdots  | Labeled tau
-
 Ep   ::= cdots  | label Ep t | unlabel Ep | labelOf Ep
                 | upgrade Ep t | upgrade v Ep
 \end{code}
 
-\begin{figure}[t] % labeled
-\small
 \begin{mathpar}
 \inferrule[label]
 { |c = (lcurr, ...)|\\
@@ -287,8 +312,72 @@ Ep   ::= cdots  | label Ep t | unlabel Ep | labelOf Ep
   |t' = lcurr lub l lub l'|}
 { |conf c (E[upgrade (LabeledTCB l t) l']) --> conf c (E[label t' t])| }
 \end{mathpar}
-\caption{Semantics for labeled values\label{fig:sos:labeled}.}
+\caption{Extending \lio{} with labeled values\label{fig:sos:labeled}.}
 \end{figure}
+
+\concept{label}
+The |label| terminal is used to explicitly label a term.
+%
+As rule \ruleref{label} shows, the function associates the supplied
+label |l| with term |t| by wrapping the term with the |LabeledTCB|
+constructor.
+%
+Importantly, it first asserts that the new label (|l|) used to
+protect |t| is at least as restricting as the old label (the current
+label, |lcurr|), i.e., |lcurr canFlowTo l ~> true|.
+ 
+\concept{unlabel}
+Dually, |unlabel|, unwraps explicitly labeled values.
+%
+As defined in rule \ruleref{unlabel}, given a labeled value
+|LabeledTCB l t| the function returns the wrapped term |t|.
+%
+Since the returned term is no longer explicitly labeled by |l|, and
+is instead protected by the current label, |lcurr| must be at least
+as restricting as |l|.
+%
+To ensure this, the current label is raised from |lcurr| to |lcurr lub
+l|---this captures the fact that the remaining computation might
+depend on |t|. 
+%
+Moreover, this highlights the fact that the current label always
+``floats'' above the labels of the values observed by the current
+computation.
+
+\concept{labelOf}
+The |labelOf| function provides a means for inspecting the label of a
+labeled value.
+%
+As detailed by reduction rule \ruleref{labelOf}, given a labeled value
+|LabeledTCB l t| the function returns the label |l| protecting term
+|t|.
+%
+This allows code to check the label of a labeled value before deciding
+to unlabel it, and thereby raise the current label.
+%
+It it worth noting that regardless of the current label in the
+configuration, the label of a labeled value can be inspected---hence
+labels are effectively ``public.''\footnote{
+In fact labels are actually protected by the current label, but since
+code can always observe objects labeled at the current label this is
+akin to being public.
+}
+
+\concept{upgrade}
+Finally, |upgrade| allows a piece of code raise the label of a
+labeled value.
+%
+Since labeled values are immutable, this function, in effect produces
+another labeled value that is protected by a label more restricting
+than the current one.
+%
+Since LIO has the invariant that a computation can only create or
+write to entities above the current label, we use |lcurr| when
+upgrading a labeled value.
+
+\concept{toLabeled}
+\hl{HERE}
+
 
 Note that with |toLabeled| we can define |upgrade| as follows:
 \begin{code}
@@ -308,27 +397,15 @@ given Figure~\ref{fig:sos:labeled}. This definition is:
 
 \subsection{Labeled references}
 
-\begin{figure}[t] % syntax
-\centering
-\begin{code}
-v    ::= cdots  | LIORefTCB I v t| LIORefTCB S t
-t    ::= cdots  | newRef s t t | writeRef s t t 
-                | readRef s t | upgrade t t
-                | labelOfR s t
-tau  ::= cdots  | LIORef s tau
-
-
-Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t 
-                | readRef s Ep | upgrade Ep t | upgrade v Ep
-                | labelOfR s Ep
-\end{code}
-\caption{Formal syntax for values, terms, and types,
-where |s  ::=  S inlinesep I|.\label{fig:sos:ref-syntax}}
-\vspace*{-5pt}
-\end{figure} 
-
 \begin{figure}[!ht]
 \small
+\begin{code}
+v    ::= cdots  | LIORefTCB I v t
+t    ::= cdots  | newRef s t t | writeRef s t t | readRef s t | labelOfR s t
+tau  ::= cdots  | LIORef s tau
+Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep | labelOfR s Ep
+\end{code}
+
 \begin{mathpar}
 \inferrule[newRef-|I|]
 { |c = (lcurr, mI, ...)|\\
@@ -363,13 +440,15 @@ where |s  ::=  S inlinesep I|.\label{fig:sos:ref-syntax}}
 { }
 { |Ep[labelOfR I (LIORefTCB I l a)]) --> Ep[l]| }
 \end{mathpar}
-\caption{Semantics for flow-insensitive references\label{fig:sos:refs}.}
+\caption{Semantics for references, with |s  ::=  S inlinesep
+I|.\label{fig:sos:ref-syntax}
+\label{fig:sos:refs}.}
 \end{figure}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{figure}[h!]
 \small
