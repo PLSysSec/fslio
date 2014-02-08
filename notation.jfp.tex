@@ -37,7 +37,7 @@
 %format --> = "\lto"
 %format ==> = "\lto^*"
 
-%format ~> = "\leadsto"
+%format ~> = "\lto"
 %format ~>* = ~>"^*"
 
 
@@ -248,14 +248,15 @@
 %format and     = "\cap"
 %format or      = "\cup"
 %format merge   = "\curlyvee"
-%format Ep      = E"_p"
+%format E       = "\textbf{\Blue{E}}"
+%format Ep      = "\Red{E}"
 
 
 \newcommand{\dom}[1]{\ensuremath{{\textrm{dom}} #1}}
 \newcommand{\fresh}[1]{\ensuremath{\textrm{fresh}(#1)}}
 \newcommand{\update}[3]{\ensuremath{#1 [ #2 \mapsto #3 ]}}
 
-%format (denot (a)) = "\llbracket " a "\rrbracket"
+%format (denot (a)) = "\llbracket " a "\rrbracket_{"lattice"}"
 %format (denot_2 (a)) = "\llbracket " a "\rrbracket_{"lattice2"}"
 %format conf (c) (t) = "\conf{"c"}{"t"}"
 %format fresh (a) = "\fresh{"a"}"

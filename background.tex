@@ -81,6 +81,9 @@ l_d|, but can thereafter only write to entities labeled |l_e| if
 For example, LIO allows a public computation to read secret data by
 raising |lcurr| from |L| to |H|. Importantly, the new current label
 prevents the computation from subsequently writing to public entities.
+
+\concept{Labeled objects}
+\hl{TODO:talk about labeled values and references}
  
 \subsection{\lio: A corase-grained IFC calculus}
  
@@ -96,14 +99,14 @@ types, respectively.
 %
 Values include standard primitives (Booleans, unit,
 and $\lambda$-abstractions) and terminals corresponding to labels
-(|lattice|) and monadic values (|LIOTCB tau|).\footnote{
+(|l|) and monadic values (|LIOTCB tau|).\footnote{
 We restrict our formalization to computations implemented in the |LIO|
 monad and only consider Haskell features relevant to IFC, similar to
 the presentation of LIO in~\tocite{jfptechreport}.
 }
 %
-Terms constitute standard constructs (values, variables |x|, function
-application, the |fix| operator, and conditionals), terminals
+Terms are composed of standard constructs (values, variables |x|,
+function application, the |fix| operator, and conditionals), terminals
 corresponding to label operations (|t lop t|, where |lub| is the join,
 |glb| is the meet, and |canFlowTo| is the partial-order on labels),
 standard monadic operators (|return t| and |t >>= t|), and |getLabel|,
@@ -114,6 +117,7 @@ computations; since the \lio{} type system is standard, we do not
 discuss it further.
 
 \begin{figure}
+\small
 \centering
 %format Values  = "\mathrm{Values}"
 %format Terms   = "\mathrm{Terms}"
@@ -130,39 +134,41 @@ LOps    lop  ::=  lub | glb | canFlowTo
 \label{fig:language:base}}
 \end{figure}
 
-\hl{HERE}
-
-\concept{configurations}
-An \lio{} program is a \emph{configuration} of the form |conf c t|,
-where |t| is the monadic term under evaluation, i.e., | G, c :- t :
-LIO tau| for some type environment |G|, and |c| is state associated
-with the computation.
+\concept{eval ctx}
+We use operational semantics with evaluation contexts in the style of
+Felleisen and Hieb to specify the reduction rules for \lio~\tocite{}.
 %
-The state |c| is a tuple that contains the current label |lcurr|,
-among other objects (discussed in later), i.e., |c = (lcurr, ...)|.
+Figure~\ref{fig:sos:base} defines the reduction rules for the base
+calculus with an evaluation context for pure
+terms (|Ep|) and one for monadic terms (|E|).
 %
+The evaluation context are standard; we solely highlight that terms
+are evaluated only when used in the top-level context (|E|), as in
+Haskell.
 
-\begin{figure}[ht]
-\small
-\begin{mathpar}
-\inferrule
-{ |conf c t --> conf c' t'| }
-{ |conf c (E[t]) --> conf c' (E[t'])| }
-\and
-\inferrule
-{ |Ep[t] ~> Ep[t']| }
-{ |conf c (Ep[t]) --> conf c (Ep[t'])| }
-\and
-\inferrule
-{ |t ~> t'| }
-{ |Ep[t] ~> Ep[t']| }
-\end{mathpar}
-\caption{Evaluation relations}
-\end{figure}
-
+\concept{pure red}
+Similarly, the reduction rules for pure terms are mostly standard.
+%
+Only two points are worth noting.
+%
+First, we define substitution |{t2 / x } t1| in the usual way:
+homomorphic on all operators and renaming bound names to avoid
+captures. 
+%
+Second, our label operations |lub|, |glb|, and |canFlowTo| rely on the
+label-specific implementation of these lattice operators, as used in
+the premise of rule \ruleref{labelOp};
+%
+we use the meta-level partial function |denot cdot|, which maps terms
+to a values, to precisely capure this implementation detail.
 
 \begin{figure}[t] % sos:base
 \small
+\begin{code}
+Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
+E   ::= []| Ep | E >>= t 
+\end{code}
+
 \begin{mathpar}
 \inferrule[app]
 { } { |Ep[(\x.t1) t2] ~> Ep[{ t2 / x } t1]| }
@@ -176,9 +182,9 @@ among other objects (discussed in later), i.e., |c = (lcurr, ...)|.
 \inferrule[ifFalse]
 { } { |Ep[if false then t2 else t3] ~> Ep[t3]| }
 \and
-\inferrule[lOp]
-{ | denot ( l3 = l1 lop l2 ) | }
-{ |Ep[l1 lop l2] ~> Ep[l3]| }
+\inferrule[labelOp]
+{ | v = denot ( l1 lop l2 ) | }
+{ |Ep[l1 lop l2] ~> Ep[v]| }
 \and
 \inferrule[return]
 { } { |conf c (return t) --> conf c (LIOTCB t)| }
@@ -193,14 +199,42 @@ among other objects (discussed in later), i.e., |c = (lcurr, ...)|.
 |conf c (E[getLabel]) --> conf c (E[return lcurr])|
 }
 \end{mathpar}
-\caption{Reduction rules for base \lio.}
+\caption{Reduction rules for base \lio.\label{lio:sos:base}}
 \end{figure}
 
-\begin{code}
-Ep  ::= Ep t | fix Ep | if Ep then t else t 
-      | Ep lop t | v lop Ep
-E  ::= []| Ep | E >>= t 
-\end{code}
+\concept{monad red}
+\hl{here}
+The recution rules for monadic terms deserve some attention.
+
+\concept{configurations}
+An \lio{} program is a \emph{configuration} of the form |conf c t|,
+where |t| is the monadic term under evaluation, i.e., | G, c :- t :
+LIO tau| for some type environment |G|, and |c| is state associated
+with the computation.
+%
+The state |c| is a tuple that contains the current label |lcurr|,
+among other objects (discussed in later), i.e., |c = (lcurr, ...)|.
+%
+The relation |conf lcurr ccurr m t  -->  conf lcurr' ccurr' m' t'|
+represents a single evaluation step from term |t|, with current label
+|lcurr|, current clearance |ccurr|, and memory |m|, to term |t'|, with
+current label |lcurr'|, current clearance |ccurr'|, and memory |m'|.
+%
+We write |@-->*| for the reflexive and transitive closure of |@-->|.
+%
+For the moment, we ignore the clearance and memory in the
+configuration, and the subindexes in the transition relation.
+%
+The reduction rules for the core |LIO| operations are given in
+Fig.~\ref{fig:sos:lio}.
+%
+The rules for |return| and |(>>=)| are trivial and standard---recall
+that all IFC checks are performed by individual |LIO| actions.
+%
+Rule \ruleref{getLabel} defines the |LIO| library function for
+retrieving the underlying current label. 
+
+
 
 \subsection{Labeled values}
 
@@ -263,14 +297,6 @@ given Figure~\ref{fig:sos:labeled}. This definition is:
   toLabeled' (labelOf t1 lub l lub t2) nil (unlabel t1)|
 }
 
-\Red{
-Maybe useful somewhere else:
-The design constraints imposed by the library approach has led to a
-novel point in the design space of language-level IFC systems---when
-compared to more traditional IFC systems---that incorporates ideas
-from previous IFC operating systems.
-}
-
 \begin{figure}[!ht]
 \small
 \begin{mathpar}
@@ -309,3 +335,35 @@ from previous IFC operating systems.
 \end{mathpar}
 \caption{Semantics for flow-insensitive references\label{fig:sos:refs}.}
 \end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+\begin{figure}[h!]
+\small
+\begin{mathpar}
+\inferrule
+{ |conf c t --> conf c' t'| }
+{ |conf c (E[t]) --> conf c' (E[t'])| }
+\and
+\inferrule
+{ |Ep[t] ~> Ep[t']| }
+{ |conf c (Ep[t]) --> conf c (Ep[t'])| }
+\and
+\inferrule
+{ |t ~> t'| }
+{ |Ep[t] ~> Ep[t']| }
+\end{mathpar}
+\caption{Evaluation relations \hl{ Maybe useful somewhere; appendix? } }
+\end{figure}
+
+
+\hl{
+Maybe useful somewhere else:
+The design constraints imposed by the library approach has led to a
+novel point in the design space of language-level IFC systems---when
+compared to more traditional IFC systems---that incorporates ideas
+from previous IFC operating systems.
+}
