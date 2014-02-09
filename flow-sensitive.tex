@@ -114,7 +114,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \begin{mathpar}
 \inferrule[newRef-|S|]
 { |c = (lcurr, mI, mS)|\\
-  |lcurr canFlowTo l ~>* true|\\
+  |lcurr canFlowTo l ~> true|\\
   |mS' = mS[a mapsto (lcurr, LabeledTCB l t)]|\\
   |c' = (lcurr, mI, mS')|
 }
@@ -127,7 +127,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[readRef-|S|]
 { |c = (lcurr, mI, mS)| \\
   |mS(a) = (l, LabeledTCB l' t)|\\
-  |l lub l' ~>* l''|
+  |l lub l' ~> l''|
 }
 { |conf c (E[readRef S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB l'' t)])| }
 
@@ -136,8 +136,8 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
   |mS(a) = (l, LabeledTCB l' t)| \\
-  |lcurr canFlowTo l ~>* true|\\
-  |lcurr canFlowTo l' ~>* true|\\
+  |lcurr canFlowTo l ~> true|\\
+  |lcurr canFlowTo l' ~> true|\\
   |mS' = mS[a mapsto (l, LabeledTCB l' t)]|\\
   |c' = (lcurr, mI, mS')|
 }
@@ -190,7 +190,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[upgradeRef]
 { |c = (lcurr, mI, mS)|\\
   |mS(a) = (l', v)|\\
-  |lcurr canFlowTo l' ~>* true| \\
+  |lcurr canFlowTo l' ~> true| \\
   |conf c (upgrade v l) ==> conf c (LIOTCB v')|\\
   |mS' = mS [ a mapsto (l',v') ]|\\
   |c' = (lcurr, mI, mS')|
@@ -271,10 +271,10 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \begin{mathpar}
 \inferrule[toLabeled]
 {|c = (lcurr, mI, mS)|\\
- |lcurr canFlowTo l|\\
+ |lcurr canFlowTo l ~> true|\\
  |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
  |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
- |lcurr' canFlowTo l|\\
+ |lcurr' canFlowTo l ~> true|\\
  |c''' = (lcurr, mI', mS'' merge mS)|
 }
 {|conf c (E[toLabeled' l v t]) --> conf c''' (E[label l t']|}

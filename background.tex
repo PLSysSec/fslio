@@ -372,55 +372,95 @@ another labeled value that is protected by a label more restricting
 than the current one.
 %
 Since LIO has the invariant that a computation can only create or
-write to entities above the current label, we use |lcurr| when
-upgrading a labeled value.
+write to entities above the current label, we use |lcurr| in addition
+to the supplied label when upgrading a labeled value.
 
 \concept{label creep}
-It is natural to ask how one would go about implementing |upgrade|,
-which simply raises the label of a explicitly labeled term, without
-inspecting the term, on top of LIO.
+Intuitively, we can try to define |upgrade| in terms of existing
+terminals by first |unlabel|ing the labeled value and then |label|ing
+the result with the join of the current label, existing label and new
+label.
 %
-Intuitively, the term must be |unlabel|ed and then |label|ed with the
-join of the current label, existing label and new label.
-%
-However, |unlabel| raises the current label and, while the |label|
-will succeed in creating a new labeled value with the desired label,
-the semantics are not equivalent---the current label cannot be lowered
-since we now have (potentially) more sensitive data in scope!
+Unfortunately, these semantics are different; |unlabel| raises the
+current label and, while the |label| will succeed in creating a new
+labeled value with the desired label, the current label cannot be
+lowered to the label at the point before the |unlabel|, since we now
+have (potentially) more sensitive data in scope.
 %
 This raising of the current label to a point where the computation can
 no longer perform useful tasks is known as \emph{label
 creep}~\cite{sabelfeld:language-based-iflow}.
 %
-Though label creep does not compromise security, since the current
-label still protects all data in lexical scope, it makes LIO overly
-restrictive.
+Label creep does not compromise security, since the current
+label still protects all data in lexical scope.
 %
-In general, being able to perform computations on sensitive data
-without raising the current label is crucial to building practical
-applications.
+However, it makes LIO overly restrictive---in general, being able to
+perform computations on sensitive data without raising the current
+label is crucial to building practical applications.
 
 \concept{toLabeled}
-\hl{HERE}
+To this end, LIO provides the |toLabeled| function which executes an
+|LIO| action (that may raise the current label) and subsequently
+restores the current label.
+%
+Extending terms and the pure evaluation context with |toLabeled| (|t
+::= cdots inlinesep toLabeled t t| and |Ep ::= cdots inlinesep
+toLabeled Ep t|, respectively) we give the precise semantics of
+|toLabeled| as follows;
+%
+\begin{mathpar}
+\inferrule[toLabeled]
+{
+|c = (lcurr, ...)|\\
+|lcurr canFlowTo l ~> true| \\
+|conf c t ==> conf c' (LIOTCB t')| \\
+|c' = (lcurr', ...)|\\
+|lcurr' canFlowTo l ~> true|\\
+|c'' = c merge c'|
+}
+{
+|conf c (E[toLabeled l t]) --> conf c'' (E[label l t'])|
+}
+\end{mathpar}
+%
+Intuitively, if the current label at the point |toLabeled l t| is
+executed is |lcurr|, |toLabeled| evaluates |t| to completion and
+restores the current label to |lcurr|, i.e., |toLabeled| provides a
+separate context in which |t| is evaluated.
+%
+(Here, the state merge function |merge| is defined as: |c merge c' @=
+c|, in the next section we present an alternative definition.)
+%
+Of course, since returning the result of |t| directly would allow for
+trivial leaks, |toLabeled| labels |t'| with |l|.
+%
+This effectively states that the result of |t| is protected by label
+|l|, as opposed to the current label at the point |t| completed.
+%
+Importantly, this requires that the result not be more sensitive than
+|l|.
 
-Note that with |toLabeled| we can define |upgrade| as follows:
+\concept{upgrade with toLabeled}
+Note that with |toLabeled| we can now define |upgrade| as follows:
 \begin{code}
 upgrade t1 t2 @= getLabel >>= \l.
   toLabeled (labelOf t1 lub l lub t2) (unlabel t1)
 \end{code}
-Unfortunately, because |toLabeled| needs to be modified to accomodate
-for flow-sensitive references and so we provide |upgrade| as a
-primitive.\footnote{
-In section~\ref{sec:flow-sensitive}, we define an alternative
-version of |toLabeled|, in terms of which we can define the
-upgrade function such that its semantics are equivalent to those
-given Figure~\ref{fig:sos:labeled}. This definition is:
+However, since |toLabeled| needs to be modified to accommodate for
+flow-sensitive references, we leave our definition |upgrade| as a
+given in Figure~\ref{fig:sos:labeled}.\footnote{
+In section~\ref{sec:flow-sensitive}, we define an alternative version
+of |toLabeled|, in terms of which we can define the upgrade function
+such that its semantics are equivalent to those given
+Figure~\ref{fig:sos:labeled}. This definition is:
 |upgrade t1 t2 @= getLabel >>= \l.
   toLabeled' (labelOf t1 lub l lub t2) nil (unlabel t1)|
 }
 
 
 \subsection{Labeled references}
+
+\hl{HERE}
 
 \begin{figure}[!ht]
 \small
@@ -434,7 +474,7 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep | labelOfR s Ep
 \begin{mathpar}
 \inferrule[newRef-|I|]
 { |c = (lcurr, mI, ...)|\\
-  |lcurr canFlowTo l ~>* true|\\
+  |lcurr canFlowTo l ~> true|\\
   |mI' = mI[a mapsto LabeledTCB l t]|\\
   |c' = (lcurr, mI', ...)|
 }
@@ -452,7 +492,7 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep | labelOfR s Ep
 \and
 \inferrule[writeRef-|I|]
 { |c = (lcurr, mI, ...)|\\
-  |lcurr canFlowTo l ~>* true|\\
+  |lcurr canFlowTo l ~> true|\\
   |mI' = mI[a mapsto LabeledTCB l t]|\\
   |c' = (lcurr, mI', ...)|
 }
