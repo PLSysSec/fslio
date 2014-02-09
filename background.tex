@@ -460,15 +460,53 @@ Figure~\ref{fig:sos:labeled}. This definition is:
 
 \subsection{Labeled references}
 
-\hl{HERE}
+\concept{FI refs}
+To complete the LIO description, we extend our \lio{} presentation with
+mutable, flow-insensitive references.
+%
+Conceptually, flow-insensitive references are simply mutable |Labeled| values.
+%
+Like labeled values, the label of a reference is immutable and serves to
+protect the underlying term.
+%
+(Recall that |upgrade| does not raise the label of a value; rather it simply
+produces another immutable value.)
+%
+The immutable label makes the semantics straight forward: writing a term to a
+reference amounts to transferring protection from the current label to the
+reference label (hence the reference label must be above the current label);
+reading from a reference transfers protection from the reference label to the
+current label, which is raised accordingly.
+%
 
-\begin{figure}[!ht]
+\concept{new syntax}
+%
+The extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
+%
+We use subscripts |I| and |S| to respectively distinguish flow-insensitive and
+flow-sensitive productions, the semantics for latter are described in
+Section~\ref{sec:flow-sensitive}.
+%
+We add references to \lio{} by firstly extending the configuration state to
+contain a memory store |mI|: |c = (lcurr, mI, ...)|;
+%
+|mI| maps memory addresses---spanned over by metavariable |a|---to |Labeled|
+values.
+%
+%% Second, we add a flow-insensitive reference value (|LIORefTCB I l a|), and
+%% terms for creating (|newRef s|), reading (|readRef s|), modifying (|writeRef
+%% s|), and inspecting the label of (|labelOfR s|) a reference.
+%
+
+\begin{figure}[t]
 \small
 \begin{code}
-v    ::= cdots  | LIORefTCB I v t
-t    ::= cdots  | newRef s t t | writeRef s t t | readRef s t | labelOfR s t
+v    ::= cdots  | LIORefTCB I l a
+t    ::= cdots  | newRef s t t | writeRef s t t | readRef s t
+                | labelOfR s t
 tau  ::= cdots  | LIORef s tau
-Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep | labelOfR s Ep
+Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep 
+                | labelOfR s Ep
 \end{code}
 
 \begin{mathpar}
@@ -510,6 +548,30 @@ I|.\label{fig:sos:ref-syntax}
 \label{fig:sos:refs}.}
 \end{figure}
 
+\concept{semantics for refs}
+%
+When creating a flow-insensitive reference, |newRef I l t| creates a labeled
+value that guards |t| with label |l| and stores it in the memory store at a
+new, fresh, address |a|.
+%
+Subsequently, the function returns a value of type |LIORef I| that simply
+encapsulates the reference label and address where the term is stored.
+%
+Rule \ruleref{readRef-|I|} specifies the semantics for reading a
+labeled reference; reading the term stored at address |a| simply
+amounts to unlabeling the value |m(a)| stored at the underlying
+address.
+%
+Terminal |writeRef I| is used to update the memory store with a new labeled term
+|t| for the reference at location |a|.
+%
+Note that |writeRef I| leaves the label of the reference intact, i.e., the
+label of a flow-insensitive reference is never changed, but in turn requires
+that the current label not be any more sensitive than the reference label.
+%
+Consequently, |labelOfR I| can always be used to inspect the label of a such a
+reference.
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
