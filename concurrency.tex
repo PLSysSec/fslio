@@ -85,7 +85,8 @@ represents the list of flow-sensitive references into which the thread
 is allowed to write. This function is analogous to |toLabeled'| in
 that it restricts the scope of the store available to the spawned
 thread. Figure~\ref{fig:forkS-semantics} shows the semantics for this
-operation.
+operation. The |addrs| operation is the same as in |toLabeled'| from
+the previous section.
 
 \begin{figure}[ht]
   \centering
@@ -104,6 +105,7 @@ operation.
   \caption{Semantics for the |forkLIO'| primitive.}
   \label{fig:forkS-semantics}
 \end{figure}
+
 
 % In a sequential setting, the attack in Figure~\ref{fig:fs-attack} is disabled by
 % the enforcement presented in the previous section, allowing us to prove
