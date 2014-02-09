@@ -447,8 +447,8 @@ upgrade t1 t2 @= getLabel >>= \l.
   toLabeled (labelOf t1 lub l lub t2) (unlabel t1)
 \end{code}
 However, since |toLabeled| needs to be modified to accommodate for
-flow-sensitive references, we leave our definition |upgrade| as a
-given in Figure~\ref{fig:sos:labeled}.\footnote{
+flow-sensitive references with auto-upgrading, we leave our definition
+|upgrade| as a given in Figure~\ref{fig:sos:labeled}.\footnote{
 In section~\ref{sec:flow-sensitive}, we define an alternative version
 of |toLabeled|, in terms of which we can define the upgrade function
 such that its semantics are equivalent to those given
