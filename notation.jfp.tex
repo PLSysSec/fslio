@@ -36,7 +36,8 @@
 \newcommand{\lto}{\longrightarrow}
 %format --> = "\lto"
 %format ==> = "\lto^*"
-
+%format .--> = "\overset{"fork(e)"}{\lto}"
+%format .-.-> = "\overset{"fork(mS',e)"}{\lto}"
 %format ~> = "\lto"
 %format ~>* = ~>"^*"
 
@@ -90,6 +91,8 @@
 %format p_Alice
 %format p_Bob
 
+%format ResultTCB = "R^{\Red{\textsf{{\tiny TCB}}}}"
+
 %format publishTCB = publish"^{\Red{\textsf{{\tiny TCB}}}}"
 %format LIOTCB = "LIO^{\Red{\textsf{{\tiny TCB}}}}"
 %format LabeledTCB = "Lb^{\Red{\textsf{{\tiny TCB}}}}"
@@ -113,6 +116,10 @@
 %format LabeledTCB_b' = LabeledTCB"_{"b'"}"
 %format LabeledTCB_b'' = LabeledTCB"_{"b''"}"
 
+%format newLMVar = "\textbf{newLMVar}"
+%format takeLMVar = "\textbf{takeLMVar}"
+%format putLMVar = "\textbf{putLMVar}"
+
 %format newRef (s)   = "\textbf{newRef}_{"s"}"
 %format writeRef (s) = "\textbf{writeRef}_{"s"}"
 %format readRef (s) = "\textbf{readRef}_{"s"}"
@@ -124,6 +131,8 @@
 %format unlabel = "\textbf{unlabel}"
 %format toLabeled = "\textbf{toLabeled}"
 %format toLabeled'
+%format forkLIO = "\textbf{forkLIO}"
+%format waitLIO = "\textbf{waitLIO}"
 %format upgradeM = "\textbf{upgradeStore}"
 %format upgradeL (t) (l) = t"\Uparrow^{"l"}"
 %format nil = "\epsilon"
@@ -138,6 +147,8 @@
 
 %format alpha = "\alpha"
 %format alpha'
+
+%format boxdot = "\boxdot"
 
 %format tau = "\tau"
 %format tau'

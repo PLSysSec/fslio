@@ -61,15 +61,16 @@ This problem can be addressed in several ways. Prior work proposed the
 check forbids assignment to a public reference in a secret context. In
 contrast, the permissive-upgrade check allows the assignment but marks
 it as a partial leak; if there is a subsequent conditional branch on
-partially leaked data, the program stops. We adapt the
+partially leaked data, the program stops.  We adapt the
 permissive-upgrade idea to our floating-label model, which results in
 a slightly more permissive enforcement that allows the conditional
 branch.
 
-We extend the formalization of |LIO| to include both flow-insensitive
-and flow-sensitive LIORefs. Figure~\ref{fig:fs-exts-syntax} introduces
-the syntax for values, terms and types that we require in order to
-account for both flow-sensitive and flow-insensitive references.
+In order to express our flow-sensitive enforcement, we extend the
+formalization of |LIO| to include flow-sensitive LIORefs with an
+|upgrade| operation. Figure~\ref{fig:fs-exts-syntax} introduces the
+syntax for values, terms and types that we require in order to account
+for both flow-sensitive and flow-insensitive references.
 
 The expression |m1 merge m2| merges the two stores, using elements
 from |m1| to override those of |m2|.
@@ -131,8 +132,8 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 }
 { |conf c (E[readRef S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB l'' t)])| }
 
-
 \and
+
 \inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
   |mS(a) = (l, LabeledTCB l' t)| \\
@@ -142,7 +143,6 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
   |c' = (lcurr, mI, mS')|
 }
 { |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[return ()])| }
-
 
 % \and
 
@@ -175,6 +175,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 \and
 
+
 \inferrule[labelOf-|S|]
 { |c = (lcurr, mI, mS)|\\
   |mS(a) = (l, LabeledTCB l' t)|
@@ -195,7 +196,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
   |mS' = mS [ a mapsto (l',v') ]|\\
   |c' = (lcurr, mI, mS')|
 }
-{ |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
+{ |conf c (E[upgradeR (LIORefTCB S a) l']) --> conf c' (E[return ()])| }
 
 %%-deian-\inferrule{\env.\lbl\flows l \and l\flows l' \and \RTS'=\RTS\uparrow^{l'} \{x\}}
 %%-deian-{\defRTS{E[\upgrade{(\LIORef{l}{x})}{l'}]} \lto \wEnvRTS{\env}{\RTS'}{r}{E[\returnLIO{()}]}}[\textsc{Upgrade}]
@@ -318,9 +319,9 @@ toLabeledWith l def f =
 \vspace*{-5pt}
 \begin{mathpar}
 \inferrule[unlabel-AU]
-{ |c = (lcurr, ...)|\\
+{ |c = (lcurr, mI, mS)|\\
   |lcurr lub l ~> lcurr'|\\
-  |c' = (lcurr', ...)|
+  |c' = c [ lcurr mapsto lcurr' ]|
 }
 {
 |conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[upgradeM >> return t])|

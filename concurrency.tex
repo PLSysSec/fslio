@@ -6,72 +6,168 @@ version of |LIO|.
 % which includes operations for creating threads and expressing
 % communication among them.
 
-\hl{To do}
+Concurrent |LIO|~\cite{?} extends the sequential version of |LIO| with
+operations for creating threads and expressing communication among
+them, as seen in Figure~\ref{fig:conc-syntax}.
+\begin{figure}[ht] % labeled
+\small
+\begin{code}
+v    ::= cdots  | ResultTCB t 
+t    ::= cdots  | forkLIO l t | waitLIO t
+                | newLMVar l t | takeLMVar t | putLMVar t t
+tau  ::= cdots  | Result l tau | LMVar l tau
+\end{code}
+\caption{Syntax for concurrent |LIO|.\label{fig:conc-syntax}}
+\end{figure}
+
+|LMVar|s are an IFC-aware version of |MVar|s, which are
+well-established primitives for synchronization in
+Haskell~\cite{CH96}.  A value of type |LMVar l a| is a mutable
+location that is either empty or contains a value of type |a| labeled
+with |l|. They are created with |newLMVar|, and they are accessed with
+|takeLMVar| and |putLMVar|. Function |takeLMVar| raises the current
+label and empties an |LMVar| if it is full, and blocks
+otherwise. Function |putLMVar| fills an |LMVar| with a value if it is
+empty and the current label flows to the label of the |LMVar|, and
+blocks otherwise. These are the only synchronization and communication
+primitives for concurrent |LIO|. For the sake of brevity, we elide a
+full presentation of the semantics of |LMVars| since it is standard.
+
+The expression |forkLIO l t| forks a new thread to perform the
+computation |t|, where |l| is an upper bound on the current label of
+the computation in the spawned thread. Essentially, |forkLIO| is a
+concurrent version of |toLabeled|. When a thread is spawned, the
+parent receives a value of type |Result l a|, which serves as a
+handler that allows to access the labeled result produced by |t|. The
+function |waitLIO| allows threads to inspect these values, i.e. the
+values returned by spawned computations, in a manner similar to
+|unlabel|. After calling |waitLIO|, the current label is raised to the
+label of its argument, and the program waits for the target thread to
+produce a result, which is then returned. As shown in~\cite{?}, these
+primitives serve to close the termination channel, since in order to
+observe (non-)termination of a forked thread, we must first raise our
+current label. The semantics for these operations are shown in
+Figure~\ref{fig:conc-semantics}. Note that we rely on the
+implementation of |LMVar|s in order to implement these
+operations. Every thread writes its result to an |LMVar|, from which
+other threads can read using |waitLIO|.
+
+\begin{figure}[ht]
+\begin{mathpar}
+  \inferrule[(forkLIO)]
+  {|c = (lcurr, mI, mS)| \\
+   |lcurr canFlowTo l ~> True| \\
+   |c' = c[ mI mapsto mI[ mv mapsto LabeledTCB l boxdot ] ]| \\
+   |e = t >>= \x -> putLMVar mv x| \\
+   |fresh(mv)|
+}
+{
+|conf c (E[forkLIO l t]) .-->  conf (c') (E[return (ResultTCB mv)])|
+}
+\and
+\inferrule[(waitLIO)]
+{}
+{|conf c (E[waitLIO (ResultTCB mv)]) --> conf c (E[takeLMVar mv])|}
+\end{mathpar}
+  \caption{Semantics for |forkLIO| and |waitLIO|.}
+  \label{fig:conc-semantics}
+\end{figure}
 
 \subsection{Flow-sensitive references}
-In a sequential setting, the attack in Figure~\ref{fig:fs-attack} is disabled by
-the enforcement presented in the previous section, allowing us to prove
-termination-insensitive non-interference. However, as described before, the
-concurrent version of |LIO| requires the property of
-\emph{termination-sensitive} non-interference. In this section, we show ohow
-threads and label changes on shared references jeopardizes security.  
-Specifically, we present how to exploit the termination channel in concurrent 
-|LIO|.
 
-\begin{figure}
-\begin{code}
-do  forkLIO H $ -- Thread A
-       do  v <- readLIORef secretM
-          when v (readLIORef secretH)
-    forkLIO H $ -- Thread B
-       do  upgrade shared_ref M
-           writeLIORef public True
-\end{code}  
-\caption{Flow-sensitive attack in a concurrent setting.\label{fig:fs-conc-attack}}
+The results from previous sections extend naturally to the concurrent
+setting. However, under the \emph{auto-upgrade} semantics, having a
+store which is shared among all threads implies that all references
+get upgraded whenever any thread raises its current label. As this
+might be too restrictive in practice, we offer |forkLIO'|, an
+alternative version of |forkLIO| with an additional parameter which
+represents the list of flow-sensitive references into which the thread
+is allowed to write. This function is analogous to |toLabeled'| in
+that it restricts the scope of the store available to the spawned
+thread. Figure~\ref{fig:forkS-semantics} shows the semantics for this
+operation.
+
+\begin{figure}[ht]
+  \centering
+  \begin{mathpar}
+\inferrule[forkLIO']
+{|c = (lcurr, mI, mS)|\\
+ |lcurr canFlowTo l ~> true|\\
+ |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
+ |c' = c[ mI mapsto mI[ mv mapsto LabeledTCB l boxdot ] ]| \\
+ |e = t >>= \x -> putLMVar mv x| \\
+ |fresh(mv)|
+}
+{|conf c (E[forkLIO' l v t]) .-.-> conf c' (E[return (ResultTCB mv)])|}
+    
+  \end{mathpar}
+  \caption{Semantics for the |forkLIO'| primitive.}
+  \label{fig:forkS-semantics}
 \end{figure}
-Figure~\ref{fig:fs-conc-attack} shows the attack. This piece of code illustrates
-that our approach for sequential |LIO| does not naturally generalize for
-concurrency.  
-%how to exploit the termination
-%channel to leak information in this context. 
-We assume that threads are interleaved so that thread A's code runs to
-completion before thread B's code. Otherwise, it is enough to insert dummy
-instructions before forking thread B. We also assume the standard three-point
-lattice |low canFlowTo medium canFlowTo high|. Thread A firstly read a secret at
-label |medium|, thereby upgrading |shared_ref| to that label. Depending on the
-read value, the thread then reads a secret with label |high|, which further
-upgrades |shared_ref| to |high|. Thread B, on the other hand, firstly try to
-upgrade |shared_ref| to level |medium|. It is this instruction which exploits
-the termination channel. If |secretM| was |False|, the upgrade operation
-succeeds since |share_ref| is already at level |medium|. In contrast, if
-|secretM| was |True|, the instruction fails due to |shared_ref| having the label
-|high|. This implies that the operation that follows the upgrade instruction,
-which writes a value to a public reference at level |low| (|writeLIORef public
-True|), will either be executed or not depending on a value at level |medium|.
-The fact of stopping thread B at different execution points, depending on
-|secretM|, constitutes a termination leak. 
 
-In general terms, the attack shows that threads, with different floating-labels,
-might refer to the same shared flow-sensitive reference. If the reference is
-upgraded in one thread based on some confidential data, then it might taint the
-other ones when the reference is read. Such taints might then stop the execution
-of the threads, which consequently could exploit the termination covert channel.
+% In a sequential setting, the attack in Figure~\ref{fig:fs-attack} is disabled by
+% the enforcement presented in the previous section, allowing us to prove
+% termination-insensitive non-interference. However, as described before, the
+% concurrent version of |LIO| requires the property of
+% \emph{termination-sensitive} non-interference. In this section, we show ohow
+% threads and label changes on shared references jeopardizes security.  
+% Specifically, we present how to exploit the termination channel in concurrent 
+% |LIO|.
 
-In order to address this attack, we can either remove shared state altogether,
-or use the \emph{no-sensitive-upgrades} policy without explicit or automatic
-upgrades. At the semantics level, restricting sharing is achieved when forking.
+% \begin{figure}
+% \begin{code}
+% do  forkLIO H $ -- Thread A
+%        do  v <- readLIORef secretM
+%           when v (readLIORef secretH)
+%     forkLIO H $ -- Thread B
+%        do  upgrade shared_ref M
+%            writeLIORef public True
+% \end{code}  
+% \caption{Flow-sensitive attack in a concurrent setting.\label{fig:fs-conc-attack}}
+% \end{figure}
+% Figure~\ref{fig:fs-conc-attack} shows the attack. This piece of code illustrates
+% that our approach for sequential |LIO| does not naturally generalize for
+% concurrency.  
+% %how to exploit the termination
+% %channel to leak information in this context. 
+% We assume that threads are interleaved so that thread A's code runs to
+% completion before thread B's code. Otherwise, it is enough to insert dummy
+% instructions before forking thread B. We also assume the standard three-point
+% lattice |low canFlowTo medium canFlowTo high|. Thread A firstly read a secret at
+% label |medium|, thereby upgrading |shared_ref| to that label. Depending on the
+% read value, the thread then reads a secret with label |high|, which further
+% upgrades |shared_ref| to |high|. Thread B, on the other hand, firstly try to
+% upgrade |shared_ref| to level |medium|. It is this instruction which exploits
+% the termination channel. If |secretM| was |False|, the upgrade operation
+% succeeds since |share_ref| is already at level |medium|. In contrast, if
+% |secretM| was |True|, the instruction fails due to |shared_ref| having the label
+% |high|. This implies that the operation that follows the upgrade instruction,
+% which writes a value to a public reference at level |low| (|writeLIORef public
+% True|), will either be executed or not depending on a value at level |medium|.
+% The fact of stopping thread B at different execution points, depending on
+% |secretM|, constitutes a termination leak. 
 
-\hl{Pablo, can you put the rule here avoiding sharing?}
+% In general terms, the attack shows that threads, with different floating-labels,
+% might refer to the same shared flow-sensitive reference. If the reference is
+% upgraded in one thread based on some confidential data, then it might taint the
+% other ones when the reference is read. Such taints might then stop the execution
+% of the threads, which consequently could exploit the termination covert channel.
 
-Once sharing is restricted, it is safe to upgrade flow-sensitive references as 
-we did for the sequential setting of LIO. 
+% In order to address this attack, we can either remove shared state altogether,
+% or use the \emph{no-sensitive-upgrades} policy without explicit or automatic
+% upgrades. At the semantics level, restricting sharing is achieved when forking.
 
-\hl{Ale: Not sure about the next paragraph, is it the automatically upgrade what 
-does not work? I believe it is the upgrade, so no upgrade then of any kind}
-The strategy of {\nsu} avoid the attack in Figure~\ref{fig:fs-conc-attack}.  The
-reason for that is that |shared_ref| would not be \emph{automatically} upgraded
-by thread A. Consequently, command |upgrade share_ref medium| succeeds and so
-both threads would always run to completion, producing no leaks.
+% \hl{Pablo, can you put the rule here avoiding sharing?}
+
+% Once sharing is restricted, it is safe to upgrade flow-sensitive references as 
+% we did for the sequential setting of LIO. 
+
+% \hl{Ale: Not sure about the next paragraph, is it the automatically upgrade what 
+% does not work? I believe it is the upgrade, so no upgrade then of any kind}
+% The strategy of {\nsu} avoid the attack in Figure~\ref{fig:fs-conc-attack}.  The
+% reason for that is that |shared_ref| would not be \emph{automatically} upgraded
+% by thread A. Consequently, command |upgrade share_ref medium| succeeds and so
+% both threads would always run to completion, producing no leaks.
 
 
 % Local Variables:
