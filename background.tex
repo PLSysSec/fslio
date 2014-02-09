@@ -92,7 +92,7 @@ To give precise semantics, we consider LIO as an extended
 simply-typed, call-by-name $\lambda$-calculus, called \lio.
 %
 The formal syntax of the core \lio{} calculus, parametric in the label
-type |lattice|, is given in Fig.~\ref{fig:language:base}.
+type |lattice|, is given in Fig.~\ref{fig:sos:base}.
 %
 Syntactic categories |v|, |t|, and |tau| represent values, terms, and
 types, respectively.
@@ -102,7 +102,7 @@ and $\lambda$-abstractions) and terminals corresponding to labels
 (|l|) and monadic values (|LIOTCB tau|).\footnote{
 We restrict our formalization to computations implemented in the |LIO|
 monad and only consider Haskell features relevant to IFC, similar to
-the presentation of LIO in~\tocite{jfptechreport}.
+the presentation of LIO in~\cite{stefan:lio,stefan:addressing-covert}.
 }
 %
 Terms are composed of standard constructs (values, variables |x|,
@@ -131,12 +131,12 @@ Types   tau  ::=  Bool | () | tau -> tau | lattice | LIO tau
 LOps    lop  ::=  lub | glb | canFlowTo
 \end{code}
 \caption{Base \lio{} syntactic categories.
-\label{fig:language:base}}
+\label{fig:sos:base}}
 \end{figure}
 
 \concept{eval ctx}
-We use operational semantics with evaluation contexts in the style of
-Felleisen and Hieb to specify the reduction rules for \lio~\tocite{}.
+We use operational semantics with evaluation contexts in the style of Felleisen
+and Hieb to specify the reduction rules for \lio~\cite{felleisen1992revised}.
 %
 Figure~\ref{fig:sos:base} defines the reduction rules for the base
 calculus with an evaluation context for pure
@@ -515,29 +515,29 @@ I|.\label{fig:sos:ref-syntax}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{figure}[h!]
-\small
-\begin{mathpar}
-\inferrule
-{ |conf c t --> conf c' t'| }
-{ |conf c (E[t]) --> conf c' (E[t'])| }
-\and
-\inferrule
-{ |Ep[t] ~> Ep[t']| }
-{ |conf c (Ep[t]) --> conf c (Ep[t'])| }
-\and
-\inferrule
-{ |t ~> t'| }
-{ |Ep[t] ~> Ep[t']| }
-\end{mathpar}
-\caption{Evaluation relations \hl{ Maybe useful somewhere; appendix? } }
-\end{figure}
-
-
-\hl{
-Maybe useful somewhere else:
-The design constraints imposed by the library approach has led to a
-novel point in the design space of language-level IFC systems---when
-compared to more traditional IFC systems---that incorporates ideas
-from previous IFC operating systems.
-}
+%%maybe useful:%\begin{figure}[h!]
+%%maybe useful:%\small
+%%maybe useful:%\begin{mathpar}
+%%maybe useful:%\inferrule
+%%maybe useful:%{ |conf c t --> conf c' t'| }
+%%maybe useful:%{ |conf c (E[t]) --> conf c' (E[t'])| }
+%%maybe useful:%\and
+%%maybe useful:%\inferrule
+%%maybe useful:%{ |Ep[t] ~> Ep[t']| }
+%%maybe useful:%{ |conf c (Ep[t]) --> conf c (Ep[t'])| }
+%%maybe useful:%\and
+%%maybe useful:%\inferrule
+%%maybe useful:%{ |t ~> t'| }
+%%maybe useful:%{ |Ep[t] ~> Ep[t']| }
+%%maybe useful:%\end{mathpar}
+%%maybe useful:%\caption{Evaluation relations \hl{ Maybe useful somewhere; appendix? } }
+%%maybe useful:%\end{figure}
+%%maybe useful:%
+%%maybe useful:%
+%%maybe useful:%\hl{
+%%maybe useful:%Maybe useful somewhere else:
+%%maybe useful:%The design constraints imposed by the library approach has led to a
+%%maybe useful:%novel point in the design space of language-level IFC systems---when
+%%maybe useful:%compared to more traditional IFC systems---that incorporates ideas
+%%maybe useful:%from previous IFC operating systems.
+%%maybe useful:%}
