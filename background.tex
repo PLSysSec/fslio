@@ -483,9 +483,9 @@ current label, which is raised accordingly.
 %
 The extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
 %
-We use subscripts |I| and |S| to respectively distinguish flow-insensitive and
-flow-sensitive productions, the semantics for latter are described in
-Section~\ref{sec:flow-sensitive}.
+We use subscript |s ::= I inlinesep S| to respectively distinguish
+flow-insensitive and flow-sensitive productions, the semantics for latter are
+described in Section~\ref{sec:flow-sensitive}.
 %
 We add references to \lio{} by firstly extending the configuration state to
 contain a memory store |mI|: |c = (lcurr, mI, ...)|;
@@ -543,9 +543,9 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 { }
 { |Ep[labelOfR I (LIORefTCB I l a)]) --> Ep[l]| }
 \end{mathpar}
-\caption{Semantics for references, with |s  ::=  S inlinesep
-I|.\label{fig:sos:ref-syntax}
-\label{fig:sos:refs}.}
+\caption{Extending \lio{} with references. The reduction rules for
+flow-sensitive (|S|) reference are given in Figure~\ref{fig:fs-exts-semantics}.
+\label{fig:sos:refs}}
 \end{figure}
 
 \concept{semantics for refs}
