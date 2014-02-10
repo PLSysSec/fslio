@@ -1,69 +1,74 @@
 \section{Introduction to LIO}
 \label{sec:background}
 
-\concept{LIO library as LIO-monad}
-LIO is a language-level IFC system, implemented as a Haskell
-library.
+%\concept{LIO library as LIO-monad}
+LIO is a language-level IFC system, implemented as a library in Haskell.  The
+library provides an special API, called the \emph{monad} |LIO|, which 
+programmers utilize to write their computations to enforce IFC policies. 
 %
-Concretely, LIO provides programmers with a new monad, called |LIO|,
-that is similar to---and is intended to be used in place of---the
-standard Haskell |IO| monad, but additionally monitors and controls
-the flow of information.
+%Concretely, LIO provides programmers with a new monad, called |LIO|,
+%that is similar to---and is intended to be used in place of---the
+%standard Haskell |IO| monad, but additionally monitors and controls
+%the flow of information.
 %
-In turn, various practical features (e.g., mutable references and
-threads) are implemented as combinators in this monad.
+%In turn, various practical features (e.g., mutable references and
+%threads) are implemented as combinators in this monad.
 %
+%\concept{Current label used to govern flows}
 
-\concept{Current label used to govern flows}
-The |LIO| monad encapsulates the state necessary to enforce IFC for
-the computation under evaluation.
+The |LIO| monad essentially implements a purely dynamic execution monitor. More 
+specifically, it encapsulates the state necessary to enforce IFC for the computation
+under evaluation.
 %
-Part of this state is the ``current label.''
+Part of this state is the \emph{current floating-label} (or just current label for short).
 %
 Intuitively, the current label serves a role similar to the program
 counter (|pc|) of more-traditional IFC systems
 (e.g.,~\cite{FlowCaml}).
 %
-Namely, it restricts the current computation from performing arbitrary
-side-effects.
+Namely, it restricts the current computation from performing 
+side-effects compromising confidentiality of data.
+Henceforth, we assume that all computations are encoded in |LIO|.
+
 %
 %For instance, if the current label is |lcurr|, LIO restricts the
 %computation to only reading data labeled |l_d|, where |l_d canFlowTo
 %lcurr|.
 %
-For instance, it restricts the computation from writing to entities
-labeled |l_e|, unless |lcurr canFlowTo l_e|.
+%For instance, it restricts the computation from writing to entities
+%labeled |l_e|, unless |lcurr canFlowTo l_e|.
 
-\concept{Current label is label on all in scope}
-To soundly reason about IFC, every object in an IFC system \emph{must}
-be labeled.
+%\concept{Current label is label on all in scope}
+Conceptually speaking, to soundly reason about IFC, every piece of data 
+ \emph{must} be labeled, i.e., associated to a security level.
 %
-This includes literals, terms, labels, execution contexts, etc.
+%This includes literals, terms, labels, execution contexts, etc.
 %
-However and in contrast to language-based systems (e.g.,
-Jif~\cite{myers:jif}, FlowCaml~\cite{FlowCaml}, Breeze~\cite{Breeze},
-etc.), where every value is explicitly labeled, values in LIO are
-Haskell values and thus do not have explicit labels.
+%However and in contrast to language-based systems (e.g.,
+%Jif~\cite{myers:jif}, FlowCaml~\cite{FlowCaml}, Breeze~\cite{Breeze},
+%etc.), where every value is explicitly labeled, values in LIO are
+%Haskell values and thus do not have explicit labels.
 %
-(LIO cannot explicitly label every Haskell value without modifying the
-language runtime!)
+%(LIO cannot explicitly label every Haskell value without modifying the
+%language runtime!)
 %
-Instead, and like several IFC operating
-systems~\cite{efstathopoulos:asbestos,zeldovich:histar}, LIO takes a
-coarse-grained approach and uses the current label to protect all
-values in scope, i.e., in LIO, the current label |lcurr| is the label
-on all ``unlabeled'' values.
+ Different from other language-based systems (e.g.~\cite{myers:jif,FlowCaml}),
+ LIO takes a coarse-grained approach and uses the current label to protect all
+ values in scope, i.e., in LIO, the current label |lcurr| is the label on all
+ the non-explicitly label values in the context of a computation---an idea taken
+ from IFC operating systems~\cite{efstathopoulos:asbestos,zeldovich:histar}.
 %
-Since the current label is used to restrict the current computation
-from performing arbitrary side-effects---this ensures that that the
-confidentiality (and integrity) of all values in scope are preserved.
+%% It is repetitive with the previous paragraph
+%Since the current label is used to restrict the current computation
+%from performing arbitrary side-effects---this ensures that that the
+%confidentiality (and integrity) of all values in scope are preserved.
 %
-(Henceforth, we assume that all computations are encoded in |LIO|.)
 
-\concept{Floating label}
+%\concept{Floating label}
+
 Further borrowing from IFC operating systems (namely,
 HiStar~\cite{zeldovich:histar}), LIO raises the current label to
-protect newly read data that is incorporated in scope.
+protect newly read data incorporated in scope.
 %
 That is, the current label is raised to ``float'' above the labels of
 all the objects read by the current computation.
@@ -79,44 +84,18 @@ l_d|, but can thereafter only write to entities labeled |l_e| if
 |lcurr' canFlowTo l_e|.
 %
 For example, LIO allows a public computation to read secret data by
-raising |lcurr| from |L| to |H|. Importantly, the new current label
+raising |lcurr| from |low| to |high|. Importantly, the new current label
 prevents the computation from subsequently writing to public entities.
 
-\concept{Labeled objects}
-\hl{TODO:talk about labeled values and references}
- 
+% \concept{Labeled objects}
+% \hl{TODO:talk about labeled values and references}
+% \hl{Ale:I think it is not needed, it can be done along the way}
+
 \subsection{\lio: A corase-grained IFC calculus}
  
-\concept{\lio{} syntax}
-To give precise semantics, we consider LIO as an extended
-simply-typed, call-by-name $\lambda$-calculus, called \lio.
-%
-The formal syntax of the core \lio{} calculus, parametric in the label
-type |lattice|, is given in Fig.~\ref{fig:sos:base}.
-%
-Syntactic categories |v|, |t|, and |tau| represent values, terms, and
-types, respectively.
-%
-Values include standard primitives (Booleans, unit,
-and $\lambda$-abstractions) and terminals corresponding to labels
-(|l|) and monadic values (|LIOTCB tau|).\footnote{
-We restrict our formalization to computations implemented in the |LIO|
-monad and only consider Haskell features relevant to IFC, similar to
-the presentation of LIO in~\cite{stefan:lio,stefan:addressing-covert}.
-}
-%
-Terms are composed of standard constructs (values, variables |x|,
-function application, the |fix| operator, and conditionals), terminals
-corresponding to label operations (|t lop t|, where |lub| is the join,
-|glb| is the meet, and |canFlowTo| is the partial-order on labels),
-standard monadic operators (|return t| and |t >>= t|), and |getLabel|,
-described below.
-%
-Types consist of Booleans, unit, function types, labels, and |LIO|
-computations; since the \lio{} type system is standard, we do not
-discuss it further.
+%\concept{\lio{} syntax}
 
-\begin{figure}
+\begin{figure}[t]
 \small
 \centering
 %format Values  = "\mathrm{Values}"
@@ -130,58 +109,78 @@ Terms   t    ::=  v | x | t t | fix t | if t then t else t
 Types   tau  ::=  Bool | () | tau -> tau | lattice | LIO tau  
 LOps    lop  ::=  lub | glb | canFlowTo
 \end{code}
-\caption{Base \lio{} syntactic categories.
-\label{fig:sos:base}}
+\caption{\label{fig:sos:base}
+          Base \lio{} syntactic categories.}
 \end{figure}
 
-\concept{eval ctx}
-We use operational semantics with evaluation contexts in the style of Felleisen
-and Hieb to specify the reduction rules for \lio~\cite{felleisen1992revised}.
+We describe a calculus which gives precise semantics to |LIO| and the rôle of
+the current label when preserving confidentiality. More technically, we consider
+LIO as an extended simply-typed, call-by-name $\lambda$-calculus, called \lio.
 %
-Figure~\ref{fig:sos:rules-abr} defines an evaluation context for pure
-terms (|Ep|) and one for monadic terms (|E|), as well as giving an
-example of a monadic reduction rule for |getLabel|, which retrieves
-the current label.
+The formal syntax of the core \lio{} calculus, parametric in the label
+type |lattice|, is given in Fig.~\ref{fig:sos:base}.
 %
-\begin{figure}[t] % sos:rules-abr
-\small
+Syntactic categories |v|, |t|, and |tau| represent values, terms, and
+types, respectively.
+%
+Values include standard primitives (Booleans, unit, and $\lambda$-abstractions)
+and terminals corresponding to labels (|lattice|) and monadic values (|LIOTCB
+t|).\footnote{ We restrict our formalization to computations implemented in the
+  |LIO| monad and only consider Haskell features relevant to IFC, similar to the
+  presentation of LIO in~\cite{stefan:lio,stefan:addressing-covert}.  } We note
+that values of the form |LIOTCB t| denote computations subject to security
+checks. In fact, security checks might only occur when evaluating such values.
+%
+Terms are composed of standard constructs (values, variables |x|, function
+application, the |fix| operator, and conditionals), terminals corresponding to
+label operations (|t lop t|, where |lub| is the join, |glb| is the meet, and
+|canFlowTo| is the partial-order on labels), standard monadic operators (|return
+t| and |t >>= t|), and |getLabel|, to be explained below.
+%
+Types consist of Booleans, unit, function types, labels, and |LIO|
+computations; since the \lio{} type system is standard, we do not
+discuss it further.
+
+% Monadic operators 
+\begin{wrapfigure}{r}{0.4\columnwidth}
+\vspace{-15pt}
 \begin{code}
-Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
-E   ::= []| Ep | E >>= t 
+do  x <- t 
+    return (x+1) 
 \end{code}
+\vspace{-15pt}
+\caption{\label{fig:do}|do|-notation}
+\end{wrapfigure}
+Monadic terms are used to create complex LIO computations from simpler
+ones. Term |return t| produces a computation which simply returns the value
+denoted by |t|. The monadic term |>>=|, called \emph{bind}, is used to sequence
+LIO programs. Specifically, term |t >>= (\x.t')| takes the result produced by
+term |t| and gives it as an argument to the function |\x.t'|.  This operator
+allows computation |t'| to depend on the value produced by |t|.  We sometimes
+use Haskell’s |do|-notation to write such computations. For example, the term |t
+>>= \x.return (x+1)|, which describes the computation adding one to the value
+produced by the term |t|, is written as in Figure \ref{fig:do}.
 
-\begin{mathpar}
-{\centering ...}
-\\
-\inferrule[getLabel]
-{ |c = (lcurr, ...)|  }
-{
-|conf c (E[getLabel]) --> conf c (E[return lcurr])|
-}
-\end{mathpar}
-\caption{Evaluation contexts and |getLabel| reduction rule for base \lio.\label{fig:sos:rules-abr}}
-\end{figure}
-%
-The evaluation contexts are standard; we solely highlight that terms
-are evaluated only when used in the top-level context (|E|), as in
-Haskell.
-%
-Similarly, the rest of the reduction rules are mostly standard, so
-we only include them in the appendix.
-
-\concept{configurations}
+%\concept{configurations}
 %The reduction rules for monadic terms deserve some attention.
 %
-Rather than modeling state, such as the current label, as
-purely-functional monad layers, we take an operational and
-more-imperative approach by modeling state as a separate component.
+%Rather than modeling state, such as the current label, as
+%purely-functional monad layers, we take an operational and
+%more-imperative approach by modeling state as a separate component.
 %
-Specifically, a top-level computation is a \emph{configuration}
-of the form |conf c t|, where |t| is the monadic term and |c| is the
-state associated with the term.
+Following a more-imperative approach, we model the state kept by LIO as a
+separate component in a configuration.
+%in an operational and
+%more-imperative style as a separate component.
+Specifically, a top-level computation is a \emph{configuration} of the form
+|conf c t|, where |t| is the monadic term and |c| is the state associated with
+the term. We partially specify the state of \lio as being composed by the
+current label |lcurr|, i.e., |c = (lcurr, ...)| where |...| denotes other parts
+of the state not relevant at this point.
+
 %
-(Under this definition, \lio{} type-judgements have the form | G, c :-
-t : LIO tau|, where |G| is the usual type environment.)
+%(Under this definition, \lio{} type-judgements have the form | G, c :-
+%t : LIO tau|, where |G| is the usual type environment.)
 %
 % As a result of this encoding, the definition for |return| and |(>>=)|
 % are trivial: the former simply reduces to a monadic value by wrapping
@@ -189,26 +188,65 @@ t : LIO tau|, where |G| is the usual type environment.)
 % left-hand term and supplies the result to the right-hand term, as
 % usual.
 
+
+\begin{figure}[t] % sos:rules-abr
+\small
+\begin{code}
+Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
+E   ::= []| Ep | E >>= t 
+\end{code}
+\begin{mathpar}
+%{\centering ...}
+\\
+\inferrule[getLabel]
+{ |c = (lcurr, ...)|  }
+{
+|conf c (E[getLabel]) --> conf c (E[return lcurr])|
+}
+\end{mathpar}
+\caption{Evaluation contexts and |getLabel| reduction rule.\label{fig:sos:rules-abr}}
+\end{figure}
+
+%\concept{eval ctx}
+We use evaluation contexts in the style of Felleisen and Hieb to specify the
+reduction rules for \lio~\cite{felleisen1992revised}.
+%
+Figure~\ref{fig:sos:rules-abr} defines the evaluation contexts |Ep| for pure
+terms and |E| for monadic ones, as well as giving an
+example of a reduction rule for the monadic term |getLabel|, which retrieves
+the current label.
+%
+
+%
+The evaluation contexts are standard; we solely highlight that monadic terms are
+evaluated only at the outer most used of bind (|E >>= t|), as in Haskell.  
 Rule \ruleref{getLabel} defines the LIO library function |getLabel|.
 %
 Recall that it is the current label that protects all the values in scope.
+% 
+The rest of the reduction rules can be found in the Appendix~\ref{sec:app:sem}.
 %
-However, since neither |return| nor |>>=| perform any security checks,
-all LIO functions must inspect the current label to enforce IFC.
+
+
 %
-For example, we can define a |publish| function that writes the
-supplied value to a public channel in terms of a |publishTCB| function
-(that unsafely writes any data to the channel) as follows:
-\begin{code}
-publish v = do  lcurr <- getLabel 
-                when (lcurr canFlowTo low) (publishTCB v)
-\end{code}
-Hence, if the current computation has read any sensitive data---and
-thus the current label is |high|---it cannot subsequently leak it with
-publish.\footnote{
-  As with other TCB functions, we assume that |publishTCB| is not part
-  of the surface syntax.
-}
+%However, since neither |return| nor |>>=| perform any security checks,
+%all LIO functions must inspect the current label to enforce IFC.
+%
+%Ale: for space reasons only 
+% For example, we can define a |publish| function that writes the
+% supplied value to a public channel in terms of a |publishTCB| function
+% (that unsafely writes any data to the channel) as follows:
+% \begin{code}
+% publish v = do  lcurr <- getLabel 
+%                 if (lcurr canFlowTo low)  then  publishTCB v
+%                                           else  return ()
+% \end{code}
+% Hence, if the current computation has read any sensitive data---and
+% thus the current label is |high|---it cannot subsequently leak it with
+% publish.\footnote{
+%   As with other TCB functions, we assume that |publishTCB| is not part
+%   of the surface syntax.
+% }
 
 \subsection{Labeled values}
 
