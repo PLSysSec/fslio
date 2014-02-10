@@ -3,7 +3,7 @@
 
 %% Information-flow control as a promising technology 
 Information-flow control (IFC) emerges as a promising technology to preserve
-confidentiality and integrity of data in presence of untrusted code.  In
+confidentiality and integrity of data in the presence of untrusted code.  In
 particular, it has become attractive for web 
 applications~\citep[e.g.][]{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
   yang:2013:towards, conf/esorics/AkhaweLHSS13, Hedin13} and mobile phone
@@ -12,7 +12,7 @@ to allow untrusted code to access confidential information while restricting its
 manipulation.
 
 % Intro to non-interference 
-IFC focus on preventing, or limiting, leaks of secret data into public
+IFC focusses on preventing, or limiting, leaks of secret data into public
 channels. When no leaks are desired, the chosen baseline policy is
 \emph{non-interference}~\citep{Goguen:Meseguer:Noninterference}, which 
 essentially demands no dependence of public events on secrets. In scenarios where
@@ -35,12 +35,12 @@ can only flow from public data into secret entities.
 
 %% Treatment of variables 
 %% Definition flow-sensitive, flow-insensitive 
-One of the facets to IFC analysis lies in the treatment of
-variables~\citep{Hunt:2006}. Some analyzes, called \emph{flow-insensitive},
-forbid variables to change its security labels at execution time, i.e., labels
+One of the facets of IFC analysis lies in the treatment of
+variables~\citep{Hunt:2006}. Some analyses, which are known as \emph{flow-insensitive},
+prevent variables from changing their security labels at execution time, i.e., labels
 are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} enforcements
 admit changes on labels to reflect the confidentiality of the stored data, i.e.,
-labels are considered as \emph{mutable}. For instance, assuming variable |h|,
+labels are considered to be \emph{mutable}. For instance, assuming variable |h|,
 with security level |high|, variable |l|, with security levels |low|, and
 function |publish(v)|, which produces a public event of value |v|, the program
 |P = h := l ; publish(h)| is accepted by such an enforcement. The reason for
@@ -53,10 +53,10 @@ the assignment (|h := l|).
 
 %% Why one instead of the other one 
 %%%%% FS+ Permissiveness in dynamic approaches, limited resources, 
-Flow-sensitive analyzes are beneficial for different reasons. In presence of
+Flow-sensitive analyses are beneficial for different reasons. In presence of
 scarce resources, for instance CPU registers, it is not feasible to think that
 they will be assigned a fixed security label throughout program
-execution~\citep{BonelliCM05}. More importantly, flow-sensitivity analyses often
+execution~\citep{BonelliCM05}. More importantly, flow-sensitive analyses often
 boost permissiveness by leveraging the changes on labels to reduce the number of
 rejected programs (recall program $P$ above). 
 
@@ -75,12 +75,12 @@ Figure \ref{fig:fsattackintro} illustrates the problem of enabling arbitrary
 label changes.  In the attack, variables |l| and |h| do not change their
 security levels---|low| and |high|, respectively. In contrast, variable |t| can
 change its security level to |high|. For purely dynamic monitors, where
-non-taken branches are not inspected, the attack succeed to leak information
+non-taken branches are not inspected, the attack successfully leaks information
 about |h|. More precisely, when |h| is true, the initial labels for |l| and |t|
 are |low| since they initially store constants (|l :=1 ; t := 0|).  Due to 
 the assignment |t := 1| inside the
 first |then|-branch (which depends on |h|), the value of |t| changes to |1| and its label to
-|high|. The condition of the second branch is not fulfill and therefore 
+|high|. The condition of the second branch does not hold and therefore 
 the monitor executes |publish(l)|, which produces the public event 
 |1|. On the other hand, when |h| is false, variable |t| is not relabeled to 
 |high|, i.e., the first |then|-branch is not taken. Instead, the second
@@ -91,7 +91,7 @@ and the assigned value is a constant. Finally, the monitor executes
 |publish(l)|, which produces the public event |0|. As a result, the monitor 
 missed to catch the information leak about |h|.  
 
-To close this covert channel, there exists mainly three different proposals:
+To close this covert channel, there exist mainly three different proposals:
 incorporate some static analysis/information into the execution
 monitor~\citep{Russo:2010,stefan:lio,10.1109/SP.2013.10}, forbid certain label
 changes ---a policy known as \emph{no-sensitive
@@ -103,7 +103,7 @@ for sequential programming languages.
 
 %% Operating system community
 Before the time of language-based techniques for IFC, the operating system
-community has traditionally handle the problem inherent to combine mutable
+community has traditionally handled the problem inherent in combining mutable
 labels and purely dynamic monitors. Modern examples of that are the operating
 systems Asbestos~\citep{Efstathopoulos:2005}, HiStar~\citep{zeldovich:histar},
 and Flume~\citep{krohn:flume}. In a nutshell, those systems are composed of
@@ -118,13 +118,13 @@ write into public files. As before, changing labels might become a covert
 channel itself. To avoid it, HiStar and Flume require label changes to be done
 explicitly.  Asbestos, on the other hand, allows changes in security labels as
 the result of receiving messages under specific and safe conditions. Different
-form language-based approaches, OS work rarely comes with soundness guarantees
-(except for~\citep{Krohn,seL4IF}). Bare in mind that an operating system is not
+from language-based approaches, OS work rarely comes with soundness guarantees
+(except for~\citep{Krohn,seL4IF}). Bear in mind that an operating system is not
 a simple piece of software to prove correct.
 
 
 %% LIO brings together OS and LB  
-LIO is a IFC system that brings ideas from the OS domain into a language-based
+LIO is an IFC system that brings ideas from the OS domain into a language-based
 setting~\citep{stefan:lio,stefan:addressing-covert}.  LIO is a floating-label
 system, where the label of a computation can be safely raised to accommodate
 reading sensitive data. This action can be seen as raising the program counter
@@ -149,11 +149,11 @@ flow-sensitive references.
 The novelty in the calculus is to consider labels as being composed of two
 elements: a label describing the confidentiality of the stored value, and
 another label, called \emph{the label on the label}, which describes the
-confidentiality of the value's label. The calculus then forbids to change a
+confidentiality of the value's label. The calculus then forbids changing a
 label of a reference if \emph{the label on the label is below the
   floating-label} (i.e. following the {\nsu}
 discipline~\citep{Austin:Flanagan:PLAS10}). Inspired by~\citep{Hedin13}, we add
-an instruction capable to \emph{upgrade} labels under certain safe conditions in
+an instruction capable of \emph{upgrading} labels under certain safe conditions in
 order to boost permissiveness. As one of our main insights and results, we prove
 that the policy {\nsu} and upgrade operations can be already expressed using
 flow-insensitive concepts---the key idea being leveraging nested labeled
@@ -162,13 +162,13 @@ channel should not be neglected~\citep{stefan:addressing-covert}, our upgrade
 operation \emph{does not fail}. Instead, it taints the floating-label with the
 label on the label regardless the success of the operation.
 
-To reduce the programmer's burden to
-introduce upgrade annotations, the calculus provides means for automatically
-upgrade references at safe points, i.e., when the floating-label gets tainted.
+To reduce the programmer's burden of
+introducing upgrade annotations, the calculus provides means for automatically
+upgrading references at safe points, i.e., when the floating-label gets tainted.
 While secure, this feature facilitates label creep, i.e., all flow-sensitive
 references might end up with ``too high'' labels. To address that, we propose a
 block-structured primitive which only upgrades the labels of declared
-flow-sensitive references, while forbidden the access to undeclared ones.
+flow-sensitive references, while disallowing access to undeclared ones.
 % using flow-sensitive entities without permanently tainting the floating label,
 % but enforcing their destruction after the execution of the block.
 %To guarantee
@@ -184,19 +184,19 @@ flow-sensitive references, while forbidden the access to undeclared ones.
 % permissive policy for scenarios where actions are forbidden by the monitor based on threads'
 % local data---an essential requirement to obtain performance and
 % scalability.
-More concretely, the contribution of this paper are as follows.
+More concretely, the contributions of this paper are:
 \begin{itemize}
 
-\item An extension to incorporate flow-sensitive entities in LIO. As a result,
-  not only increases LIO its permissiveness, but it also provides means for safely
-  combining flow-insensitive and flow-sensitive references. 
+\item An extension to incorporate flow-sensitive entities in LIO. This
+  not only increases LIO's permissiveness, but also provides means for safely
+  combining flow-insensitive and flow-sensitive references.
 
-\item A uniform mechanisms to treat flow-insensitive and flow-sensitive
+\item A uniform mechanism to treat flow-insensitive and flow-sensitive
   references in either a sequential or concurrent setting. To the best of our
   knowledge, we are the first ones to analyze the challenges of purely dynamic
-  monitors with flow-sensitive references in presence of concurrency.
+  monitors with flow-sensitive references in the presence of concurrency.
 
-\item Provably non-interference. Our formal results are developed for arbitrary
+\item Provable non-interference. Our formal results hold for arbitrary
   security lattices. 
 
 % \item An implementation of our ideas in Haskell, where programmers can write
