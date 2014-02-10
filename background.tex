@@ -484,8 +484,8 @@ Importantly, this requires that the result not be more sensitive than
 
 \subsection{Labeled references}
 
-\concept{FI refs}
-To complete the LIO description, we extend our \lio{} presentation with
+%\concept{FI refs}
+To complete the description of LIO, we extend our \lio{} calculus  with
 mutable, flow-insensitive references.
 %
 Conceptually, flow-insensitive references are simply mutable |Labeled| values.
@@ -493,39 +493,18 @@ Conceptually, flow-insensitive references are simply mutable |Labeled| values.
 Like labeled values, the label of a reference is immutable and serves to
 protect the underlying term.
 %
-(Recall that |upgrade| does not raise the label of a value; rather it simply
+(Recall that |upgrade| provides the effect of raising the label of a value by simply
 produces another immutable value.)
 %
 The immutable label makes the semantics straightforward: writing a term to a
-reference amounts to transferring protection from the current label to the
-reference label (hence the reference label must be above the current label);
-reading from a reference transfers protection from the reference label to the
-current label, which is raised accordingly.
+reference amounts to ensure reference label to be as restrictive as the current
+label (i.e., the reference label must be above the current label);
+reading from a reference taints the current label with the reference label.
 %
-In this paper we also introduce a flow-sensitive version of
-references, where the reference label itself is also mutable; the
-semantics for these references are described in
-Section~\ref{sec:flow-sensitive}.
-
-\concept{new syntax}
-%
-The extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
-%
-We use subscript |s ::= I inlinesep S| to respectively distinguish
-flow-insensitive and flow-sensitive productions.
-%, the semantics for latter are
-%described in Section~\ref{sec:flow-sensitive}.
-%
-We add references to \lio{} by firstly extending the configuration state to
-contain a memory store |mI|: |c = (lcurr, mI, ...)|;
-%
-|mI| maps memory addresses---spanned over by metavariable |a|---to |Labeled|
-values.
-%
-%% Second, we add a flow-insensitive reference value (|LIORefTCB I l a|), and
-%% terms for creating (|newRef s|), reading (|readRef s|), modifying (|writeRef
-%% s|), and inspecting the label of (|labelOfR s|) a reference.
-%
+% In this paper we also introduce a flow-sensitive version of
+% references, where the reference label itself is also mutable; the
+% semantics for these references are described in
+% Section~\ref{sec:flow-sensitive}.
 
 \begin{figure}[t]
 \small
@@ -540,9 +519,9 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 
 \begin{mathpar}
 \inferrule[newRef-|I|]
-{ |c = (lcurr, mI, ...)|\\
-  |lcurr canFlowTo l ~> true|\\
-  |mI' = mI[a mapsto LabeledTCB l t]|\\
+{ |c = (lcurr, mI, ...)| \and 
+  |lcurr canFlowTo l| \ \\
+  |mI' = mI[a mapsto LabeledTCB l t]| \and   
   |c' = (lcurr, mI', ...)|
 }
 { |conf c (E[newRef I l t]) --> conf c' (E[return (LIORefTCB I l a)])| }
@@ -558,9 +537,9 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 
 \and
 \inferrule[writeRef-|I|]
-{ |c = (lcurr, mI, ...)|\\
-  |lcurr canFlowTo l ~> true|\\
-  |mI' = mI[a mapsto LabeledTCB l t]|\\
+{ |c = (lcurr, mI, ...)| \and 
+  |lcurr canFlowTo l| \\
+  |mI' = mI[a mapsto LabeledTCB l t]| \and 
   |c' = (lcurr, mI', ...)|
 }
 { |conf c (E[writeRef I (LIORefTCB I l a) t]) --> conf c' (E[return ()])| }
@@ -576,35 +555,56 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 flow-sensitive (|S|) references are given in Figure~\ref{fig:fs-exts-semantics}.
 \label{fig:sos:refs}}
 \end{figure}
+%\concept{new syntax}
+%
+The syntactic extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
+%
+We use subscript |s ::= I inlinesep S| to respectively distinguish
+flow-insensitive and flow-sensitive productions (The former explain in this
+section and the latter in Section \ref{sec:flow-sensitive}.)
+%, the semantics for latter are
+%described in Section~\ref{sec:flow-sensitive}.
+%
+In the semantics, we extend configurations to involve a reference (memory) store |mI|: |c = (lcurr, mI, ...)|;
+%
+|mI| maps memory addresses---spanned over by metavariable |a|---to |Labeled|
+values.
+%
+%% Second, we add a flow-insensitive reference value (|LIORefTCB I l a|), and
+%% terms for creating (|newRef s|), reading (|readRef s|), modifying (|writeRef
+%% s|), and inspecting the label of (|labelOfR s|) a reference.
+%
 
-\concept{semantics for refs}
+%\concept{semantics for refs}
 %
 When creating a flow-insensitive reference, |newRef I l t| creates a labeled
-value that guards |t| with label |l| and stores it in the memory store at a
-new, fresh, address |a|.
+value that guards |t| with label |l| (|LabeledTCB l t|) and stores it in the
+memory store at a new, fresh, address |a| (|mI[a mapsto LabeledTCB l t]|).
 %
-Subsequently, the function returns a value of type |LIORef I| that simply
-encapsulates the reference label and address where the term is stored.
+Subsequently, the function returns a value of shape |LIORefTCB I l a| (with type
+|LIORef I|) which simply encapsulates the reference label and address where the
+term is stored.
 %
 Rule \ruleref{readRef-|I|} specifies the semantics for reading a
 labeled reference; reading the term stored at address |a| simply
 amounts to unlabeling the value |m(a)| stored at the underlying
-address.
+address (|unlabel mI(a)|).
 %
 Terminal |writeRef I| is used to update the memory store with a new labeled term
 |t| for the reference at location |a|.
 %
-Note that |writeRef I| leaves the label of the reference intact, i.e., the
+Note that |writeRef I| \emph{leaves the label of the reference intact}, i.e., the
 label of a flow-insensitive reference is never changed, but in turn requires
-that the current label not be any more sensitive than the reference label.
+that the current label not be any more sensitive than the reference label
+(|lcurr canFlowTo l|).
 %
 Consequently, |labelOfR I| can always be used to inspect the label of a such a
 reference.
 %
 
-\concept{updated |merge| }
-We finally remark that any references created in a |toLabeled| block outlive
-the |toLabeled| block computation.
+%\concept{updated |merge| }
+We finally remark that any references created in a |toLabeled| block might 
+outlive the |toLabeled| block computation.
 %
 Hence, we update the merge function used in rule~\ruleref{toLabeled} to
 accommodate for references as follows:
