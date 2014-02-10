@@ -108,7 +108,7 @@ from |m1| to override those of |m2|.
 \small
 \begin{code}
 v    ::= cdots  | LIORefTCB S t
-t    ::= cdots  | upgradeR t t 
+t    ::= cdots  | upgradeR t t
 Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \end{code}
 
@@ -116,18 +116,17 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[newRef-|S|]
 { |c = (lcurr, mI, mS)|\\
   |lcurr canFlowTo l ~> true|\\
-  |mS' = mS[a mapsto (lcurr, LabeledTCB l t)]|\\
+  |mS' = mS[a mapsto LabeledTCB lcurr (LabeledTCB l t)]|\\
   |c' = (lcurr, mI, mS')|
 }
 { |conf c (E[newRef S l t]) --> conf c' (E[return (LIORefTCB S a)])| }
 { |fresh a| }
 
-
 \and
 
 \inferrule[readRef-|S|]
 { |c = (lcurr, mI, mS)| \\
-  |mS(a) = (l, LabeledTCB l' t)|\\
+  |mS(a) = LabeledTCB l (LabeledTCB l' t)|\\
   |l lub l' ~> l''|
 }
 { |conf c (E[readRef S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB l'' t)])| }
@@ -136,85 +135,42 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 \inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
-  |mS(a) = (l, LabeledTCB l' t)| \\
+  |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
   |lcurr canFlowTo l ~> true|\\
-  |lcurr canFlowTo l' ~> true|\\
-  |mS' = mS[a mapsto (l, LabeledTCB l' t)]|\\
+  |mS' = mS[a mapsto LabeledTCB l (LabeledTCB l' t)]|\\
   |c' = (lcurr, mI, mS')|
 }
 { |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[return ()])| }
 
-% \and
-
-% \inferrule[labelOf]
-% { |c = (lcurr, mI, mS)| \\
-%   |(lf, LabeledTCB l x) = m_alpha (a)| }
-% { |conf c (E[labelOfR alpha (LIORefTCB alpha a) t]) --> conf c (E[return l])| }
-
-%%\inferrule{}
-%%{\defRTS{E[\labelOfFI{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FI}]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Flow sensitive references:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r \\  \Lb{l}{u}{v} = \RTS(x)}
-%%{\defRTS{E[\readRef{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{v}]}}[\textsc{ReadRef}]
-
-% \and
-
-% \inferrule[writeRef-S]
-% { |c = (lcurr, m)|\\
-%   | (lf, LabeledTCB l t) = m(a)|\\
-%   | l lub lcurr ~>* l'|\\
-%   |c' = (lcurr, m[a mapsto (lf, LabeledTCB l' t')])|
-% }
-% { |conf c (E[writeRef S (LIORefTCB S l a) t']) --> conf c' (E[return ()])| }
-
-%%\inferrule{l \flows \env.\lbl \and \RTS' = \RTS[ x \mapsto \Lb{\env.\lbl}{\bot}{v} ] \and x \in r}
-%%{\defRTS{E[\writeRefFS{(\LIORefRTS{l}{x})}{v}]} \lto \wEnvRTS{\env}{\RTS}{r}{E[\returnLIO{()}]}}[\textsc{WriteRef-FS}]
-
 \and
-
 
 \inferrule[labelOf-|S|]
 { |c = (lcurr, mI, mS)|\\
-  |mS(a) = (l, LabeledTCB l' t)|
+  |mS(a) = LabeledTCB l (LabeledTCB l' t)|
 }
-{ |conf c (E[labelOfR S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB f l')])|}
-
-%%\inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \RTS'=\RTS\uparrow^{\env'.\lbl} r }
-%%{\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env'}{\RTS'}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
-
+{ |conf c (E[labelOfR S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB l l')])|}
 
 \and
 
 \inferrule[upgradeRef]
 { |c = (lcurr, mI, mS)|\\
-  |mS(a) = (l', v)|\\
+  |mS(a) = LabeledTCB l' v|\\
   |lcurr canFlowTo l' ~> true| \\
   |conf c (upgrade v l) ==> conf c (LIOTCB v')|\\
-  |mS' = mS [ a mapsto (l',v') ]|\\
+  |mS' = mS [ a mapsto LabeledTCB l' v']|\\
   |c' = (lcurr, mI, mS')|
 }
-{ |conf c (E[upgradeR (LIORefTCB S a) l']) --> conf c' (E[return ()])| }
-
-%%-deian-\inferrule{\env.\lbl\flows l \and l\flows l' \and \RTS'=\RTS\uparrow^{l'} \{x\}}
-%%-deian-{\defRTS{E[\upgrade{(\LIORef{l}{x})}{l'}]} \lto \wEnvRTS{\env}{\RTS'}{r}{E[\returnLIO{()}]}}[\textsc{Upgrade}]
-
-
+{ |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
 \end{mathpar}
-\caption{Semantics for references.\label{fig:fs-exts-semantics}}
+\caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:fs-exts-semantics}}
 \end{figure}
 
 \begin{figure}
+\small
 \begin{code}
-newtype LIORefTCB S t = LIORefTCB S (LIORefTCB I t)
-
-wrap :: LIORef I t -> LIORef S t
 wrap r @= LIORefTCB S r
-
-unwrap :: LIORef S t -> LIORef I t
 unwrap (LIORefTCB S r) @= r
+whenDiv t t1 @= if t then t1 else fix (\x. x)
 
 newRef S l t @= do
   lcurr  <- getLabel
@@ -229,7 +185,7 @@ readRef S r @= readRef I (unwrap r) >>= unlabel
 writeRef S r t @= let  r'  = unwrap r
                        l   = labelOf r' in do
   lcurr <- getLabel
-  when (lcurr canFlowTo l) $ toLabeled l $ do
+  whenDiv (lcurr canFlowTo l) $ toLabeled l $ do
      v   <- readRef I r'
      v'  <- label (labelOf v) t
      writeRef r' v'
@@ -240,7 +196,7 @@ labelOfR S r @= readRef I (unwrap r) >>= return . labelOf
 upgradeR r l @= let  r'  = unwrap r
                      l'  = labelOf r' in do
   lcurr <- getLabel
-  when (lcurr canFlowTo l') $ toLabeled l' $ do
+  whenDiv (lcurr canFlowTo l') $ toLabeled l' $ do
      v   <- readRef I r'
      v'  <- upgrade v l
      writeRef r' v'
@@ -270,7 +226,7 @@ addrs (nil)                                       @= emptyset
 addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \end{code}
 \begin{mathpar}
-\inferrule[toLabeled]
+\inferrule[toLabeled']
 {|c = (lcurr, mI, mS)|\\
  |lcurr canFlowTo l ~> true|\\
  |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
@@ -278,7 +234,7 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
  |lcurr' canFlowTo l ~> true|\\
  |c''' = (lcurr, mI', mS'' merge mS)|
 }
-{|conf c (E[toLabeled' l v t]) --> conf c''' (E[label l t']|}
+{|conf c (E[toLabeled' l v t]) --> conf c'' (E[label l t']|}
 %%\inferrule{\env.\lbl \flows l \flows \env.\clr \and r' \subseteq r \\ \wEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} }
 %%{\defRTS{E[\toLabeled{l\ r'}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{r\cup r''}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
 \end{mathpar}
@@ -321,7 +277,7 @@ toLabeledWith l def f =
 \inferrule[unlabel-AU]
 { |c = (lcurr, mI, mS)|\\
   |lcurr lub l ~> lcurr'|\\
-  |c' = c [ lcurr mapsto lcurr' ]|
+  |c' = (lcurr', mI, mS)|
 }
 {
 |conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[upgradeM >> return t])|

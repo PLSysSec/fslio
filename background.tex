@@ -573,6 +573,18 @@ Consequently, |labelOfR I| can always be used to inspect the label of a such a
 reference.
 %
 
+\concept{updated |merge| }
+We finally remark that any references created in a |toLabeled| block outlive
+the |toLabeled| block computation.
+%
+Hence, we update the merge function used in rule~\ruleref{toLabeled} to
+accommodate for references as follows:
+|(lcurr, mI, ...) merge (lcurr', mI', ...) = (lcurr, mI', ...)|.
+%
+In other words, the merge function restores the current label to that of the
+outer configuration, but retains the latest memory store.
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

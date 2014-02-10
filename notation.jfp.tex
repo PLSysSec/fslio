@@ -49,6 +49,9 @@
 %format &==> = ==>"_l"
 %format (erase (l) (t)) = "\erase{"l"}{"t"}"
 %format hole = "\bullet"
+%format diverge = "{\Uparrow}"
+%format whenDiv = when"_"diverge
+
 
 \newcommand{\safe}[1]{\varsigma({#1})}
 %format (safe (t)) = "\safe{"t"}"
@@ -138,7 +141,7 @@
 %format upgradeL (t) (l) = t"\Uparrow^{"l"}"
 %format nil = "\epsilon"
 %format emptyset = "\emptyset"
-%format @= = "="
+%format @= = "\triangleq{}"
 
 %format ex = "\xi"
 %format ifcFail = ex"_{\tiny IFC}"
@@ -350,3 +353,4 @@
 
 %%
 \newcommand{\lio}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice|}}}
+\newcommand{\liofs}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice, S|}}}
