@@ -216,16 +216,25 @@ upgradeR r l @= let  r'  = unwrap r
 \vspace*{-5pt}
 \begin{code}
 v    ::= cdots  | set (v, ...) | nil
-t    ::= cdots  | set (t, ...) | toLabeled' t t t
+t    ::= cdots  | set (t, ...) | withRefs t t | toLabeled' t t t
 tau  ::= cdots  | set (tau, ...)
      
-Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...)
+Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...) | withRefs Ep t 
                 | toLabeled' Ep t t | toLabeled' v Ep t
 
 addrs (nil)                                       @= emptyset
 addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \end{code}
 \begin{mathpar}
+\inferrule[withRefs]
+{|c = (lcurr, mI, mS)|\\
+ |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
+ |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
+ |c''' = (lcurr', mI', mS'' merge mS)|
+}
+{|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
+\and
+%%XXX: REMOVE THIS:
 \inferrule[toLabeled']
 {|c = (lcurr, mI, mS)|\\
  |lcurr canFlowTo l ~> true|\\
@@ -235,9 +244,11 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
  |c''' = (lcurr, mI', mS'' merge mS)|
 }
 {|conf c (E[toLabeled' l v t]) --> conf c'' (E[label l t']|}
-%%\inferrule{\env.\lbl \flows l \flows \env.\clr \and r' \subseteq r \\ \wEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} }
-%%{\defRTS{E[\toLabeled{l\ r'}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{r\cup r''}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
 \end{mathpar}
+\begin{code}
+toLabeled' l v t  @= withRefs v (toLabeled l t) 
+                  == toLabeled l (withRefs v t)
+\end{code}
 \caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
 \end{figure}
 

@@ -36,8 +36,8 @@
 \newcommand{\lto}{\longrightarrow}
 %format --> = "\lto"
 %format ==> = "\lto^*"
-%format .--> = "\overset{"fork(e)"}{\lto}"
-%format .-.-> = "\overset{"fork(mS',e)"}{\lto}"
+%format .--> = "\overset{"fork(t)"}{\lto}"
+%format .-.-> = "\overset{"fork(mS',t)"}{\lto}"
 %format ~> = "\lto"
 %format ~>* = ~>"^*"
 
@@ -136,6 +136,7 @@
 %format toLabeled'
 %format forkLIO = "\textbf{forkLIO}"
 %format forkLIO'
+%format withRefs = "\textbf{withRefs}"
 %format waitLIO = "\textbf{waitLIO}"
 %format upgradeM = "\textbf{upgradeStore}"
 %format upgradeL (t) (l) = t"\Uparrow^{"l"}"
@@ -355,3 +356,4 @@
 %%
 \newcommand{\lio}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice|}}}
 \newcommand{\liofs}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice, S|}}}
+\newcommand{\lioconc}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice|,\parallel}}}
