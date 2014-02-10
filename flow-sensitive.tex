@@ -293,3 +293,11 @@ toLabeledWith l def f =
 % operation is complete. This allows any partially-leaked information
 % (due to flow-sensitive references) to be taken into account in future
 % label checks.
+
+\begin{theorem}[Kleene equivalence]
+Forall |t,v| in \lio{}, and |t', v'| in \liofs{}, such that |t| $\cong$ |t'|
+and |v| $\cong$ |v'|,
+|t| $\cong_\textrm{kleene}$ |t'| iff
+|conf c t  ==> diverge| $\Leftrightarrow$ |conf c t' ==> diverge| and 
+|conf c t  ==> v| $\Leftrightarrow$ |conf c t' ==> v'|.
+\end{theorem}
