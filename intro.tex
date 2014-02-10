@@ -138,32 +138,37 @@ increase permissiveness when interacting with external databases~\citep{giffin:h
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
-In this paper, we adapt LIO to work with flow-sensitive entities.  
+In this paper, we extend the calculus for LIO in order to work with
+flow-sensitive references.
 %For pure and
 %immutable flow-sensitive values (e.g. booleans or functions), we propose to
 %taint the floating-label with the labels of the values being
 %inspected---regardless if it is their labels or content what is under scrutiny.
-We present a calculus which treats almost uniformly flow-insensitive and
-flow-sensitive mutable references. The novelty in the calculus is to consider
-the labels as being composed of two elements: a label describing the
-confidentiality of the stored value, and another label, called \emph{the label
-  on the label}, which describes the confidentiality of the value's
-label. Having this model, we forbid to change a label of a reference if
-\emph{the label on the label is below the floating-label} (similar to the {\nsu}
+%We present a calculus which treats almost uniformly flow-insensitive and
+%flow-sensitive mutable references. 
+The novelty in the calculus is to consider labels as being composed of two
+elements: a label describing the confidentiality of the stored value, and
+another label, called \emph{the label on the label}, which describes the
+confidentiality of the value's label. The calculus then forbids to change a
+label of a reference if \emph{the label on the label is below the
+  floating-label} (i.e. following the {\nsu}
 discipline~\citep{Austin:Flanagan:PLAS10}). Inspired by~\citep{Hedin13}, we add
-an instruction capable to upgrade labels under certain safe conditions. However,
-different from Hedin et al., our upgrade operation \emph{does not
-  fail}. Instead, it taints the floating-label with the label on the label
-regardless the success of the operation. This different is crucial to scale our
-approach for concurrency, where the termination channel should not be
-neglected~\citep{stefan:addressing-covert}. To reduce the programmer's burden to
+an instruction capable to \emph{upgrade} labels under certain safe conditions in
+order to boost permissiveness. As one of our main insights and results, we prove
+that the policy {\nsu} and upgrade operations can be already expressed using
+flow-insensitive concepts---the key idea being to considered nested labeled
+values.  In order to extend our calculus to concurrency, where the termination
+channel should not be neglected~\citep{stefan:addressing-covert}, our upgrade
+operation \emph{does not fail}. Instead, it taints the floating-label with the
+label on the label regardless the success of the operation.
+
+To reduce the programmer's burden to
 introduce upgrade annotations, the calculus provides means for automatically
 upgrade references at safe points, i.e., when the floating-label gets tainted.
 While secure, this feature facilitates label creep, i.e., all flow-sensitive
-references might end up with ``too high'' labels. To address that, we
-propose a block-structured primitive which only upgrades the labels of
-declared flow-sensitive references, while forbidden the access to undeclared
-ones.
+references might end up with ``too high'' labels. To address that, we propose a
+block-structured primitive which only upgrades the labels of declared
+flow-sensitive references, while forbidden the access to undeclared ones.
 % using flow-sensitive entities without permanently tainting the floating label,
 % but enforcing their destruction after the execution of the block.
 %To guarantee
@@ -186,7 +191,7 @@ More concretely, the contribution of this paper are as follows.
   not only increases LIO its permissiveness, but it also provides means for safely
   combining flow-insensitive and flow-sensitive references. 
 
-\item An uniform mechanisms to treat flow-insensitive and flow-sensitive
+\item A uniform mechanisms to treat flow-insensitive and flow-sensitive
   references in either a sequential or concurrent setting. To the best of our
   knowledge, we are the first ones to analyze the challenges of purely dynamic
   monitors with flow-sensitive references in presence of concurrency.
