@@ -251,6 +251,8 @@ toLabeled' l v t  @= withRefs v (toLabeled l t)
 \end{code}
 \caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
 \end{figure}
+\hl{We should note somewhere that trying to access a non-existant ref results
+in program getting stuck}
 
 \begin{figure}
 \small

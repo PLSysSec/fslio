@@ -53,8 +53,47 @@ t    ::= cdots  | forkLIO t
 {
 |conf c (E[forkLIO t]) .-->  conf c (E[return ()])|
 }
+\and
+\inferrule[(T-step)]
+{
+|c = (lcurr, mI, mS)|\\
+|conf c (withRefs v t) -->  conf c' t'|\\
+|c' = (lcurr', mI', mS')|\\
+|v' = refs(dom mS')|
+}
+{
+|tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t')|
+}
+\and
+\inferrule[(T-noStep)]
+{
+|c = (lcurr, mI, mS)|\\
+|conf c (withRefs v t)| \not|-->|
+}
+{
+|tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI mS (k2, ...)|
+}
+\and
+\inferrule[(T-fork)]
+{
+|c = (lcurr, mI, mS)|\\
+|conf c (withRefs v t) .-.->  conf c' t''|\\
+|c' = (lcurr', mI', mS')|\\
+|v' = refs(dom mS')|\\
+|knew = thread lcurr' v' t'|
+}
+{
+|tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t'', knew)|
+}
+\and
+\inferrule[(T-done)]
+{ }
+{
+|tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
+}
+
 \end{mathpar}
-  \caption{Semantics for |forkLIO| and |waitLIO|.}
+  \caption{Semantics for |forkLIO|.}
   \label{fig:conc-semantics}
 \end{figure}
 
@@ -83,7 +122,6 @@ the previous section.
 %%{|conf c (E[forkLIO' v t]) .-.-> conf c (E[return ()])|}
 %%    
 %%  \end{mathpar}
-
 \begin{code}
 forkLIO' v t  @= withRefs v (forkLIO t) 
               == forkLIO (withRefs v t)

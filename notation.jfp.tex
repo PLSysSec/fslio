@@ -37,7 +37,7 @@
 %format --> = "\lto"
 %format ==> = "\lto^*"
 %format .--> = "\overset{"fork(t)"}{\lto}"
-%format .-.-> = "\overset{"fork(mS',t)"}{\lto}"
+%format .-.-> = "\overset{"fork(t')"}{\lto}"
 %format ~> = "\lto"
 %format ~>* = ~>"^*"
 
@@ -228,6 +228,9 @@
 %format k''
 %format k1
 %format k2
+%format knew = k"_\textrm{new}"
+%format addrs (s) = addrs(s)
+%format refs (s)  = addrs"^{-1}" (s)
 
 %format a'
 %format a''
@@ -277,6 +280,8 @@
 %format (denot (a)) = "\llbracket " a "\rrbracket_{"lattice"}"
 %format (denot_2 (a)) = "\llbracket " a "\rrbracket_{"lattice2"}"
 %format conf (c) (t) = "\conf{"c"}{"t"}"
+%format tconf (i) (s) (t) = "\tconf{"i"}{"s"}{"t"}"
+%format thread (i) (s) (t) = "\thread{"i"}{"s"}{"t"}"
 %format fresh (a) = "\fresh{"a"}"
 %format update (m) (a) (t) = "\update{"m"}{"a"}{"t"}"
 
@@ -351,6 +356,8 @@
 
 %%%
 \newcommand{\conf}[2]{\langle #1 |inlinesep| #2\rangle}
+\newcommand{\tconf}[3]{\{ #1, #2 |inlinesep| #3\}}
+\newcommand{\thread}[3]{\langle #1, #2, #3\rangle}
 
 
 %%
