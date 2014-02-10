@@ -1,0 +1,73 @@
+\appendices
+\section{Semantics for the base calculus}
+
+The reduction rules for pure and monadic terms are given in
+Figure~\ref{fig:sos:rules}.
+
+\concept{pure red}
+%
+The reduction rules for pure terms are mostly standard.
+%
+Only two points are worth noting.
+%
+First, we define substitution |{t2 / x } t1| in the usual way:
+homomorphic on all operators and renaming bound names to avoid
+captures. 
+%
+Second, our label operations |lub|, |glb|, and |canFlowTo| rely on the
+label-specific implementation of these lattice operators, as used in
+the premise of rule \ruleref{labelOp};
+%
+we use the meta-level partial function |denot cdot|, which maps terms
+to values, to precisely capture this implementation detail.
+
+\concept{monad red}
+%
+The reduction rules for monadic terms deserve some attention.
+%
+As a result of this encoding, the definition for |return| and |(>>=)|
+are trivial: the former simply reduces to a monadic value by wrapping
+the term with the |LIOTCB| constructor, while the latter evaluates the
+left-hand term and supplies the result to the right-hand term, as
+usual.
+
+
+\begin{figure}[t] % sos:rules
+\small
+\begin{code}
+Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
+E   ::= []| Ep | E >>= t 
+\end{code}
+
+\begin{mathpar}
+\inferrule[app]
+{ } { |Ep[(\x.t1) t2] ~> Ep[{ t2 / x } t1]| }
+\and
+\inferrule[fix]
+{ } { |Ep[fix (\x.t)] ~> Ep[{fix (\x.t) / x } t|] }
+\and
+\inferrule[ifTrue]
+{ } { |Ep[if true then t2 else t3] ~> Ep[t2]| }
+\and
+\inferrule[ifFalse]
+{ } { |Ep[if false then t2 else t3] ~> Ep[t3]| }
+\and
+\inferrule[labelOp]
+{ | v = denot ( l1 lop l2 ) | }
+{ |Ep[l1 lop l2] ~> Ep[v]| }
+\and
+\inferrule[return]
+{ } { |conf c (E[return t]) --> conf c (E[LIOTCB t])| }
+\and
+\inferrule[bind]
+{ }
+{ |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (E[t2 t1])| }
+\and
+\inferrule[getLabel]
+{ |c = (lcurr, ...)|  }
+{
+|conf c (E[getLabel]) --> conf c (E[return lcurr])|
+}
+\end{mathpar}
+\caption{Reduction rules for base \lio.\label{fig:sos:rules}}
+\end{figure}
