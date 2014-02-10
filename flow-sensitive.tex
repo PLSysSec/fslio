@@ -216,16 +216,25 @@ upgradeR r l @= let  r'  = unwrap r
 \vspace*{-5pt}
 \begin{code}
 v    ::= cdots  | set (v, ...) | nil
-t    ::= cdots  | set (t, ...) | toLabeled' t t t
+t    ::= cdots  | set (t, ...) | withRefs t t | toLabeled' t t t
 tau  ::= cdots  | set (tau, ...)
      
-Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...)
+Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...) | withRefs Ep t 
                 | toLabeled' Ep t t | toLabeled' v Ep t
 
 addrs (nil)                                       @= emptyset
 addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \end{code}
 \begin{mathpar}
+\inferrule[withRefs]
+{|c = (lcurr, mI, mS)|\\
+ |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
+ |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
+ |c''' = (lcurr', mI', mS'' merge mS)|
+}
+{|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
+\and
+%%XXX: REMOVE THIS:
 \inferrule[toLabeled']
 {|c = (lcurr, mI, mS)|\\
  |lcurr canFlowTo l ~> true|\\
@@ -235,11 +244,15 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
  |c''' = (lcurr, mI', mS'' merge mS)|
 }
 {|conf c (E[toLabeled' l v t]) --> conf c'' (E[label l t']|}
-%%\inferrule{\env.\lbl \flows l \flows \env.\clr \and r' \subseteq r \\ \wEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} }
-%%{\defRTS{E[\toLabeled{l\ r'}{t}]} \lto \\ \wEnvRTS{\env}{\RTS'}{r\cup r''}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
 \end{mathpar}
+\begin{code}
+toLabeled' l v t  @= withRefs v (toLabeled l t) 
+                  == toLabeled l (withRefs v t)
+\end{code}
 \caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
 \end{figure}
+\hl{We should note somewhere that trying to access a non-existant ref results
+in program getting stuck}
 
 \begin{figure}
 \small
@@ -293,15 +306,26 @@ toLabeledWith l def f =
 % operation is complete. This allows any partially-leaked information
 % (due to flow-sensitive references) to be taken into account in future
 % label checks.
-\begin{definition}[Reference-implementation abstraction]
-|LIORefTCB S t| $\cong$ |LIORefTCB S t'|, otherwise
-|t| $\cong$ |t'| if |t = t'|
+
+\begin{definition}
+We define the equivalence relation oblivious to flow-sensitive reference
+implemnetation as:
+\begin{itemize}
+\item |LIORefTCB S t &=  LIORefTCB S t'| for any |t|, |t'|.
+\item |t &=  t'| iff |t = t'|.
+\item |LIOTCB t &=  LIOTCB t'| iff |t &=  t'|.
+\item |LabeledTCB l t &= LabeledTCB l t'| iff |t &=  t'| and |l &=  l'|.
+\item etc.
+\end{itemize}
 \end{definition}
 
-\begin{theorem}[Kleene equivalence]
-Forall |t,v| in \lio{}, and 
-|t', v'| in \liofs{}, such that |v| $\cong$ |v'|,
-|t| $\cong_\textrm{kleene}$ |t'| iff
-|conf c t  ==> diverge| $\Leftrightarrow$ |conf c t' ==> diverge| and 
-|conf c t  ==> v| $\Leftrightarrow$ |conf c t' ==> v'|.
+\begin{theorem}[Equivalence]
+For all |t, v| in \lio{} and |t', v'| in \liofs{},
+and |v &= v'|, it must be that
+%
+|conf (lcurr,mI) t  ==> conf (lcurr',...) diverge| $\Leftrightarrow$
+|conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) diverge| and 
+%
+|conf (lcurr,mI) t  ==> conf (lcurr',...) v| $\Leftrightarrow$
+|conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) v'|.
 \end{theorem}

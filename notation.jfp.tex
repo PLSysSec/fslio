@@ -36,8 +36,8 @@
 \newcommand{\lto}{\longrightarrow}
 %format --> = "\lto"
 %format ==> = "\lto^*"
-%format .--> = "\overset{"fork(e)"}{\lto}"
-%format .-.-> = "\overset{"fork(mS',e)"}{\lto}"
+%format .--> = "\overset{"fork(t)"}{\lto}"
+%format .-.-> = "\overset{"fork(t')"}{\lto}"
 %format ~> = "\lto"
 %format ~>* = ~>"^*"
 
@@ -136,12 +136,14 @@
 %format toLabeled'
 %format forkLIO = "\textbf{forkLIO}"
 %format forkLIO'
+%format withRefs = "\textbf{withRefs}"
 %format waitLIO = "\textbf{waitLIO}"
 %format upgradeM = "\textbf{upgradeStore}"
 %format upgradeL (t) (l) = t"\Uparrow^{"l"}"
 %format nil = "\epsilon"
 %format emptyset = "\emptyset"
 %format @= = "\triangleq{}"
+%format &= = "\cong_\textrm{$\not$ref}"
 
 %format ex = "\xi"
 %format ifcFail = ex"_{\tiny IFC}"
@@ -226,6 +228,9 @@
 %format k''
 %format k1
 %format k2
+%format knew = k"_\textrm{new}"
+%format addrs (s) = addrs(s)
+%format refs (s)  = addrs"^{-1}" (s)
 
 %format a'
 %format a''
@@ -275,6 +280,8 @@
 %format (denot (a)) = "\llbracket " a "\rrbracket_{"lattice"}"
 %format (denot_2 (a)) = "\llbracket " a "\rrbracket_{"lattice2"}"
 %format conf (c) (t) = "\conf{"c"}{"t"}"
+%format tconf (i) (s) (t) = "\tconf{"i"}{"s"}{"t"}"
+%format thread (i) (s) (t) = "\thread{"i"}{"s"}{"t"}"
 %format fresh (a) = "\fresh{"a"}"
 %format update (m) (a) (t) = "\update{"m"}{"a"}{"t"}"
 
@@ -349,8 +356,11 @@
 
 %%%
 \newcommand{\conf}[2]{\langle #1 |inlinesep| #2\rangle}
+\newcommand{\tconf}[3]{\{ #1, #2 |inlinesep| #3\}}
+\newcommand{\thread}[3]{\langle #1, #2, #3\rangle}
 
 
 %%
 \newcommand{\lio}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice|}}}
 \newcommand{\liofs}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice, S|}}}
+\newcommand{\lioconc}{\ensuremath{\lambda^{\textsf{\tiny $\parallel$-LIO}}_{|lattice|}}}

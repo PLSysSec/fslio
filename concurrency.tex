@@ -9,16 +9,6 @@ version of |LIO|.
 Concurrent |LIO|~\cite{?} extends the sequential version of |LIO| with
 operations for creating threads and expressing communication among
 them, as seen in Figure~\ref{fig:conc-syntax}.
-\begin{figure}[ht] % labeled
-\small
-\begin{code}
-v    ::= cdots  | ResultTCB t 
-t    ::= cdots  | forkLIO l t | waitLIO t
-                | newLMVar l t | takeLMVar t | putLMVar t t
-tau  ::= cdots  | Result l tau | LMVar l tau
-\end{code}
-\caption{Syntax for concurrent |LIO|.\label{fig:conc-syntax}}
-\end{figure}
 
 |LMVar|s are an IFC-aware version of |MVar|s, which are
 well-established primitives for synchronization in
@@ -53,23 +43,57 @@ operations. Every thread writes its result to an |LMVar|, from which
 other threads can read using |waitLIO|.
 
 \begin{figure}[ht]
+\small
+\begin{code}
+t    ::= cdots  | forkLIO t
+\end{code}
 \begin{mathpar}
-  \inferrule[(forkLIO)]
-  {|c = (lcurr, mI, mS)| \\
-   |lcurr canFlowTo l ~> True| \\
-   |c' = c[ mI mapsto mI[ mv mapsto LabeledTCB l boxdot ] ]| \\
-   |e = t >>= \x -> putLMVar mv x| \\
-   |fresh(mv)|
-}
+\inferrule[(forkLIO)]
+{ }
 {
-|conf c (E[forkLIO l t]) .-->  conf (c') (E[return (ResultTCB mv)])|
+|conf c (E[forkLIO t]) .-->  conf c (E[return ()])|
 }
 \and
-\inferrule[(waitLIO)]
-{}
-{|conf c (E[waitLIO (ResultTCB mv)]) --> conf c (E[takeLMVar mv])|}
+\inferrule[(T-step)]
+{
+|c = (lcurr, mI, mS)|\\
+|conf c (withRefs v t) -->  conf c' t'|\\
+|c' = (lcurr', mI', mS')|\\
+|v' = refs(dom mS')|
+}
+{
+|tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t')|
+}
+\and
+\inferrule[(T-noStep)]
+{
+|c = (lcurr, mI, mS)|\\
+|conf c (withRefs v t)| \not|-->|
+}
+{
+|tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI mS (k2, ...)|
+}
+\and
+\inferrule[(T-fork)]
+{
+|c = (lcurr, mI, mS)|\\
+|conf c (withRefs v t) .-.->  conf c' t''|\\
+|c' = (lcurr', mI', mS')|\\
+|v' = refs(dom mS')|\\
+|knew = thread lcurr' v' t'|
+}
+{
+|tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t'', knew)|
+}
+\and
+\inferrule[(T-done)]
+{ }
+{
+|tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
+}
+
 \end{mathpar}
-  \caption{Semantics for |forkLIO| and |waitLIO|.}
+  \caption{Semantics for \lioconc{}.}
   \label{fig:conc-semantics}
 \end{figure}
 
@@ -90,18 +114,19 @@ the previous section.
 
 \begin{figure}[ht]
   \centering
-  \begin{mathpar}
-\inferrule[forkLIO']
-{|c = (lcurr, mI, mS)|\\
- |lcurr canFlowTo l ~> true|\\
- |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
- |c' = c[ mI mapsto mI[ mv mapsto LabeledTCB l boxdot ] ]| \\
- |e = t >>= \x -> putLMVar mv x| \\
- |fresh(mv)|
-}
-{|conf c (E[forkLIO' l v t]) .-.-> conf c' (E[return (ResultTCB mv)])|}
-    
-  \end{mathpar}
+%%  \begin{mathpar}
+%%\inferrule[forkLIO']
+%%{|c = (lcurr, mI, mS)|\\
+%% |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|
+%%}
+%%{|conf c (E[forkLIO' v t]) .-.-> conf c (E[return ()])|}
+%%    
+%%  \end{mathpar}
+\begin{code}
+forkLIO' v t  @= withRefs v (forkLIO t) 
+              == forkLIO (withRefs v t)
+\end{code}
+
   \caption{Semantics for the |forkLIO'| primitive.}
   \label{fig:forkS-semantics}
 \end{figure}
