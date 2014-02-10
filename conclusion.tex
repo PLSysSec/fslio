@@ -1,15 +1,15 @@
 \section{Conclusions}
 
-We show an extension for LIO with flow-sensitive references. Our approach
-implements the {\nsu} policy for label changes, and contains upgrade operations
+We show an extension of LIO with flow-sensitive references. Our approach
+implements the {\nsu} policy for label changes, and includes |upgrade| operations
 to boost permissiveness. As a programmer, introducing upgrade operations might
-be tiresome. To reduce that burden, we propose convenient places where to
-automatically insert them, i.e., when the floating-label is raised. For
+be cumbersome. In order to reduce that burden, we propose automatically
+inserting them at convenient places, i.e., when the floating label is raised. For
 concurrent systems, we slightly adapt our notion of upgrade to avoid failure,
-i.e., upgrading labels does not stop execution. This difference it is important
-to avoid the termination channel, which might leak data at a high rate in
-presence of threads. A key insight of this work is to show that, either for the
-sequential and concurrent setting, it is possible to provide the discipline {\nsu}
+i.e., upgrading labels does not stop execution. This difference is crucial
+for avoiding the termination channel, which might leak data at a relatively high rate in
+the presence of threads. A key insight of this work is to show that, both for the
+sequential and concurrent settings, it is possible to provide the {\nsu} discipline
 and upgrade operations in terms of flow-insensitive concepts---this is due to 
 the ability of LIO to handle nested labeled values. As a consequence,
 soundness of our extension is reduced to previous

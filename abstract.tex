@@ -1,24 +1,28 @@
 \begin{abstract}
-  Flow-sensitive analysis for information-flow control (IFC) allow to change the
-  security annotations associated to data structures. This feature is beneficial
-  for several reasons: it often boosts permissiveness, reduce the burden of
-  explicit annotations, and enables the reuse of single-threaded data
-  structures. In a purely dynamic setting, although attractive, changes on
-  labels can become a covert-channel capable to leak secrets at a high
-  rate. 
+  Flow-sensitive analysis for information-flow control (IFC) allows
+  data structures to have mutable security annotations,
+  i.e. annotations that can change over the course of the
+  computation. This feature is beneficial for several reasons: it
+  often boosts permissiveness, reduces the burden of explicit
+  annotations, and enables reuse of single-threaded data
+  structures. In a purely dynamic setting, although attractive,
+  mutable labels can expose a covert channel capable of leaking
+  secrets at a high rate.
   %Existing language-based solutions cover sequential languages, where it
   %is forbidden to either change the labels of certain flow-sensitive variables
   %or branch on them.  
-  We present an extension for LIO---a floating-label system based on ideas from
-  the operating system domain---capable to securely handle flow-sensitive
-  references. The key insight is considering labels as being composed of two
-  elements: a label indicating the confidentiality of data, and another label,
-  called \emph{the label on the label}, which describes the confidentiality of
-  the data's label itself. With this model, our approach allows label changes
-  subject to the {\nsu} policy. Additionally, we consider operations to upgrade
-  labels in safe situations and automatic places where to trigger them. As a
-  surprising result, we prove that {\nsu} and upgrade operations can be encoded
-  by using flow-insensitive concepts---for that, we leverage the ability of LIO
+  We present an extension for LIO---a floating-label system based on
+  ideas from the operating system domain---capable of securely
+  handling flow-sensitive references. The key insight is considering
+  labels as being composed of two elements: a label indicating the
+  confidentiality of data, and another label, called \emph{the label
+    on the label}, which describes the confidentiality of the data's
+  label itself. Within this model, our approach allows label changes
+  subject to the {\nsu} policy. Additionally, we introduce operations
+  to upgrade labels in safe situations and a mechanism for the
+  automatic placement of these operations. As a surprising result, we
+  prove that {\nsu} and upgrade operations can be encoded by using
+  flow-insensitive concepts---for that, we leverage the ability of LIO
   to have nested labeled values.
 %the structure of the security lattice (e.g. no relabeling of
 %secrets as public data) and branches on altered flow-sensitive variables.
@@ -27,7 +31,7 @@
 % This feature becomes particularly important to
 % secure in presence of flow-sensitive entities.
   In addition, we extend our solution for concurrent systems almost naturally,
-  but with a subtle difference to avoid the termination channel. 
+  except for a subtle change to avoid the termination channel. 
 % We show, by an attack, that \emph{{\nsu}} is the most suitable
 % discipline for label changes where execution is stopped only based on threads’
 % local data---an essential requirement to obtain performance and scalability.
