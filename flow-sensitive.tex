@@ -165,46 +165,6 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:fs-exts-semantics}}
 \end{figure}
 
-\begin{figure}
-\small
-\begin{code}
-wrap r @= LIORefTCB S r
-unwrap (LIORefTCB S r) @= r
-whenDiv t t1 @= if t then t1 else fix (\x. x)
-
-newRef S l t @= do
-  lcurr  <- getLabel
-  v      <- label l t
-  r      <- newRef I lcurr v
-  return (wrap r)
-
-
-readRef S r @= readRef I (unwrap r) >>= unlabel
-
-
-writeRef S r t @= let  r'  = unwrap r
-                       l   = labelOf r' in do
-  lcurr <- getLabel
-  whenDiv (lcurr canFlowTo l) $ toLabeled l $ do
-     v   <- readRef I r'
-     v'  <- label (labelOf v) t
-     writeRef r' v'
-
-
-labelOfR S r @= readRef I (unwrap r) >>= return . labelOf
-
-upgradeR r l @= let  r'  = unwrap r
-                     l'  = labelOf r' in do
-  lcurr <- getLabel
-  whenDiv (lcurr canFlowTo l') $ toLabeled l' $ do
-     v   <- readRef I r'
-     v'  <- upgrade v l
-     writeRef r' v'
-
-\end{code}
-\caption{Implementation for flow-sensitive references.\label{fig:fs-exts-semantics-impl}}
-\end{figure}
-
 %
 % ToLabeled rule that propagates FS taints
 %
