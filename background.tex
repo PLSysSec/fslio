@@ -347,22 +347,28 @@ terminals by first |unlabel|ing the labeled value and then |label|ing
 the result with the join of the current label, existing label and new
 label.
 %
-Unfortunately, these semantics are different; |unlabel| raises the
-current label and, while the |label| will succeed in creating a new
-labeled value with the desired label, the current label cannot be
-lowered to the label at the point before the |unlabel|, since we now
-have (potentially) more sensitive data in scope.
+Unfortunately, using |unlabel| would cause the current label to be
+raised, since we now have (potentially) sensitive data in scope, thus
+preventing the computation from performing subsequent side effects on
+less sensitive locations.
+%
+% Unfortunately, these semantics are different; |unlabel| raises the
+% current label and, while the |label| will succeed in creating a new
+% labeled value with the desired label, the current label cannot be
+% lowered to the label at the point before the |unlabel|, since we now
+% have (potentially) more sensitive data in scope.
 %
 This raising of the current label to a point where the computation can
 no longer perform useful tasks is known as \emph{label
 creep}~\cite{sabelfeld:language-based-iflow}.
 %
-Label creep does not compromise security, since the current
-label still protects all data in lexical scope.
+% Label creep does not compromise security, since the current
+% label still protects all data in lexical scope.
 %
-However, it makes LIO overly restrictive---in general, being able to
-perform computations on sensitive data without raising the current
-label is crucial to building practical applications.
+Despite not compromising security, label creep makes LIO overly
+restrictive---in general, being able to perform computations on
+sensitive data without raising the current label is crucial to
+building practical applications.
 
 \concept{toLabeled}
 To this end, LIO provides the |toLabeled| function which executes an
