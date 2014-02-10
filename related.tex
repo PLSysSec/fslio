@@ -22,8 +22,8 @@ clear how this technique generalizes to arbitrary lattices. Moreover, the
 privatization operation can only enforce non-interference when outputs are
 suppressed after branching on a marked flow-sensitive reference. Unfortunately,
 none of the mentioned work so far consider concurrency. In fact, the notion of
-{\pu} does not easily generalized with concurrency. The reason is that it would
-require to track occurrences of branches across threads, which challenges 
+{\pu} does not easily generalize to the concurrent setting. The reason is that it would
+require tracking occurrences of branches across threads, which challenges 
 scalability. 
 
 
@@ -75,7 +75,7 @@ scalability.
 %% Breeze
 Recently, Hritcu et al.~\citep{10.1109/SP.2013.10} propose a floating-label
 system called Breeze. It allows label changes in the current label (i.e. pc) and
-consider flow-insensitive values. Given the design similarities with
+considers flow-insensitive values. Given the design similarities with
 LIO~\citep{stefan:lio}, we believe that our results could be easily adapted to
 Breeze.
 
@@ -86,10 +86,10 @@ monitor for JavaScript. The monitor utilizes the {\nsu} label changing
 policy. To overcome some of the restrictions imposed by this discipline, the
 primitive \textbf{upgrade} is introduced to explicitly change labels. Our
 upgrade operation resembles that proposed by Hedin et el. Moreover, the
-extension to |toLabeled| in Section \ref{} \hl{to fillin} can be seen as an
+extension to |toLabeled| in Section \ref{sec:flow-sensitive} can be seen as an
 automatic application of \textbf{upgrade} every time that the current label gets
 raised. Using testing, Birgisson et al.~\citep{Arnar2012} automatically insert
-instructions \textbf{upgrade} to boost the permissiveness of {\nsu}. We show how
+\textbf{upgrade} instructions to boost the permissiveness of {\nsu}. We show how
 the concept of upgrade can be extended to work in a concurrent setting.
 
 
