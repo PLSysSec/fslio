@@ -32,7 +32,7 @@ writeRef S r t @= let  r'  = unwrap r
   whenDiv (lcurr canFlowTo l) $ toLabeled l $ do
      v   <- readRef I r'
      v'  <- label (labelOf v) t
-     writeRef r' v'
+     writeRef I r' v'
 
 
 labelOfR S r @= readRef I (unwrap r) >>= return . labelOf
@@ -43,7 +43,7 @@ upgradeR r l @= let  r'  = unwrap r
   whenDiv (lcurr canFlowTo l') $ toLabeled l' $ do
      v   <- readRef I r'
      v'  <- upgrade v l
-     writeRef r' v'
+     writeRef I r' v'
 
 \end{code}
 \caption{Implementation for flow-sensitive references.\label{fig:fs-exts-semantics-impl}}
