@@ -1,13 +1,18 @@
-\section{Soundness}
+\section{Formal results}
 \label{sec:soundness}
 
-In this section, we provide security guarantees for our approach. In
-order to prove non-interference, we will show that we can implement
-our flow-sensitive semantics in terms of flow-insensitive
-references. More concretely, every flow-sensitive reference stored as
-|LabeledTCB l_o (LabeledTCB l_d v)|, can be represented by a
-flow-insensitive reference with label |l_o|, whose contents are the
-labeled value |LabeledTCB l_d v|.
+In this section, we show that our flow-sensitive enforcement can be
+embedded into the flow-insensitive version of LIO. Additionally, we
+provide security guarantees in terms of non-interference by reusing
+previous results about LIO.
+
+\subsection{Embedding into \lio{}}
+
+We will now show that we can implement our flow-sensitive semantics in
+terms of flow-insensitive references. More concretely, every
+flow-sensitive reference stored as |LabeledTCB l_o (LabeledTCB l_d
+v)|, can be represented by a flow-insensitive reference with label
+|l_o|, whose contents are the labeled value |LabeledTCB l_d v|.
 
 Figure~\ref{fig:fs-exts-semantics-impl} shows our implementation of
 the flow-sensitive reference operations in this setting.  For a given
@@ -32,18 +37,18 @@ whenDiv t t1 @= if t then t1 else fix (\x. x)
 
 impl (LIORefTCB S r) ((lcurr,mI,mS)) @= wrap (LIORefTCB I (labelOf mS(r)) r)
 
-impl (newRef S) c @= \ l t -> do
+impl (newRef S) c @= \ l t . do
   lcurr  <- getLabel
   v      <- label l t
   r      <- newRef I lcurr v
   return (wrap r)
 
 
-impl (readRef S) c @= \r -> readRef I (unwrap r) >>= unlabel
+impl (readRef S) c @= \r . readRef I (unwrap r) >>= unlabel
 
 
-impl (writeRef S) c @= \r t -> let  r'  = unwrap r
-                                    l   = labelOf r' in do
+impl (writeRef S) c @= \r t . let  r'  = unwrap r
+                                   l   = labelOf r' in do
   lcurr <- getLabel
   toLabeled (l lub lcurr) $ do
      v   <- readRef I r'
@@ -52,10 +57,10 @@ impl (writeRef S) c @= \r t -> let  r'  = unwrap r
        writeRef I r' v'
 
 
-impl (labelOfR S) c @= \r -> readRef I (unwrap r) >>= return . labelOf
+impl (labelOfR S) c @= \r . readRef I (unwrap r) >>= return . labelOf
 
-impl (upgradeR) c @= \r l -> let  r'  = unwrap r
-                                  l'  = labelOf r' in do
+impl (upgradeR) c @= \r l . let  r'  = unwrap r
+                                 l'  = labelOf r' in do
   lcurr <- getLabel
   whenDiv (lcurr canFlowTo l') $ toLabeled l' $ do
      v   <- readRef I r'
@@ -66,10 +71,13 @@ impl (upgradeR) c @= \r l -> let  r'  = unwrap r
 \caption{Implementation mapping for flow-sensitive references. For all other terms, the function is applied homomorphically.\label{fig:fs-exts-semantics-impl}}
 \end{figure}
 
-We extend this definition naturally to convert \liofs{} environments into
-\lio{} environments, by having |impl1 ((lcurr, mI, mS)) @= (lcurr, mI')|
-where |mI' = mI[ a1 mapsto v1, ..., a_n mapsto v_n ]| for each binding
-of the form |a_i mapsto LabeledTCB li v_i| in |mS|.
+We extend this definition naturally to convert \liofs{} environments
+into \lio{} environments, by having |impl1 ((lcurr, mI, mS)) @=
+(lcurr, mI')| where |mI' = mI[ a1 mapsto v1, ..., a_n mapsto v_n ]|
+for each binding of the form |a_i mapsto LabeledTCB li v_i| in
+|mS|. Note that the domains of |mI| and |mS| are disjoint because the
+|fresh| predicate that we use in the semantics is assumed to produce
+globally unique names.
 
 In order to prove that our implementation is correct with respect to
 the semantics, we show that, if we take a program with flow-sensitive
@@ -101,14 +109,16 @@ with the flow-sensitive semantics.
   %     right.  we need the equivalence relation I defined before}}
 \end{theorem}
 
+\subsection{Security guarantees for \liofs{}, \lioafs{} and \lioconc{}}
+
 From previous results, we know that LIO has termination-insensitive
-non-interference in the sequential setting, and termination-sensitive
-non-interference in the presence of concurrency. By combining the previous
-theorem with these results, we can show that they hold for LIO with
+non-interference (TINI) in the sequential setting, and termination-sensitive
+non-interference (TSNI) in the presence of concurrency. By combining the previous
+embedding theorem with these results, we can show that they hold for LIO with
 flow-sensitive references.
 
 In order to make this paper self-contained, we now present our
-soundness theorems, as straightforward applications of the theorems in
+non-interference theorems, as straightforward applications of the theorems in
 previous work. Our security results rely on the notion of
 |l|-equivalence for terms and configurations, which captures the idea
 of terms that cannot be distinguished by an attacker which can observe
@@ -122,13 +132,14 @@ Intuitively, non-interference means that an attacker at level |l|
 cannot distinguish among different runs of a program with
 |l|-equivalent initial configurations.
 
-\begin{theorem}[Termination-insensitive non-interference for \liofs{}]
-  Consider a program |t| in \liofs{}, an attacker that observes data at
-  level |l|, and a pair of inputs |e_1| and |e_2| such that |e_1 &~
-  e_2|. Let |c| be an initial environment, and let
+\begin{theorem}[TINI for \liofs{}]
+  Consider two well-typed terms |t1| and |t2| in \liofs{} which do not
+  contain any TCB syntax nodes, such that |t1 &~ t2|. We assume there
+  is an attacker that observes data at level |l|. Let |c| be an
+  initial environment, and let
 \[
-    |conf c (t e_1) ==> conf c1 v1|\mbox{ and }
-    |conf c (t e_2) ==> conf c2 v2|
+    |conf c (t1) ==> conf c1 v1|\mbox{ and }
+    |conf c (t2) ==> conf c2 v2|
 \]
   Then, we have that |conf c1 v1 &~ conf c2 v2|.
 \end{theorem}
@@ -141,15 +152,30 @@ cannot distinguish among different runs of a program with
   termination-insensitive non-interference of \lio{}~\citep{stefan:lio}.
 \end{proofsketch}
 
+\begin{corollary}[TINI for \lioafs{}]
+  The previous non-interference result can be extended to \lioafs{} in
+  a straightforward manner. In \lioafs{}, the |unlabel| operation
+  triggers the automatic upgrades mechanism, which consists in
+  performing the |upgrade| operation for every flow-sensitive
+  reference in scope before actually raising the current
+  label. Additionally, the |withRefs| primitive allows the programmer
+  to restrict the set of references in scope, reducing the number of
+  |upgrade|s that need to be performed when |unlabel| occurs.
+  Regardless of how |unlabel| and |withRefs| are used, we note that
+  the resulting term (after inserting the necessary |upgrade|s), is just an
+  \liofs{} term. Therefore, the main TINI result for \liofs{} applies.
+\end{corollary}
+
 In the concurrent setting, we have a stronger result, where the
 termination and internal timing covert channels are closed.
 
-\begin{theorem}[Termination-sensitive non-interference for \lioconc{}]
-  Given a program |t| in \lioconc{}, and an attacker that observes
-  data at level |l|, then for all inputs |e_1| and |e_2| such that
-  |e_1 &~ e_2|, we have that if |conf c1 (t e_1) --> conf c1' t_1|,
-  then there exist |c2'| and |t_2| such that |conf c2 (t e_2) --> conf
-  c2' t_2| and |t_1 &~ t_2|.
+\begin{theorem}[TSNI for \lioconc{}]
+  Consider two well-typed terms |t1| and |t2| in \lioconc{} which do not
+  contain any TCB syntax nodes, such that |t1 &~ t2|. We assume there
+  is an attacker that observes data at level |l|. Let |c| be an
+  initial environment, and let |conf c1 t1 ==> conf c1' t1'|.
+  Then, there exist |c2'| and |t2'| such that |conf c2 t2 ==> conf
+  c2' t2'| and |t1' &~ t2'|.
 \end{theorem}
 
 \begin{proofsketch} \hl{Revise} By expanding all the flow-sensitive
@@ -162,14 +188,14 @@ termination and internal timing covert channels are closed.
 
 \hl{include link to extended version}
 
-\hl{NOTE}
+% \hl{NOTE}
 
-Why is |toLabeled| secure in the implementation of |writeRef S|? It
-would seem that it is impossible for the first |readRef I| to
-effectively raise the current label, i.e. if a reference with LOL |l|
-is in scope, it is always the case that |l canFlowTo lcurr|. Why? If a
-reference has LOL |l|, it must have been created in a context where
-the current label was |l|. From here, it is not possible to access the
-reference from a context with a lower current label. This would
-suggest that |toLabeled| is not necessary, since |readRef| is not
-changing the current label anyway.
+% Why is |toLabeled| secure in the implementation of |writeRef S|? It
+% would seem that it is impossible for the first |readRef I| to
+% effectively raise the current label, i.e. if a reference with LOL |l|
+% is in scope, it is always the case that |l canFlowTo lcurr|. Why? If a
+% reference has LOL |l|, it must have been created in a context where
+% the current label was |l|. From here, it is not possible to access the
+% reference from a context with a lower current label. This would
+% suggest that |toLabeled| is not necessary, since |readRef| is not
+% changing the current label anyway.
