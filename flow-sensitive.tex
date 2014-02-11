@@ -99,6 +99,21 @@ learn any information more sensitive than |lcurr| (the label of the label at
 the time of creation) by inspecting the label: the label has not changed!
 %
 
+\concept{\liofs{}}
+Thus, to extend LIO with flow-sensitive reference we must account for the label
+on the label of the reference at the time of creation, |lcurr|.
+%
+In turn, when changing the label of the reference, we must ensure that no data
+from the context at the time of the change, whose label is |lcurr'|, is leaked
+into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
+i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
+%
+Formally, we extend the \lio{} syntax as shown in Figure~\ref{fig:sos:refs},
+with |s=S|, and Figure~\ref{fig:sos:fs};
+%
+the reduction rules for this extended calculus, called \liofs{}, are also
+given in Figure~\ref{fig:sos:fs}.
+
 
 This problem can be addressed in several ways. Prior work proposed the
 \emph{no-sensitive-upgrade} strategy~\citep{?} and the
@@ -207,7 +222,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 }
 { |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
 \end{mathpar}
-\caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:fs-exts-semantics}}
+\caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:sos:fs}}
 \end{figure}
 
 %
