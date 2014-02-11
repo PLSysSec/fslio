@@ -236,7 +236,7 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \begin{mathpar}
 \inferrule[withRefs]
 {|c = (lcurr, mI, mS)|\\
- |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
+ |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
  |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
  |c''' = (lcurr', mI', mS'' merge mS)|
 }
@@ -245,10 +245,9 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \inferrule[upgradeStore]
 {|c = (lcurr, mI, mS)|\\
  |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
- |ti = upgradeR (LIORefTCB S a_i) lcurr|\\
- |t = t1 >> ... >> tn|
+ |ti = upgradeR (LIORefTCB S a_i) lcurr, i = 1, ..., n|
 }
-{|conf c (E[upgradeM]) --> conf c (E[t])|}
+{|conf c (E[upgradeM]) --> conf c (E[t1 >> ... >> t_n])|}
 \and
 \inferrule[unlabel-AU]
 { |c = (lcurr, mI, mS)|\\
