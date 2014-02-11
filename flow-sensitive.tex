@@ -369,6 +369,9 @@ This can be used to carry out a \emph{poison pill}-like
 attack~\cite{10.1109/SP.2013.10}, wherein the (usually untrusted) computation
 executing within the |toLabeled| block will render the outer computation useless
 by imposing label creep.
+%
+(We note that this attack is possible in \liofs{} without the auto-upgrade, but
+requires the attacker to manually insert all the upgrades.)
 
 %\concept{withRefs}
 To address this issue, our \lioafs{} calculus further extends \liofs{} with
