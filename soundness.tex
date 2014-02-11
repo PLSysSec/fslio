@@ -29,10 +29,11 @@ readRef S r @= readRef I (unwrap r) >>= unlabel
 writeRef S r t @= let  r'  = unwrap r
                        l   = labelOf r' in do
   lcurr <- getLabel
-  whenDiv (lcurr canFlowTo l) $ toLabeled l $ do
+  toLabeled l $ do
      v   <- readRef I r'
-     v'  <- label (labelOf v) t
-     writeRef I r' v'
+     whenDiv (lcurr canFlowTo l lub (labelOf v)) $ do
+       v'  <- label (labelOf v) t
+       writeRef I r' v'
 
 
 labelOfR S r @= readRef I (unwrap r) >>= return . labelOf
