@@ -271,24 +271,7 @@ canFlowTo l|).
 
 \begin{figure} % auto-fs
 \small
-\begin{code}
-v    ::= cdots  | set (v, ...) | nil
-t    ::= cdots  | set (t, ...) | withRefs t t
-tau  ::= cdots  | set (tau, ...)
-Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...) | withRefs Ep t 
-
-addrs (nil)                                       @= emptyset
-addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
-\end{code}
 \begin{mathpar}
-\inferrule[withRefs]
-{|c = (lcurr, mI, mS)|\\
- |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
- |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
- |c'' = (lcurr', mI', mS'' merge mS)|
-}
-{|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
-\and
 \inferrule[upgradeStore]
 {|c = (lcurr, mI, mS)|\\
  |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
@@ -307,6 +290,29 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 }
 \end{mathpar}
 \caption{\lioafs{}: Extending \liofs{} with auto-upgrades.\label{fig:sos:afs}}
+\end{figure}
+
+\begin{figure} % auto-fs
+\small
+\begin{code}
+v    ::= cdots  | set (v, ...) | nil
+t    ::= cdots  | set (t, ...) | withRefs t t
+tau  ::= cdots  | set (tau, ...)
+Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...) | withRefs Ep t 
+
+addrs (nil)                                       @= emptyset
+addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
+\end{code}
+\begin{mathpar}
+\inferrule[withRefs]
+{|c = (lcurr, mI, mS)|\\
+ |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
+ |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
+ |c'' = (lcurr', mI', mS'' merge mS)|
+}
+{|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
+\end{mathpar}
+\caption{Extending \liofs{} and \lioafs{} with |withRefs|.\label{fig:sos:withRefs}}
 \end{figure}
 
 %\concept{upgrade is burdensome}
@@ -377,10 +383,12 @@ by imposing label creep.
 requires the attacker to manually insert all the upgrades.)
 
 %\concept{withRefs}
-To address this issue, our \lioafs{} calculus further extends \liofs{} with
-|withRefs v t| which takes a bag |v| of references and a computation |t|, and
-executes |t| in a configuration where the flow-sensitive reference store only
-contains the subset of references |v|.
+To address this issue, we extend \liofs{} (and thus \lioafs{}) with |withRefs v
+t| which takes a bag |v| of references and a computation |t|, and executes |t|
+in a configuration where the flow-sensitive reference store only contains the
+subset of references |v|.
+%
+This extension is shown in Figure~\ref{fig:sos:withRefs}
 %
 A bag is either empty |nil|, or a number of references |set (v,..)|, where each
 element in the bag may be a reference of a distinct type.
