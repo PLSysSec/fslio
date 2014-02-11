@@ -60,6 +60,9 @@ with the flow-sensitive semantics.
   their definitions in the implementation. Then, |conf c t ==> conf
   c' v| implies |conf c t' ==> conf c' v|, and if |conf c t diverge|,
   then |conf c t' diverge|.
+  \textrm{\hl{this is not right: the constructors for FS references are
+  different (one wraps FI references, the other doesn't), so syntactic
+  equiality is not right.  we need the equivalence relation I defined before}}
 \end{theorem}
 
 For the proof we need the following lemma:
@@ -83,6 +86,8 @@ Given a program |t| in \liofs{}, an attacker that observes data at
   sequence starting from |t e_1| there is a corresponding reduction
   sequence starting from |t e_2| such that both sequences reach 
   indistinguishable configurations.
+\textrm{\hl{We proved step-by-step non-interference for lio; this is more
+powerful [big step is weak, we don't need to do any application]}}
 \end{theorem}
 
 \begin{proofsketch}
