@@ -9,25 +9,21 @@
 - Discuss extension to flow-sensitive LMVars.
 }
 
+\concept{extending \lioafs{}}
 In this section, we consider flow-sensitive references in the precence of
-concurrrency; to our knowledge, this has not been considered by other works.
+concurrrency.
 %
-Specifically, we consider a subset of the concurrent version of
-LIO~\tocite{ifcp}, that extends our sequential \liofs{} calculus (parametric in
-the auto-upgrade policy) with threads and a new terminal, |forkLIO|, for
-dynamically creating new threads.
+Concretely, we consider a subset of the concurrent version of
+LIO~\tocite{ifcp}, to extend our sequential \liofs{} and \lioafs{} calcului
+with threads and a new terminal, |forkLIO|, for dynamically creating new
+threads.
 %
-However, to guarantee termination-sensitive non-interfernce, |toLabeled| must
-be removed from the surface syntax of the underlying sequential calculus, as
-in~\tocite{ifcp}.\footnote{
-As discussed in~\tocite{icfp}, |forkLIO| with synchronization primitives can be
-used to provide functionality equivalent to that of |toLabeled|.
-}
+Intuitively, our concurrent calculus simply defines scheduler over sequential
+threads; taking a step in the concurrent calculus amounts to taking a step in a
+sequential thread and context switching to a different thread.
 %
-Intuitively, our concurrent calculus is simply a scheduler; taking a step in
-the concurrent calculus amounts to taking a step in a sequential thread and
-context switching to a different thread.
-%
+For brevity, we restrict our discussion in this section to the case where the
+underlying calculus is \lioafs{}, which is itself an extension of \liofs.
 
 Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
 %
@@ -35,7 +31,16 @@ Firstly, we extend the underlying sequential calculus terms with |forkLIO t|,
 which simply sends the scheduler a message to create a new thread in which |t|
 should be executed, and remove |toLabeled|.
 %
-(To this end we extend the reduction relation of the underlying sequential calculus with events; since |fork| is the only event, we do not disucss this further.)
+To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
+from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{
+As discussed in~\tocite{icfp}, |forkLIO| with synchronization primitives can be
+used to provide functionality equivalent to that of |toLabeled|, especially
+addressing the label creep problem discussed in Section~\ref{sec:background}.
+}
+%
+(To this end we extend the reduction relation of the underlying sequential
+calculus with events; since |fork| is the only event, we do not disucss this
+further.)
 %
 \lioconc{} is parametric in the flow-sensitivy policy, i.e., the reduction rule
 for threads can can be that  for of \liofs{} or \lioafs{}.
