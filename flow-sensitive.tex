@@ -79,7 +79,7 @@ We note that the use of |labelOfR space| is not fundamental to this attack; in
 Appendix~\ref{sec:app:fs-attack2} we show an alternative version of |leakRef|
 that does not rely on label inspection.
 
-\hl{KEY INSIGHT:}
+\concept{KEY INSIGHT:}
 Fundamentally, the label protecting the \emph{label} of an object (e.g.,
 labeled values and references) is the current label |lcurr| at the time of
 creation.
@@ -241,15 +241,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \subsection{Automatic upgrades}
 \label{sec:flow-sensitive:auto}
 
-\Red{
-- fs good; can address log problem
-- upgrade is painful, want auto upgrades
-- need withRefs to ensure we're not upgrading the whole store
-  natural place to use withRefs is in tolabeled
-- talk about no sensitive upgrades
-}
-
-\begin{figure} % semantics
+\begin{figure} % auto-fs
 \small
 \begin{code}
 v    ::= cdots  | set (v, ...) | nil
@@ -272,22 +264,101 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \inferrule[upgradeStore]
 {|c = (lcurr, mI, mS)|\\
  |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
- |ti = upgradeR (LIORefTCB S a_i) lcurr, i = 1, ..., n|
+ |ti = upgradeR (LIORefTCB S a_i) l, i = 1, ..., n|
 }
-{|conf c (E[upgradeM]) --> conf c (E[t1 >> ... >> t_n])|}
+{|conf c (E[upgradeM l]) --> conf c (E[t1 >> ... >> t_n])|}
 \and
-\inferrule[unlabel-AU]
+\inferrule[auto-upgrade]
 { |c = (lcurr, mI, mS)|\\
-  |lcurr lub l ~> lcurr'|\\
-  |c' = (lcurr', mI, mS)|\\
-  |t' = upgradeM >> return t|
+  |conf c t --> conf c' t'|\\
+  |c' = (lcurr', mI', mS')|\\
+  |t'' = if lcurr == lcurr' then t' else upgradeM lcurr' >> t'|
 }
 {
-|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[t'])|
+|conf c t --> conf c' t''|
 }
 \end{mathpar}
 \caption{\lioafs{}: Extending \liofs{} with auto-upgrades.\label{fig:sos:afs}}
 \end{figure}
+
+\concept{upgrade is burdensome}
+We can use \liofs{} to implement various applications that rely on
+flow-sensitive references, even those that rely on policies such as the
+popular no-sensitive upgrades of Austin and Flanagan~\cite{Austin:Flanagan:PLAS09}.
+%
+(In Section~\ref{sec:related}, we describe the encoding of a policy that is
+similar to, but more permissive than, no-sensitive upgrades.)
+%
+Using \liofs{} we can also safely implement our logging application using a
+flow-sensitive reference.
+%
+Unfortunately, our system (and other like it) requires that we insert
+|upgrade|s before we raise the current label, if we wish to write to the
+reference in the more-sensitive context.
+
+\concept{auto upgrade}
+Inspired by~\citep{Hedin13}, we thus provide an extension to \liofs{} that can
+be used to automatically upgrade references.
+%
+This extension, called \lioafs{}, is given in Figure~\ref{fig:sos:afs}.
+%
+As given by rules \ruleref{auto-upgrade}, whenever the current label is about
+to be raised, we first upgrade all the references (with |upgradeM|) in the
+store and then raise the current label.\footnote{
+We encode the auto-upgrade policy as in rule \ruleref{auto-upgrade} for
+brevity, despite the introduction of non-determinism in the semantics.
+%
+Importantly, and as done in our implementation, the store upgrade is
+individually added to the functions that actually raise the current label
+(e.g., |unlabel|).
+}
+%
+Intuitively, this ensures that as the computation progresses it does not
+``lose'' write access to its references.
+%
+Continuing our logging example, with auto-upgrades the reference used to the log
+never needs to be explicitly upgraded and can truly present an interface of a
+logger!
+
+\concept{store creep}
+Recall, however, that |toLabeled| provides a means for temporarily raising the
+current label.
+%
+This allows us to write programs without the label creep.
+%
+Unfortunately, when raising the current label within a |toLabeled| block, the
+upgrades of the flow-sensitive references remain even after the current label
+is restored.
+%
+Thus, when reading from any flow-sensitive reference after the |toLabeled|
+block will raise the current label to, at least, the current label at the end
+of the |toLabeled| block (since all references are upgraded).
+%
+This can be used to carry out a ``poison pill'' attack~\tocite{breeze}, wherein
+the (usually untrusted) computation executing within the |toLabeled| block will
+render the outer computation useless by imposing label creep.
+
+\concept{withRefs}
+Hence, our \lioafs{} calculus further extends \liofs{} with |withRef v t| which
+takes a bag |v| of references and a computation |t|, and executes |t| in a
+configuration where the flow-sensitive reference store only contains the subset
+of references |v|.
+%
+A bag is either empty |nil|, or a number of references |set (v,..)| (of
+potentially different types).
+%
+Rule \ruleref{withRefs} precisely defines the semantics of the new terminal,
+where |addrs| converts a bag of references to a set of their corresponding
+addresses, and |merge| is used to merge the stores, giving preferences to the
+left-hand-side store.
+%
+The function is mostly standard and provides a programming pattern similar to
+that already present in some mainstream languages (e.g., C++'s \Red{ASK DM}),
+we do not discuss it further.
+%
+We lastly remark that to address the poison pill attack, we can now simply wrap
+|toLabeled| with |withRefs|, restricting the (untrusted) code from upgrading
+arbitrary references.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
