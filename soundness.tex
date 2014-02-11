@@ -148,3 +148,15 @@ termination and internal timing covert channels are closed.
   Therefore, the result follows from the termination-sensitive
   non-interference of \lio{}.
 \end{proofsketch}
+
+\hl{NOTE}
+
+Why is |toLabeled| secure in the implementation of |writeRef S|? It
+would seem that it is impossible for the first |readRef I| to
+effectively raise the current label, i.e. if a reference with LOL |l|
+is in scope, it is always the case that |l canFlowTo lcurr|. Why? If a
+reference has LOL |l|, it must have been created in a context where
+the current label was |l|. From here, it is not possible to access the
+reference from a context with a lower current label. This would
+suggest that |toLabeled| is not necessary, since |readRef| is not
+changing the current label anyway.
