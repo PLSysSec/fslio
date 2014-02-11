@@ -9,7 +9,7 @@ references. More concretely, every flow-sensitive reference stored as
 flow-insensitive reference with label |l_o|, whose contents are the
 labeled value |LabeledTCB l_d v|.
 
-Figure~\ref{fig:fs-exts-semantics-impl} shows the implementation of
+Figure~\ref{fig:fs-exts-semantics-impl} shows our implementation of
 the flow-sensitive reference operations in this setting.  For a given
 store |c|, we define the |impl (-) (c)| function, which given a term |t|
 in \liofs{}, produces a term |impl (t) (c)| in \lio{}, which is obtained
@@ -19,8 +19,8 @@ function is applied homomorphically in all other cases.
 \begin{figure}
 \small
 \begin{code}
-wrap r @= LIORefTCB S r
-unwrap (LIORefTCB S r) @= r
+wrap r @= WrapRef r
+unwrap (WrapRef r) @= r
 whenDiv t t1 @= if t then t1 else fix (\x. x)
 
 impl (LIORefTCB S r) ((lcurr,mI,mS)) @= wrap (LIORefTCB I (labelOf mS(r)) r)
@@ -59,8 +59,8 @@ impl (upgradeR) c @= \r l -> let  r'  = unwrap r
 \caption{Implementation mapping for flow-sensitive references. For all other terms, the function is applied homomorphically.\label{fig:fs-exts-semantics-impl}}
 \end{figure}
 
-We extend this definition naturally to convert \liofs{} stores into
-\lio{} stores, by having |impl1 ((lcurr, mI, mS)) @= (lcurr, mI')|
+We extend this definition naturally to convert \liofs{} environments into
+\lio{} environments, by having |impl1 ((lcurr, mI, mS)) @= (lcurr, mI')|
 where |mI' = mI[ a1 mapsto v1, ..., a_n mapsto v_n ]| for each binding
 of the form |a_i mapsto LabeledTCB l v_i| in |mS|.
 
@@ -70,27 +70,28 @@ operations, and expand those operations, replacing them by the code in
 Figure~\ref{fig:fs-exts-semantics-impl}, then its behavior corresponds
 with the flow-sensitive semantics.
 
+For the proof, we will require a lemma stating that, for every
+flow-sensitive reference, the label-on-the-label always flows to the
+label of the reference at every program point.
 
-
-\begin{theorem}\label{thm:eq} Let |t| in \liofs{}, and let |t' = impl t| in \lio{},
-  and suppose that |conf (lcurr,mI,mS) t ==> conf (lcurr',mI',mS') v|.
-  Let |c2 = (lcurr,mI merge mS)|, then
-
-  |conf c2 t' ==> conf c2' v'|, and if |conf c t diverge|, then
-  |conf c2 t' diverge|.
- \textrm{\hl{this is not right: the
-      constructors for FS references are different (one wraps FI
-      references, the other doesn't), so syntactic equiality is not
-      right.  we need the equivalence relation I defined before}}
-\end{theorem}
-
-For the proof we need the following lemma:
-
-\begin{lemma} For every flow-sensitive reference $r$ with label $l_d$
-  and label-on-the-label $l_o$, it holds at every program point that
-  $l_o\flows l_d$, i.e. the label-onf-the-label always flows to the
-  label of the reference.
+\begin{lemma} Let |t| be a term in \liofs{}, |c = (lcurr, mI, mS)| an
+  initial environment and |r| a flow-sensitive reference in |c|.
+  Then, for every configuration |conf ((lcurr',mI',mS')) t'| reachable
+  from |conf c t|, if we consider |mS'(r) = LabeledTCB l_o (LabeledTCB
+  l_d v)|, we have that |l_o canFlowTo l_d|.
 \end{lemma}
+
+We can now state our equivalence theorem.
+
+\begin{theorem}\label{thm:eq} Let |t| in \liofs{}.
+  Then if |conf c t ==> conf c' v|, we have |conf (impl1 c) (impl t c)
+  ==> conf (impl1 c') (impl v c)|, and if |conf c t diverge|, then
+  |conf (impl1 c) (impl t c) diverge|.
+  % \textrm{\hl{this is not right:
+  %     the constructors for FS references are different (one wraps FI
+  %     references, the other doesn't), so syntactic equiality is not
+  %     right.  we need the equivalence relation I defined before}}
+\end{theorem}
 
 From previous results, we know that LIO has termination-insensitive
 non-interference in the sequential setting, and termination-sensitive
@@ -98,15 +99,27 @@ non-interference in the concurrent setting. By combining the previous
 theorem with these results, we can show that they hold for LIO with
 flow-sensitive references.
 
+Our security results rely on the notion of |l|-equivalence for terms
+and configurations, which captures the idea of terms that cannot be
+distinguished by an attacker which can observe data at level |l|. A
+pair of terms |t1, t2| is said to be |l|-equivalent (written |t1 &~
+t2|) if, after erasing all the information more sensitive than |l|
+from |t1| and |t2|, we obtain syntactically equivalent terms. This
+definition extends naturally to configurations.
+
+Intuitively, non-interference means that an attacker at level |l|
+cannot distinguish among different runs of a program with
+|l|-equivalent initial configurations.
+
 \begin{theorem}[Termination-insensitive non-interference for \liofs{}]
-Given a program |t| in \liofs{}, an attacker that observes data at
-  level $L$, and a pair of inputs $e_1$ and $e_2$ 
-  indistinguishable to the attacker, then for every reduction
-  sequence starting from |t e_1| there is a corresponding reduction
-  sequence starting from |t e_2| such that both sequences reach 
-  indistinguishable configurations.
-\textrm{\hl{We proved step-by-step non-interference for lio; this is more
-powerful [big step is weak, we don't need to do any application]}}
+  Consider a program |t| in \liofs{}, an attacker that observes data at
+  level |l|, and a pair of inputs |e_1| and |e_2| such that |e_1 &~
+  e_2|. Let |c| be an initial environment, and let
+\[
+    |conf c (t e_1) ==> conf c1 v1|\mbox{ and }
+    |conf c (t e_2) ==> conf c2 v2|
+\]
+  Then, we have that |conf c1 v1 &~ conf c2 v2|.
 \end{theorem}
 
 \begin{proofsketch}
@@ -117,15 +130,21 @@ powerful [big step is weak, we don't need to do any application]}}
   termination-insensitive non-interference of \lio{}.
 \end{proofsketch}
 
+In the concurrent setting, we have a stronger result, where the
+termination and internal timing covert channels are closed.
+
 \begin{theorem}[Termination-sensitive non-interference for \lioconc{}]
-  Given a program |t| in \lioconc{}, and an attacker that observes data at
-  level $L$, then for all inputs |e_1| and |e_2| that are
-  indistinguishable to the attacker, we have that if |conf c1 (t e_1)
-  --> conf c1' t_1|, then there exist |c2'| and |t_2| such that
-  |conf c2 (t e_2) --> conf c2' t_2| and |t_1| and |t_2| are
-  indistinguishable to the attacker.
+  Given a program |t| in \lioconc{}, and an attacker that observes
+  data at level |l|, then for all inputs |e_1| and |e_2| such that
+  |e_1 &~ e_2|, we have that if |conf c1 (t e_1) --> conf c1' t_1|,
+  then there exist |c2'| and |t_2| such that |conf c2 (t e_2) --> conf
+  c2' t_2| and |t_1 &~ t_2|.
 \end{theorem}
 
-\begin{proofsketch}
-  \hl{Similar?}
+\begin{proofsketch} \hl{Revise} By expanding all the flow-sensitive
+  operations in |t| using their definition given in
+  Figure~\ref{fig:fs-exts-semantics-impl}, we get a term in concurrent
+  \lio{}.  \hl{Show that toLabeled is fine.}
+  Therefore, the result follows from the termination-sensitive
+  non-interference of \lio{}.
 \end{proofsketch}
