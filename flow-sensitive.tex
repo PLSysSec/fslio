@@ -55,6 +55,7 @@ leakRef href = do
                        when h (writeRef space tmp ())
   return (labelOfR tmp == high)
 \end{code}
+\cut{$}
 \caption{Attack in LIO with naive flow-sensitive reference extension. We ommit
 subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 \end{figure}
@@ -78,7 +79,40 @@ We note that the use of |labelOfR space| is not fundamental to this attack; in
 Appendix~\ref{sec:app:fs-attack2} we show an alternative version of |leakRef|
 that does not rely on label inspection.
 
+\hl{KEY INSIGHT:}
+Fundamentally, the label protecting the \emph{label} of an object (e.g.,
+labeled values and references) is the current label |lcurr| at the time of
+creation.
+%
+Hence, to modify the label of the object within some context (e.g., |toLabeled|
+block) wherein the current label is |lcurr'| it must be that the |lcurr'
+canFlowTo lcurr|, i.e., we must be able to write data at sensitivity level
+|lcurr'| into an entity (the label) labeled |lcurr|.
+%
+This is especially important if we can restore the current label from |lcurr'|
+to |lcurr| and subsequently observe the leak within the program itself.
+%
+In the case where the label of the object is immutable, as is the case for
+labeled values and flow-insensitive references, this is not a concern: even if
+the current label is raised to |lcurr'| and then restored to |lcurr| we do not
+learn any information more sensitive than |lcurr| (the label of the label at
+the time of creation) by inspecting the label: the label has not changed!
+%
 
+\concept{\liofs{}}
+Thus, to extend LIO with flow-sensitive reference we must account for the label
+on the label of the reference at the time of creation, |lcurr|.
+%
+In turn, when changing the label of the reference, we must ensure that no data
+from the context at the time of the change, whose label is |lcurr'|, is leaked
+into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
+i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
+%
+Formally, we extend the \lio{} syntax as shown in Figure~\ref{fig:sos:refs},
+with |s=S|, and Figure~\ref{fig:sos:fs};
+%
+the reduction rules for this extended calculus, called \liofs{}, are also
+given in Figure~\ref{fig:sos:fs}.
 
 
 This problem can be addressed in several ways. Prior work proposed the
@@ -188,7 +222,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 }
 { |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
 \end{mathpar}
-\caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:fs-exts-semantics}}
+\caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:sos:fs}}
 \end{figure}
 
 %
