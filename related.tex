@@ -10,23 +10,47 @@ In a dynamic setting, Russo and Sabelfeld~\citep{Russo:2010} formally pin down
 the menace of mutable labels for purely dynamic monitors. They prove that
 monitors require static analysis in order to be more permissive than traditional
 flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
-Flanagan~\citep{Austin:Flanagan:PLAS10} provide the label-change policies
-\emph{\nsu} and \emph{\pu}, where the latter is provably more permissive than
-the former (i.e. it rejects less suspicious programs). The {\nsu} discipline
-stops the execution on any attempt to change the label of a public variable
-inside a secret context. In contrast, {\pu} allows such changes, marking the
-altered variables so that the program cannot subsequently branch on them. The
-marking consists in replacing the security label of the variables with |marked|,
-where |low canFlowTo high canFlowTo marked|.  Austin and Flanagan propose a
-\emph{privatization} operation to boost the permissiveness of {\pu}.  It is not
-clear how this technique generalizes to arbitrary lattices. Moreover, the
-privatization operation can only enforce non-interference when outputs are
+Flanagan~\citep{Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10} provide the
+label-change policies \emph{\nsu} and \emph{\pu}, where the latter is provably
+more permissive than the former (i.e. it rejects less suspicious programs). The
+{\nsu} discipline stops the execution on any attempt to change the label of a
+public variable inside a secret context. In contrast, {\pu} allows such changes,
+marking the altered variables so that the program cannot subsequently branch on
+them. The marking consists in replacing the security label of the variables with
+|marked|, where |low canFlowTo high canFlowTo marked|.  Austin and Flanagan
+propose a \emph{privatization} operation to boost the permissiveness of {\pu}.
+It is not clear how this technique generalizes to arbitrary lattices. Moreover,
+the privatization operation can only enforce non-interference when outputs are
 suppressed after branching on a marked flow-sensitive reference. Unfortunately,
 none of the mentioned work so far consider concurrency. In fact, the notion of
-{\pu} does not easily generalize to the concurrent setting. The reason is that it would
-require tracking occurrences of branches across threads, which challenges 
-scalability. 
+{\pu} does not easily generalize to the concurrent setting. The reason is that
+it would require tracking occurrences of branches across threads, which
+challenges scalability.
 
+The flow-sensitive extension for LIO is capable to encode a generalize version
+of {\nsu} by using an extra level of indirection.  To illustrate that, we
+consider all the references as a three-level nested labeled values---perfectly
+expressible in \liofs{}. Specifically, we utilize flow-sensitive references of
+type |LIORef S (Labeled l a)|, where |mS(a) = LabeledTCB l (LabeledTCB l
+(LabeledTCB l' t))| for a given flow-sensitive reference at address |a|. Observe
+that the first and second label of the nested structure are the same---this is
+as effectively having the first and second level of the structure collapsed. For
+creating a reference, we call |r <- newRef S lcurr lv|, where |lcurr| is the
+current label and |lv| is just a labeled value of the form |LabeledTCB l'' t|
+for an arbitrary label |l''|.  The new created reference is of the form
+|LabeledTCB lcurr (LabeledTCB lcurr lv)|.  As in {\nsu}, writing a (labeled)
+value into r, |writeRef S r lv'|, demands that the current label flows into
+|lcurr|, i.e., the label on the label at the time of creating |r|. This
+restriction rules out situations where, if |r| was creating in a public
+environment (|low|), it is not possible to modify it in a secret context
+(|high|). These are exactly the forbidden label changes in {\nsu}. Additionally,
+|writeRef S r lv'| allows to change the initially stored labeled value |lv| by
+another one |lv'| with an arbitrary label. This label change (on the last
+labeled value of the nested structure) might be rejected by {\nsu}, where it is
+only possible to change the label of a reference if the new label is 
+above the label given to the reference at the time of creation. In our encoding,
+instead, |writeRef S r lv'| always succeeds when the current label is
+|lcurr|, regarless of the |labelOf lv'|. 
 
 
 %Different from {\pu}, our approach
