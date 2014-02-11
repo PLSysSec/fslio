@@ -306,30 +306,39 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \caption{\lioafs{}: Extending \liofs{} with auto-upgrades.\label{fig:sos:afs}}
 \end{figure}
 
-\concept{upgrade is burdensome}
+%\concept{upgrade is burdensome}
 We can use \liofs{} to implement various applications that rely on
 flow-sensitive references, even those that rely on policies such as the
 popular no-sensitive upgrades of Austin and Flanagan~\cite{Austin:Flanagan:PLAS09}.
 %
+\hl{Ale: to do}
 (In Section~\ref{sec:related}, we describe the encoding of a policy that is
 similar to, but more permissive than, no-sensitive upgrades.)
 %
-Using \liofs{} we can also safely implement our logging application using a
+Using \liofs{}, we can also safely implement our logging application using a
 flow-sensitive reference.
 %
 Unfortunately, our system (and other like it) requires that we insert
-|upgrade|s before we raise the current label, if we wish to write to the
-reference in the more-sensitive context.
+|upgrade|s before we raise the current label so that it is possible to 
+write references in a more-sensitive context, e.g., to modify a public reference
+(with label on the label as |L|) after reading a secret. 
 
-\concept{auto upgrade}
+%\concept{auto upgrade}
 Inspired by~\citep{Hedin13}, we thus provide an extension to \liofs{} that can
 be used to automatically upgrade references.
 %
 This extension, called \lioafs{}, is given in Figure~\ref{fig:sos:afs}.
 %
 Intuitively, whenever the current label is about to be raised, we first upgrade
-all the references in the |mS| store, with |upgradeM|, in the store and then
-raise the current label.
+all the references in the |mS| store %, with |upgradeM|, in the store 
+and then raise the current label.
+%
+Rule \ruleref{upgradestore} upgrades every reference in the flow-sensitive store
+|mS| by executing |t_1 >> t_2 >> cdots >> t_n|, where 
+|ti = upgradeR (LIORefTCB S a_i) l|. Term |t >> t'| is
+similar to bind except that it discards the result produced by
+|t|\footnote{Formally, |t >> t'| is defined as |t >>= \x.t'| where |x| does not
+  appear free in |t'|}. 
 %
 Since in our calculus |unlabel| is the only function that raises the current
 label, we augment the \ruleref{unlabel} rule with \ruleref{unlabel-au} given in
