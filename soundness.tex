@@ -1,13 +1,20 @@
 \section{Soundness}
 \label{sec:soundness}
 
-We can implement our flow-sensitive semantics in terms of
-flow-insensitive references. More concretely, every flow-sensitive
-reference stored as |LabeledTCB l_o (LabeledTCB l_d v)|, can be
-represented by a flow-insensitive reference with label |l_o|, whose
-contents are the labeled value |LabeledTCB l_d
-v|. Figure~\ref{fig:fs-extra-semantics-impl} shows the implementation
-of the flow-sensitive reference operations in this setting.
+In this section, we provide security guarantees for our approach. In
+order to prove non-interference, we will show that we can implement
+our flow-sensitive semantics in terms of flow-insensitive
+references. More concretely, every flow-sensitive reference stored as
+|LabeledTCB l_o (LabeledTCB l_d v)|, can be represented by a
+flow-insensitive reference with label |l_o|, whose contents are the
+labeled value |LabeledTCB l_d v|.
+
+Figure~\ref{fig:fs-exts-semantics-impl} shows the implementation of
+the flow-sensitive reference operations in this setting.  For a given
+store |c|, we define the |impl (-) (c)| function, which given a term |t|
+in \liofs{}, produces a term |impl (t) (c)| in \lio{}, which is obtained
+by expanding the definitions of the flow-sensitive operations. The
+function is applied homomorphically in all other cases.
 
 \begin{figure}
 \small
@@ -16,18 +23,20 @@ wrap r @= LIORefTCB S r
 unwrap (LIORefTCB S r) @= r
 whenDiv t t1 @= if t then t1 else fix (\x. x)
 
-newRef S l t @= do
+impl (LIORefTCB S r) ((lcurr,mI,mS)) @= wrap (LIORefTCB I (labelOf mS(r)) r)
+
+impl (newRef S) c @= \ l t -> do
   lcurr  <- getLabel
   v      <- label l t
   r      <- newRef I lcurr v
   return (wrap r)
 
 
-readRef S r @= readRef I (unwrap r) >>= unlabel
+impl (readRef S) c @= \r -> readRef I (unwrap r) >>= unlabel
 
 
-writeRef S r t @= let  r'  = unwrap r
-                       l   = labelOf r' in do
+impl (writeRef S) c @= \r t -> let  r'  = unwrap r
+                                    l   = labelOf r' in do
   lcurr <- getLabel
   toLabeled l $ do
      v   <- readRef I r'
@@ -36,10 +45,10 @@ writeRef S r t @= let  r'  = unwrap r
        writeRef I r' v'
 
 
-labelOfR S r @= readRef I (unwrap r) >>= return . labelOf
+impl (labelOfR S) c @= \r -> readRef I (unwrap r) >>= return . labelOf
 
-upgradeR r l @= let  r'  = unwrap r
-                     l'  = labelOf r' in do
+impl (upgradeR) c @= \r l -> let  r'  = unwrap r
+                                  l'  = labelOf r' in do
   lcurr <- getLabel
   whenDiv (lcurr canFlowTo l') $ toLabeled l' $ do
      v   <- readRef I r'
@@ -47,8 +56,13 @@ upgradeR r l @= let  r'  = unwrap r
      writeRef I r' v'
 
 \end{code}
-\caption{Implementation for flow-sensitive references.\label{fig:fs-exts-semantics-impl}}
+\caption{Implementation mapping for flow-sensitive references. For all other terms, the function is applied homomorphically.\label{fig:fs-exts-semantics-impl}}
 \end{figure}
+
+We extend this definition naturally to convert \liofs{} stores into
+\lio{} stores, by having |impl1 ((lcurr, mI, mS)) @= (lcurr, mI')|
+where |mI' = mI[ a1 mapsto v1, ..., a_n mapsto v_n ]| for each binding
+of the form |a_i mapsto LabeledTCB l v_i| in |mS|.
 
 In order to prove that our implementation is correct with respect to
 the semantics, we show that, if we take a program with flow-sensitive
@@ -56,14 +70,18 @@ operations, and expand those operations, replacing them by the code in
 Figure~\ref{fig:fs-exts-semantics-impl}, then its behavior corresponds
 with the flow-sensitive semantics.
 
-\begin{theorem}\label{thm:eq} Let |t| in \liofs{}, and let |t'| in \lio{} be
-  obtained by expanding all the flow-sensitive operations in |t| for
-  their definitions in the implementation. Then, |conf c t ==> conf
-  c' v| implies |conf c t' ==> conf c' v|, and if |conf c t diverge|,
-  then |conf c t' diverge|.
-  \textrm{\hl{this is not right: the constructors for FS references are
-  different (one wraps FI references, the other doesn't), so syntactic
-  equiality is not right.  we need the equivalence relation I defined before}}
+
+
+\begin{theorem}\label{thm:eq} Let |t| in \liofs{}, and let |t' = impl t| in \lio{},
+  and suppose that |conf (lcurr,mI,mS) t ==> conf (lcurr',mI',mS') v|.
+  Let |c2 = (lcurr,mI merge mS)|, then
+
+  |conf c2 t' ==> conf c2' v'|, and if |conf c t diverge|, then
+  |conf c2 t' diverge|.
+ \textrm{\hl{this is not right: the
+      constructors for FS references are different (one wraps FI
+      references, the other doesn't), so syntactic equiality is not
+      right.  we need the equivalence relation I defined before}}
 \end{theorem}
 
 For the proof we need the following lemma:
@@ -74,10 +92,10 @@ For the proof we need the following lemma:
   label of the reference.
 \end{lemma}
 
-From previous results, we know that |LIO| has termination-insensitive
+From previous results, we know that LIO has termination-insensitive
 non-interference in the sequential setting, and termination-sensitive
 non-interference in the concurrent setting. By combining the previous
-theorem with these results, we can show that they hold for |LIO| with
+theorem with these results, we can show that they hold for LIO with
 flow-sensitive references.
 
 \begin{theorem}[Termination-insensitive non-interference for \liofs{}]

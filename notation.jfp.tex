@@ -256,6 +256,7 @@
 %format v1
 %format v2
 %format v_n = v"_n"
+%format v_i = v"_i"
 
 
 %format when = "\textbf{when}"
@@ -284,6 +285,9 @@
 %format merge   = "\!\!\curlyvee\!\!"
 %format E       = "\textbf{\Blue{E}}"
 %format Ep      = "\Red{E}"
+
+%format impl (x) (y) = "\llbracket " x "\rrbracket_{"I"}^{"y"}"
+%format impl1 (x)  = "\llbracket " x "\rrbracket_{"I"}"
 
 
 \newcommand{\dom}[1]{\ensuremath{{\textrm{dom}} #1}}
@@ -371,7 +375,6 @@
 \newcommand{\conf}[2]{\langle #1 |inlinesep| #2\rangle}
 \newcommand{\tconf}[3]{\{ #1, #2 |inlinesep| #3\}}
 \newcommand{\thread}[3]{\langle #1, #2, #3\rangle}
-
 
 %%
 \newcommand{\lio}{\ensuremath{\lambda^{\textsf{\tiny LIO}}_{|lattice|}}}
