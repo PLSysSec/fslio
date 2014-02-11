@@ -137,7 +137,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 \inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
-  |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
+  |mS(a) = LabeledTCB l (LabeledTCB l' t')| \\
   |lcurr canFlowTo (l lub l')|\\
   |mS' = mS[a mapsto LabeledTCB l (LabeledTCB l' t)]|\\
   |c' = (lcurr, mI, mS')|
@@ -148,7 +148,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 \inferrule[writeRef-|S|-fail]
 { |c = (lcurr, mI mS)|\\
-  |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
+  |mS(a) = LabeledTCB l (LabeledTCB l' t')| \\
   |lcurr cantFlowTo (l lub l')|
 }
 { |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[unlabel (LabeledTCB l diverge)])| }
@@ -165,13 +165,13 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 \inferrule[upgradeRef]
 { |c = (lcurr, mI, mS)|\\
-  |mS(a) = LabeledTCB l' v|\\
-  |lcurr canFlowTo l' ~> true| \\
-  |conf c (upgrade v l) ==> conf c (LIOTCB v')|\\
-  |mS' = mS [ a mapsto LabeledTCB l' v']|\\
+  |mS(a) = LabeledTCB l v|\\
+  |lcurr canFlowTo l| \\
+  |conf c (upgrade v l') ==> conf c (LIOTCB v')|\\
+  |mS' = mS [ a mapsto LabeledTCB l v']|\\
   |c' = (lcurr, mI, mS')|
 }
-{ |conf c (E[upgradeR (LIORefTCB S a) l]) --> conf c' (E[return ()])| }
+{ |conf c (E[upgradeR (LIORefTCB S a) l']) --> conf c' (E[return ()])| }
 \end{mathpar}
 \caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:sos:fs}}
 \end{figure}
@@ -194,7 +194,7 @@ with |s=S| and Figure~\ref{fig:sos:fs};
 the reduction rules for this extended calculus, called \liofs{}, are also
 given in Figure~\ref{fig:sos:fs}.
 
-\concept{\liofs{} semantics}
+%\concept{\liofs{} semantics}
 When creating a flow-sensitive reference, |newRef S l t| creates a labeled
 value that guards |t| with label |l| (|LabeledTCB l t|).
 %
@@ -241,7 +241,9 @@ which
 %is itself protected by |l|; hence, we provide an explicit rule for this failure
 %case that 
 first raises the current label (through |unlabel|) and then
-divergence (we do not provide a reduction rule for |divergence|).
+divergence, see rule 
+\ruleref{writeref-fs-fail} where |diverge| represents a divergent computation
+ (we do not provide a reduction rule for |diverge|).
 %
 The effects of this rule in a sequential settings is analogous to getting
 stuck\footnote{This is not true if we consider exceptions, a feature 
@@ -256,7 +258,7 @@ used to raise the label of the reference.
 %
 Importantly it ensures that the current computation can modify the label by
 checking that the current label flows to the label on the label (|lcurr
-canFlowTo l'|).
+canFlowTo l|).
 
 
 
@@ -330,7 +332,7 @@ all the references in the |mS| store, with |upgradeM|, in the store and then
 raise the current label.
 %
 Since in our calculus |unlabel| is the only function that raises the current
-label, we augment the \rule{unlabel} rule with \rule{unlabel-au} given in
+label, we augment the \ruleref{unlabel} rule with \ruleref{unlabel-au} given in
 Figure~\ref{fig:sos:afs}.
 %
 In doing so, this ensures that as the computation progresses it does not
