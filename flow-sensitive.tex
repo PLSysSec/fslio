@@ -53,7 +53,7 @@ leakRef href = do
   tmp   <- newRef space low ()
   toLabeled high $ do  h <- readRef space href
                        when h (writeRef space tmp ())
-  return (labelOfR tmp == high)
+  return (labelOfR space tmp == high)
 \end{code}
 \cut{$}
 \caption{Attack in LIO with naive flow-sensitive reference extension. We ommit
