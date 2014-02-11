@@ -1,5 +1,13 @@
 \section{Concurrency}
 \label{sec:conc}
+\Red{Outline:
+- We extend \liofs{} with fork.  The thm for this calculus is TS NF.
+- Note that concurrent lio with naive flow-sensitive refs has the same atack.
+- Hence we consider the FS refs as define in the previous section.
+- Our rules for the concurrent LIO have withRefs by default; this is generally
+  useful and allows us to be parametric in the underlying FS upgrade policy.
+- Discuss extension to flow-sensitive LMVars.
+}
 
 In this section, we analyze our flow-sensitivity extensions in presence of
 concurrency. We firstly give a brief introduction to a subset of the concurrent
