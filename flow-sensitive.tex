@@ -222,6 +222,14 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \subsection{Automatic upgrades}
 \label{sec:flow-sensitive:auto}
 
+\Red{
+- fs good; can address log problem
+- upgrade is painful, want auto upgrades
+- need withRefs to ensure we're not upgrading the whole store
+  natural place to use withRefs is in tolabeled
+- talk about no sensitive upgrades
+}
+
 \begin{figure} % semantics
 \small
 \begin{code}
