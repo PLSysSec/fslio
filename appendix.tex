@@ -72,3 +72,48 @@ E   ::= []| Ep | E >>= t
 \end{mathpar}
 \caption{Reduction rules for base \lio.\label{fig:sos:rules}}
 \end{figure}
+
+\section{An alternative attack on naive flow-sensitive implementation}
+\label{sec:app:fs-attack2}
+\begin{figure}
+\small
+\begin{code}
+leakRef :: LIORefTCB space Bool -> LIO Bool
+leakRef href = do
+  lref  <- newRef space low true
+  tmp   <- newRef space low false
+  toLabeled high $ do  h <- readRef space href
+                       when h (writeRef space tmp true)
+  toLabeled high $ do  t <- readRef space tmp
+                       when (not t) (writeRef space lref false)
+  readRef space lref
+\end{code}
+\caption{An attack in LIO with naive flow-sensitive reference
+extension without |labelOfR space|.\label{fig:fs-attack2}}
+\end{figure}
+%
+As in the attack of Figure~\ref{fig:fs-attack}, |leakRef| can be used to leak
+the value stores in a |high| reference |href|, while keeping the current label
+|low|.
+%
+Internally, the value is leaked into public reference |lref| by leveraging the
+fact that based on a secret value the label of a public reference (|tmp|) can
+be changed (or not).
+%
+In the first |toLabeled| block, if |h==true|, then the label of |tmp| is raised
+to |high| and its value is set to |true|.
+%
+In the second |toLabeled| block, we read |tmp|, which may raise the current
+label to |high| if the secret is |true| (and thus |tmp| was upgraded).
+%
+Indeed, if the secret is |true| (and thus |t==true|) we leave the public
+reference intact: |true|.
+%
+However, if the secret is |false|, the |tmp| reference is not modified in the
+first |toLabeled| block and thus when reading it in the second |toLabeled|
+block, the current label remains |low|, and since |t==false|, we write |false|
+into the public reference.
+%
+In both cases the value stored in |lref| corresponds to that of |href|, yet
+leaving the current label and the label of |lref| intact, |low|---a direct
+leak!

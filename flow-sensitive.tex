@@ -1,59 +1,85 @@
 \section{Flow-sensitivity extensions}
 \label{sec:flow-sensitive}
 
-Previous versions of |LIO| support mutable references (LIORefs) with a
-fixed label, which is preserved throughout the computation. These
-references are known as \emph{flow-insensitive}. In this work, we
-extend |LIO| to include \emph{flow-sensitive} references,
-i.e. references which can store values with different labels over the
-course of the computation. Unlike their flow-insensitive counterparts,
-the label associated with such a reference is mutable, and will vary
-according to the sensitivity of what is stored in the
-reference. Writing a secret value to a public reference in this
-context will cause the reference to be relabelled as secret, instead
-of halting the program.
+\concept{a more-LIO focused example for why FS}
+Unfortunately the flow-insensitive references described in the previous section
+are somewhat inflexible.
+%
+Consider, for example, an application that uses a reference as a log.
+%
+Since the log may contain sensitive information, it is important that the
+reference be labeled.
+%
+Equally important is to be able to read the log at any point in the program to,
+for instance, save it to a file.
+%
+While labeling the reference with the maximum element in the label lattice
+$\top$ would always allow writes to the log, and |toLabeled| can be used to
+write the log to a file, this is unsatisfactory: it assumes the existence of a
+maximum element, which in practical IFC systems such as Hails~\tocite{}, does
+not exist.
+%
+Moreover, it almost always over-approximates the sensitivity of the
+log---suppose that the computation never reads sensitive data, yet wishes to
+read the log content to, e.g., format it: it needs to taint itself to $\top$!
+%
+It is clear that even in the case of simple scenarios, having references with
+mutable labels that vary according to the sensitive of what is stored in the
+reference is useful.
 
-Flow-sensitive references allow the enforcement mechanism to accept a
-greater number of secure programs. Nevertheless,
-Russo~and~Sabelfeld~\citep{?} show that a naive implementation of this
-idea in a dynamic enforcement introduces a security leak. We
-illustrate this attack in the context of |LIO| in
-Figure~\ref{fig:fs-attack}. In this function, we assume that we have a
-version of |LIO| where |LIORef|s are flow-sensitive, so the
-|writeLIORef| operations in the conditionals can raise the label of
-the reference they assign to, if the current label is $H$. The
-function takes both a |public| and a |secret| reference as parameters,
-which contain either 1 or 0. Then, the function creates a public
-reference |temp| with initial value 0, and assigns 1 to |public|.
-Note that, if the value of |secret| is 1, the first |writeLIORef| is
-executed, but this causes |temp| to be 1, which prevents the second
-|writeLIORef| from executing. Thus, |public| is untouched and it will
-contain the value of |secret|. If the value of |secret| is 0, the
-first |writeLIORef| is not executed, but the second one is, causing
-|public| to be assigned the value 0. Since |temp| has not been
-assigned in a secret context, its label remains $L$, and so does the
-label of |public|. In either case, the final value of |public| matches
-the value in |secret|, so one bit of information has been leaked
-through this attack, without using the termination channel.
-% maybe say that the key part of the attack is the fact that temp
-% has different labels in different runs of the progam ???
-
-\begin{figure}[!ht]
-\vspace*{-5pt}
+\concept{naive approach doesn't work}
+However, naively implementing flow-sensitive references can effectively
+introduce the implicit problem of other language-based system to LIO.
+%
+Suppose that we allow for the label of a reference to simply be raised to the
+current label at the time a |writeRef space| is performed.
+%
+So, for example, if the label of our log reference is |low| and the computation
+has read sensitive data such that the current label is |H|, now writing to the
+log raises the label of the reference to |H|.
+%
+While this approach was clearly shown to be unsafe, due to implicit-flows, in
+language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
+construction and thus raises the question: \emph{is this approach safe in LIO?}
+%
+Unfortunately, the answer to this question is \emph{no}; consider the code
+in Figure~\ref{fig:fs-attack}, below:
+%
+\begin{figure}[h!]
+\small
 \begin{code}
-attack public secret = 
-  do  temp    <- newLIORef L 0
-      writeLIORef public 1
-      toLabeled H $ do
-        x <- readLIORef secret
-        when (x == 1) (writeLIORef temp 1)
-      toLabeled H $ do
-        t <- readLIORef temp
-        when (t /= 1) (writeLIORef public 0)
+leakRef :: LIORefTCB space Bool -> LIO Bool
+leakRef href = do
+  tmp   <- newRef space low ()
+  toLabeled high $ do  h <- readRef space href
+                       when h (writeRef space tmp ())
+  return (labelOfR tmp == high)
 \end{code}
-\caption{Potential flow-sensitivity attack in |LIO|.\label{fig:fs-attack}}
-\vspace*{-5pt}
+\caption{Attack in LIO with naive flow-sensitive reference extension. We ommit
+subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 \end{figure}
+
+\concept{can leak into ref label}
+\noindent
+%
+Here, |leakRef| can be used to leak the value stored in a |high| reference
+|href|, while keeping the current label |low|, by leveraging the new
+implicit-flow channel: the label of references.
+%
+Concretely, in |leakRef| we create a public reference |tmp| and withing the
+|toLabeled| block, which is used to ensure that the current label remains
+|low|, the label of this reference is changed to |H| if the secret stored in
+|href| is |true|, and left intact (|L|) if the secret is |false|.
+%
+Then, simply inspecting the label of the reference reveals the value stored in
+|href|!
+%
+We note that the use of |labelOfR space| is not fundamental to this attack; in
+Appendix~\ref{sec:app:fs-attack2} we show an alternative version of |leakRef|
+that does not rely on label inspection.
+
+
+
 
 This problem can be addressed in several ways. Prior work proposed the
 \emph{no-sensitive-upgrade} strategy~\citep{?} and the
