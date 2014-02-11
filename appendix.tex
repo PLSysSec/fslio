@@ -2,37 +2,6 @@
 \section{Semantics for the base calculus}
 \label{sec:app:sem}
 
-The reduction rules for pure and monadic terms are given in
-Figure~\ref{fig:sos:rules}.
-
-\concept{pure red}
-%
-The reduction rules for pure terms are mostly standard.
-%
-Only two points are worth noting.
-%
-First, we define substitution |{t2 / x } t1| in the usual way:
-homomorphic on all operators and renaming bound names to avoid
-captures. 
-%
-Second, our label operations |lub|, |glb|, and |canFlowTo| rely on the
-label-specific implementation of these lattice operators, as used in
-the premise of rule \ruleref{labelOp};
-%
-we use the meta-level partial function |denot cdot|, which maps terms
-to values, to precisely capture this implementation detail.
-
-\concept{monad red}
-%
-The reduction rules for monadic terms deserve some attention.
-%
-As a result of this encoding, the definition for |return| and |(>>=)|
-are trivial: the former simply reduces to a monadic value by wrapping
-the term with the |LIOTCB| constructor, while the latter evaluates the
-left-hand term and supplies the result to the right-hand term, as
-usual.
-
-
 \begin{figure}[t] % sos:rules
 \small
 \begin{code}
@@ -72,6 +41,37 @@ E   ::= []| Ep | E >>= t
 \end{mathpar}
 \caption{Reduction rules for base \lio.\label{fig:sos:rules}}
 \end{figure}
+
+
+The reduction rules for pure and monadic terms are given in
+Figure~\ref{fig:sos:rules}. 
+% 
+We define substitution |{t2 / x } t1| in the
+usual way: homomorphic on all operators and renaming bound names to avoid
+captures.
+%
+Our label operations |lub|, |glb|, and |canFlowTo| rely on the label-specific
+implementation of these lattice operators, as used in the premise of rule
+\ruleref{labelOp}; we use the meta-level partial function |denot cdot|, which
+maps terms to values, to precisely capture this implementation detail.
+
+%\concept{pure red}
+%
+The reduction rules for pure terms are mostly standard. For instance, 
+in rule \ruleref{ifTrue}, when the branch has a true condition, i.e., 
+|Ep[if true then t2 else t3]|, it reduces to the then branch (|Ep[t2]|). 
+The rest are self-explanatory and we do not discuss them any further. 
+%
+
+%\concept{monad red}
+%
+The reduction rules for monadic terms deserve some attention.
+%
+The definition for |return| and |(>>=)| are trivial: the former simply reduces
+to a monadic value by wrapping the term with the |LIOTCB| constructor, while the
+latter evaluates the left-hand term and supplies the result to the right-hand
+term, as usual.
+
 
 \section{An alternative attack on naive flow-sensitive implementation}
 \label{sec:app:fs-attack2}
