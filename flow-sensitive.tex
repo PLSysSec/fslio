@@ -103,6 +103,8 @@ the time of creation) by inspecting the label: the label has not changed!
 Thus, to extend LIO with flow-sensitive reference we must account for the label
 on the label of the reference at the time of creation, |lcurr|.
 %
+(This label is, however, immutable.)
+%
 In turn, when changing the label of the reference, we must ensure that no data
 from the context at the time of the change, whose label is |lcurr'|, is leaked
 into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
@@ -114,26 +116,67 @@ with |s=S|, and Figure~\ref{fig:sos:fs};
 the reduction rules for this extended calculus, called \liofs{}, are also
 given in Figure~\ref{fig:sos:fs}.
 
+\concept{\liofs{} semantics}
+When creating a flow-sensitive reference, |newRef S l t| creates a labeled
+value that guards |t| with label |l| (|LabeledTCB l t|).
+%
+However, since we wish to to allow programmers to modify the label |l| of the
+reference, we additionally store the label on |l|, i.e., |lcurr|, by simply
+labeling the already-guarded term, as as shown in rule~\ruleref{newRef-|S|}.
+%
+|newRef S| returns a |LIORefTCB S a| which simply encapsulates the fresh
+reference address where the doubly-labeled term is stored.
+%
+Note that this values from the flow-insensitive case in not encapsulating the
+label of the reference.
+%
+This is precisely because the label of a flow-sensitive reference is not
+mutable and must be looked up in the store.
+%
+As given by rule~\ruleref{labelOf-|S|}, |labelOfR S| returns the label of the
+reference after raising the current label (with |unlabel|) to account for the
+fact that the label of the reference |l'| is a value at sensitivity level |l|,
+i.e., we raise the current label to the join of the current label and the label
+on the label.
+%
+The rules for reading and writing to flow-sensitive refernces are standard;
+|readRef S| raise the current label to the label of the reference (which is
+above the label on the label) and |writeRef S| ensure that the current
+computation can write to the reference.
+%
+Note that |writeRef S| does not modify the label of the reference.
+%
+This is, in part, because we wish to keep the inferace between flow-insensitive
+and flow-sensitive references as close as possible.
+%
+Instead, we provide |upgradeR| precisely for this purpose; this primitive is
+used to raise the label of the reference.
+%
+Importantly it ensures that the current computation can modify the label by
+checking that the current label flows to the label on the label (|lcurr
+canFlowTo l'|).
 
-This problem can be addressed in several ways. Prior work proposed the
-\emph{no-sensitive-upgrade} strategy~\citep{?} and the
-\emph{permissive-upgrade} strategy~\citep{?}. The no-sensitive-upgrade
-check forbids assignment to a public reference in a secret context. In
-contrast, the permissive-upgrade check allows the assignment but marks
-it as a partial leak; if there is a subsequent conditional branch on
-partially leaked data, the program stops.  We adapt the
-permissive-upgrade idea to our floating-label model, which results in
-a slightly more permissive enforcement that allows the conditional
-branch.
 
-In order to express our flow-sensitive enforcement, we extend the
-formalization of |LIO| to include flow-sensitive LIORefs with an
-|upgrade| operation. Figure~\ref{fig:fs-exts-syntax} introduces the
-syntax for values, terms and types that we require in order to account
-for both flow-sensitive and flow-insensitive references.
 
-The expression |m1 merge m2| merges the two stores, using elements
-from |m1| to override those of |m2|.
+%%This problem can be addressed in several ways. Prior work proposed the
+%%\emph{no-sensitive-upgrade} strategy~\citep{?} and the
+%%\emph{permissive-upgrade} strategy~\citep{?}. The no-sensitive-upgrade
+%%check forbids assignment to a public reference in a secret context. In
+%%contrast, the permissive-upgrade check allows the assignment but marks
+%%it as a partial leak; if there is a subsequent conditional branch on
+%%partially leaked data, the program stops.  We adapt the
+%%permissive-upgrade idea to our floating-label model, which results in
+%%a slightly more permissive enforcement that allows the conditional
+%%branch.
+%%
+%%In order to express our flow-sensitive enforcement, we extend the
+%%formalization of |LIO| to include flow-sensitive LIORefs with an
+%%|upgrade| operation. Figure~\ref{fig:fs-exts-syntax} introduces the
+%%syntax for values, terms and types that we require in order to account
+%%for both flow-sensitive and flow-insensitive references.
+%%
+%%The expression |m1 merge m2| merges the two stores, using elements
+%%from |m1| to override those of |m2|.
 
 % Figure~\ref{fig:fs-exts-semantics} introduces the semantics for LIORef
 % operations. Rule $\textsc{NewRef}$ creates a new LIORef with a given
@@ -196,7 +239,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
   |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
-  |lcurr canFlowTo l ~> true|\\
+  |lcurr canFlowTo (l lub l') ~>* true|\\
   |mS' = mS[a mapsto LabeledTCB l (LabeledTCB l' t)]|\\
   |c' = (lcurr, mI, mS')|
 }
