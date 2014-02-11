@@ -282,7 +282,7 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 {|c = (lcurr, mI, mS)|\\
  |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
  |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
- |c''' = (lcurr', mI', mS'' merge mS)|
+ |c'' = (lcurr', mI', mS'' merge mS)|
 }
 {|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
 \and
@@ -351,36 +351,40 @@ Returning to our logging example, with auto-upgrades, the reference used as the
 log never needs to be explicitly upgraded and can always be written to---an
 interface expected of a log.
 
-\concept{store creep}
+%\concept{store creep}
 Recall, however, that |toLabeled| provides a means for temporarily raising the
-current label, allowing thereby allowing us to write programs that do not have
+current label, allowing thereby allowing us to write programs avoiding 
 label creep.
 %
-Unfortunately, with auto-upgrades, when the current label within a |toLabeled|
-block is raised, the upgrades of the flow-sensitive references remain even
+Unfortunately, with auto-upgrades, when the current label gets raised 
+within a |toLabeled| block, the upgrades of the flow-sensitive references remain even
 after the current label is restored.
 %
 Thus, reading from any flow-sensitive reference after the |toLabeled|
 block will raise the current label to, at least, the current label at the end
-of the |toLabeled| block (since all references are upgraded).
+of the |toLabeled| block (since all references are upgraded every time that 
+the current label gets raised).
 %
-This can be used to carry out a ``poison pill''-like attack~\tocite{breeze}, wherein
-the (usually untrusted) computation executing within the |toLabeled| block will
-render the outer computation useless by imposing label creep.
+This can be used to carry out a \emph{poison pill}-like
+attack~\cite{10.1109/SP.2013.10}, wherein the (usually untrusted) computation
+executing within the |toLabeled| block will render the outer computation useless
+by imposing label creep.
 
-\concept{withRefs}
+%\concept{withRefs}
 To address this issue, our \lioafs{} calculus further extends \liofs{} with
 |withRefs v t| which takes a bag |v| of references and a computation |t|, and
 executes |t| in a configuration where the flow-sensitive reference store only
 contains the subset of references |v|.
 %
 A bag is either empty |nil|, or a number of references |set (v,..)|, where each
-element in the bag may have a distinct type.
+element in the bag may be a reference of a distinct type.
 %
 Rule \ruleref{withRefs} precisely defines the semantics of this new primitive,
 where meta function |addrs| converts a bag of references to a set of their
 corresponding addresses, and |merge| is used to merge the stores, giving
-preferences to the left-hand-side store.
+preferences to the left-hand-side store, i.e., when there is a discrepancy on a
+stored value between both stores, it chooses the one appearing on the
+left-hand-side.
 %
 The primitive is mostly standard and provides a programming paradigm similar to
 that already present in some mainstream languages (e.g., C++'s \Red{ASK DM}).
