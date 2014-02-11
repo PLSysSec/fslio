@@ -1,8 +1,8 @@
 \section{Flow-sensitivity extensions}
 \label{sec:flow-sensitive}
 
-\concept{a more-LIO focused example for why FS}
-Unfortunately the flow-insensitive references described in the previous section
+%\concept{a more-LIO focused example for why FS}
+Unfortunately, the flow-insensitive references described in the previous section
 are somewhat inflexible.
 %
 Consider, for example, an application that uses a reference as a log.
@@ -13,23 +13,25 @@ reference be labeled.
 Equally important is to be able to read the log at any point in the program to,
 for instance, save it to a file.
 %
-While labeling the reference with the maximum element in the label lattice
-$\top$ would always allow writes to the log, and |toLabeled| can be used to
-write the log to a file, this is unsatisfactory: it assumes the existence of a
-maximum element, which in practical IFC systems such as Hails~\tocite{}, does
-not exist.
+Although labeling the reference with the top element in the
+security lattice (i.e., $\top$) would always allow writes to the log, and |toLabeled| can be
+used to write the log to a file, this is unsatisfactory: it assumes the
+existence of a top element, which in practical IFC systems such as
+Hails~\cite{giffin:hails}, does not exist.
 %
-Moreover, it almost always over-approximates the sensitivity of the
-log---suppose that the computation never reads sensitive data, yet wishes to
-read the log content to, e.g., format it: it needs to taint itself to $\top$!
+More importantly, it almost always over-approximates the sensitivity of the
+log. For instance, suppose that the computation never reads sensitive data, yet wishes to
+read the log content to, e.g., format it, then it needs to taint itself to $\top$!
 %
 It is clear that even in the case of simple scenarios, having references with
 mutable labels that vary according to the sensitive of what is stored in the
 reference is useful.
 
-\concept{naive approach doesn't work}
+%\concept{naive approach doesn't work}
+% Ale: I don't like implicit since it might be associated to implicit flows
 However, naively implementing flow-sensitive references can effectively
-introduce the implicit problem of other language-based system to LIO.
+introduce label changes as a covert channel. 
+%similar to other language-based system to LIO.
 %
 Suppose that we allow for the label of a reference to simply be raised to the
 current label at the time a |writeRef space| is performed.
@@ -38,14 +40,16 @@ So, for example, if the label of our log reference is |low| and the computation
 has read sensitive data such that the current label is |H|, now writing to the
 log raises the label of the reference to |H|.
 %
-While this approach was clearly shown to be unsafe, due to implicit-flows, in
-language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
-construction and thus raises the question: \emph{is this approach safe in LIO?}
+As identified by other language-based IFC systems
+(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}, this
+approach is not safe; consider the code in Figure~\ref{fig:fs-attack}.
+%While this approach was clearly shown to be unsafe, due to implicit-flows, in
+%language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
+%construction and thus raises the question: \emph{is this approach safe in LIO?}
 %
-Unfortunately, the answer to this question is \emph{no}; consider the code
-in Figure~\ref{fig:fs-attack}, below:
+%Unfortunately, the answer to this question is \emph{no} 
 %
-\begin{figure}[h!]
+\begin{figure}[t]
 \small
 \begin{code}
 leakRef :: LIORefTCB space Bool -> LIO Bool
@@ -60,12 +64,12 @@ leakRef href = do
 subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 \end{figure}
 
-\concept{can leak into ref label}
-\noindent
+%\concept{can leak into ref label}
+%\noindent
 %
-Here, |leakRef| can be used to leak the value stored in a |high| reference
-|href|, while keeping the current label |low|, by leveraging the new
-implicit-flow channel: the label of references.
+In this attack, |leakRef| can be used to leak the value stored in a |high| reference
+|href|, while keeping the current label |low|, by leveraging a new
+covert channel: the label of references.
 %
 Concretely, in |leakRef| we create a public reference |tmp| and withing the
 |toLabeled| block, which is used to ensure that the current label remains
@@ -77,95 +81,30 @@ Then, simply inspecting the label of the reference reveals the value stored in
 %
 We note that the use of |labelOfR space| is not fundamental to this attack; in
 Appendix~\ref{sec:app:fs-attack2} we show an alternative version of |leakRef|
-that does not rely on label inspection.
+which does not rely on label inspection and follows the structure of the attack
+given in Section~\ref{sec:intro}.
 
-\hl{KEY INSIGHT:}
+%\concept{KEY INSIGHT:}
 Fundamentally, the label protecting the \emph{label} of an object (e.g.,
 labeled values and references) is the current label |lcurr| at the time of
 creation.
 %
 Hence, to modify the label of the object within some context (e.g., |toLabeled|
-block) wherein the current label is |lcurr'| it must be that the |lcurr'
+block) wherein the current label is |lcurr'|, \emph{it must be the case that} |lcurr'
 canFlowTo lcurr|, i.e., we must be able to write data at sensitivity level
 |lcurr'| into an entity (the label) labeled |lcurr|.
 %
-This is especially important if we can restore the current label from |lcurr'|
+This restriction is especially important if we can restore the current label
+from |lcurr'|, where |lcurr canFlowToStrict lcurr'|,  
 to |lcurr| and subsequently observe the leak within the program itself.
 %
 In the case where the label of the object is immutable, as is the case for
 labeled values and flow-insensitive references, this is not a concern: even if
-the current label is raised to |lcurr'| and then restored to |lcurr| we do not
-learn any information more sensitive than |lcurr| (the label of the label at
-the time of creation) by inspecting the label: the label has not changed!
+the current label is raised to |lcurr'| and then restored to |lcurr|, we do not
+learn any information more sensitive than |lcurr| (the label of the label at the
+time of creation) by inspecting the label of the reference: the label has not
+changed!
 %
-
-\concept{\liofs{}}
-Thus, to extend LIO with flow-sensitive reference we must account for the label
-on the label of the reference at the time of creation, |lcurr|.
-%
-(This label is, however, immutable.)
-%
-In turn, when changing the label of the reference, we must ensure that no data
-from the context at the time of the change, whose label is |lcurr'|, is leaked
-into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
-i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
-%
-Formally, we extend the \lio{} syntax as shown in Figure~\ref{fig:sos:refs},
-with |s=S|, and Figure~\ref{fig:sos:fs};
-%
-the reduction rules for this extended calculus, called \liofs{}, are also
-given in Figure~\ref{fig:sos:fs}.
-
-\concept{\liofs{} semantics}
-When creating a flow-sensitive reference, |newRef S l t| creates a labeled
-value that guards |t| with label |l| (|LabeledTCB l t|).
-%
-However, since we wish to to allow programmers to modify the label |l| of the
-reference, we additionally store the label on |l|, i.e., |lcurr|, by simply
-labeling the already-guarded term, as as shown in rule~\ruleref{newRef-|S|}.
-%
-|newRef S| returns a |LIORefTCB S a| which simply encapsulates the fresh
-reference address where the doubly-labeled term is stored.
-%
-Note that this values from the flow-insensitive case in not encapsulating the
-label of the reference.
-%
-This is precisely because the label of a flow-sensitive reference is not
-mutable and must be looked up in the store.
-%
-As given by rule~\ruleref{labelOf-|S|}, |labelOfR S| returns the label of the
-reference after raising the current label (with |unlabel|) to account for the
-fact that the label of the reference |l'| is a value at sensitivity level |l|,
-i.e., we raise the current label to the join of the current label and the label
-on the label.
-%
-The rules for reading and writing to flow-sensitive references are mostly
-standard; |readRef S| raise the current label to the label of the reference
-(which is above the label on the label) and |writeRef S| ensure that the
-current computation can write to the reference.
-%
-One peculiarity with |writeRef S| is the case when the current label does not
-flow to the join of the reference label, i.e., |lcurr canFlowTo l lub l' ~>*
-false|, and thus the write should fail.
-%
-If our program simply gets stuck, the current label does not reflect the fact
-that the rule relies, and thus observes, the label on the reference |l'| which
-is itself protected by |l|; hence, we provide an explicit rule for this failure
-case that first raises the current label (through |unlabel|) and then
-divergence (we do not provide a reduction rule for |divergence|).
-%
-Additionally, we note that |writeRef S| does not modify the label of the reference.
-%
-This is, in part, because we wish to keep the infer ace between
-flow-insensitive and flow-sensitive references as close as possible.
-%
-Instead, we provide |upgradeR| precisely for this purpose; this primitive is
-used to raise the label of the reference.
-%
-Importantly it ensures that the current computation can modify the label by
-checking that the current label flows to the label on the label (|lcurr
-canFlowTo l'|).
-
 
 \begin{figure} % semantics
 \small
@@ -178,7 +117,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \begin{mathpar}
 \inferrule[newRef-|S|]
 { |c = (lcurr, mI, mS)|\\
-  |lcurr canFlowTo l ~> true|\\
+  |lcurr canFlowTo l|\\
   |fresh a|\\
   |mS' = mS[a mapsto LabeledTCB lcurr (LabeledTCB l t)]|\\
   |c' = (lcurr, mI, mS')|
@@ -190,7 +129,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[readRef-|S|]
 { |c = (lcurr, mI, mS)| \\
   |mS(a) = LabeledTCB l (LabeledTCB l' t)|\\
-  |l lub l' ~> l''|
+  |l'' = l lub l'|
 }
 { |conf c (E[readRef S (LIORefTCB S a)]) --> conf c (E[unlabel (LabeledTCB l'' t)])| }
 
@@ -199,7 +138,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[writeRef-|S|]
 { |c = (lcurr, mI mS)|\\
   |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
-  |lcurr canFlowTo (l lub l') ~>* true|\\
+  |lcurr canFlowTo (l lub l')|\\
   |mS' = mS[a mapsto LabeledTCB l (LabeledTCB l' t)]|\\
   |c' = (lcurr, mI, mS')|
 }
@@ -210,7 +149,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[writeRef-|S|-fail]
 { |c = (lcurr, mI mS)|\\
   |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
-  |lcurr canFlowTo (l lub l') ~>* false|
+  |lcurr cantFlowTo (l lub l')|
 }
 { |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[unlabel (LabeledTCB l diverge)])| }
 
@@ -238,18 +177,94 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \end{figure}
 
 
+%\concept{\liofs{}}
+Thus, to extend LIO with flow-sensitive reference, we must account for the label
+on the label of the reference at the time of creation, |lcurr|.
+%
+(This label is, however, immutable.)
+%
+In turn, when changing the label of the reference, we must ensure that no data
+from the context at the time of the change, whose label is |lcurr'|, is leaked
+into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
+i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
+%
+Formally, we extend the \lio{} syntax shown in Figure~\ref{fig:sos:refs}
+with |s=S| and Figure~\ref{fig:sos:fs};
+%
+the reduction rules for this extended calculus, called \liofs{}, are also
+given in Figure~\ref{fig:sos:fs}.
+
+\concept{\liofs{} semantics}
+When creating a flow-sensitive reference, |newRef S l t| creates a labeled
+value that guards |t| with label |l| (|LabeledTCB l t|).
+%
+However, since we wish to allow programmers to modify the label |l| of the
+reference, we additionally store the label on |l|, i.e., |lcurr|, by simply
+labeling the already-guarded term (|mS' = mS[a mapsto LabeledTCB lcurr
+(LabeledTCB l t)]|), as as shown in rule~\ruleref{newRef-|S|} .
+%
+Primitive |newRef S| returns a |LIORefTCB S a| which simply encapsulates the fresh
+reference address where the doubly-labeled term is stored.
+%
+Different from the constructor |LIORefTCB I|,  the constructor |LIORefTCB S|
+does not encapsulate the label of the reference. 
+%
+This is precisely because the label of a flow-sensitive reference is 
+mutable and must be looked up in the store.
+%
+As given by rule~\ruleref{labelOf-|S|}, |labelOfR S| returns the label of the
+reference after raising the current label (with |unlabel|) to account for the
+fact that the label of the reference |l'| is a value at sensitivity level |l|,
+i.e., we raise the current label to the join of the current label and the label
+on the label.
+%
+The rules for reading and writing to flow-sensitive references are mostly
+standard; |readRef S| raise the current label to the label of the reference
+(which is above the label on the label) and |writeRef S| ensure that the
+current computation can write to the reference (|lcurr canFlowTo (l lub l')|).
+%
+One peculiarity with |writeRef S| is the case when the current label does not
+flow to the join of the reference label, i.e., |lcurr cantFlowTo l lub l'|, and
+thus the write should fail.
+%
+If our semantics simply gets stuck, there is a termination leak which reveals
+information about the possible changes on label |l'| (itself protected by |l|).
+Observe that those changes could have occurred in a more sensitive context than
+|lcurr|. For sequential LIO, this is not a problem since the security guarantees
+ignore termination leaks~\cite{stefan:lio}. However, in a concurrent setting,
+such leaks are a concern~\cite{stefan:addressing-covert}. Aiming to apply our
+flow-sensitive approach for concurrency almost without modifications (see
+Section~\ref{sec:conc}), we introduce a failure rule for |writeRef S|
+which
+%does not reflect the fact
+%that the rule relies, and thus observes, the label on the reference |l'| which
+%is itself protected by |l|; hence, we provide an explicit rule for this failure
+%case that 
+first raises the current label (through |unlabel|) and then
+divergence (we do not provide a reduction rule for |divergence|).
+%
+The effects of this rule in a sequential settings is analogous to getting
+stuck\footnote{This is not true if we consider exceptions, a feature 
+out of the scope of this paper}. 
+Additionally, we note that |writeRef S| does not modify the label of the reference.
+%
+This is, in part, because we wish to keep the difference between
+flow-insensitive and flow-sensitive references as close as possible.
+%
+Instead, we provide |upgradeR| precisely for this purpose; this primitive is
+used to raise the label of the reference.
+%
+Importantly it ensures that the current computation can modify the label by
+checking that the current label flows to the label on the label (|lcurr
+canFlowTo l'|).
+
+
+
+
 \subsection{Automatic upgrades}
 \label{sec:flow-sensitive:auto}
 
-\Red{
-- fs good; can address log problem
-- upgrade is painful, want auto upgrades
-- need withRefs to ensure we're not upgrading the whole store
-  natural place to use withRefs is in tolabeled
-- talk about no sensitive upgrades
-}
-
-\begin{figure} % semantics
+\begin{figure} % auto-fs
 \small
 \begin{code}
 v    ::= cdots  | set (v, ...) | nil
@@ -272,22 +287,96 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \inferrule[upgradeStore]
 {|c = (lcurr, mI, mS)|\\
  |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
- |ti = upgradeR (LIORefTCB S a_i) lcurr, i = 1, ..., n|
+ |ti = upgradeR (LIORefTCB S a_i) l, i = 1, ..., n|
 }
-{|conf c (E[upgradeM]) --> conf c (E[t1 >> ... >> t_n])|}
+{|conf c (E[upgradeM l]) --> conf c (E[t1 >> ... >> t_n])|}
 \and
-\inferrule[unlabel-AU]
+\inferrule[unlabel-au]
 { |c = (lcurr, mI, mS)|\\
-  |lcurr lub l ~> lcurr'|\\
-  |c' = (lcurr', mI, mS)|\\
-  |t' = upgradeM >> return t|
+  |lcurr' = lcurr lub l|\\
+  |conf c (upgradeM lcurr') ==> conf (lcurr, mI, mS') (LIOTCB ())|\\
+  |c' = (lcurr', mI, mS')|
 }
 {
-|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[t'])|
+|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[return t])|
 }
 \end{mathpar}
 \caption{\lioafs{}: Extending \liofs{} with auto-upgrades.\label{fig:sos:afs}}
 \end{figure}
+
+\concept{upgrade is burdensome}
+We can use \liofs{} to implement various applications that rely on
+flow-sensitive references, even those that rely on policies such as the
+popular no-sensitive upgrades of Austin and Flanagan~\cite{Austin:Flanagan:PLAS09}.
+%
+(In Section~\ref{sec:related}, we describe the encoding of a policy that is
+similar to, but more permissive than, no-sensitive upgrades.)
+%
+Using \liofs{} we can also safely implement our logging application using a
+flow-sensitive reference.
+%
+Unfortunately, our system (and other like it) requires that we insert
+|upgrade|s before we raise the current label, if we wish to write to the
+reference in the more-sensitive context.
+
+\concept{auto upgrade}
+Inspired by~\citep{Hedin13}, we thus provide an extension to \liofs{} that can
+be used to automatically upgrade references.
+%
+This extension, called \lioafs{}, is given in Figure~\ref{fig:sos:afs}.
+%
+Intuitively, whenever the current label is about to be raised, we first upgrade
+all the references in the |mS| store, with |upgradeM|, in the store and then
+raise the current label.
+%
+Since in our calculus |unlabel| is the only function that raises the current
+label, we augment the \rule{unlabel} rule with \rule{unlabel-au} given in
+Figure~\ref{fig:sos:afs}.
+%
+In doing so, this ensures that as the computation progresses it does not
+``lose'' write access to its references.
+%
+Returning to our logging example, with auto-upgrades, the reference used as the
+log never needs to be explicitly upgraded and can always be written to---an
+interface expected of a log.
+
+\concept{store creep}
+Recall, however, that |toLabeled| provides a means for temporarily raising the
+current label, allowing thereby allowing us to write programs that do not have
+label creep.
+%
+Unfortunately, with auto-upgrades, when the current label within a |toLabeled|
+block is raised, the upgrades of the flow-sensitive references remain even
+after the current label is restored.
+%
+Thus, reading from any flow-sensitive reference after the |toLabeled|
+block will raise the current label to, at least, the current label at the end
+of the |toLabeled| block (since all references are upgraded).
+%
+This can be used to carry out a ``poison pill''-like attack~\tocite{breeze}, wherein
+the (usually untrusted) computation executing within the |toLabeled| block will
+render the outer computation useless by imposing label creep.
+
+\concept{withRefs}
+To address this issue, our \lioafs{} calculus further extends \liofs{} with
+|withRefs v t| which takes a bag |v| of references and a computation |t|, and
+executes |t| in a configuration where the flow-sensitive reference store only
+contains the subset of references |v|.
+%
+A bag is either empty |nil|, or a number of references |set (v,..)|, where each
+element in the bag may have a distinct type.
+%
+Rule \ruleref{withRefs} precisely defines the semantics of this new primitive,
+where meta function |addrs| converts a bag of references to a set of their
+corresponding addresses, and |merge| is used to merge the stores, giving
+preferences to the left-hand-side store.
+%
+The primitive is mostly standard and provides a programming paradigm similar to
+that already present in some mainstream languages (e.g., C++'s \Red{ASK DM}).
+%
+We lastly remark that by simply wrapping |toLabeled| with |withRefs|, and
+thereby restrict the (untrusted) code within the |toLabeled| block from
+upgrading arbitrary references, we eliminate the aforementioned attack.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -315,3 +404,9 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 %% |conf (lcurr,mI) t  ==> conf (lcurr',...) v| $\Leftrightarrow$
 %% |conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) v'|.
 %% \end{theorem}
+
+
+% Local Variables:
+% TeX-master: "main.tex"
+% TeX-command-default: "Make"
+% End:
