@@ -27,24 +27,24 @@ none of the mentioned work so far consider concurrency. In fact, the notion of
 it would require tracking occurrences of branches across threads, which
 challenges scalability.
 
-The flow-sensitive extension for LIO is capable to encode a generalize version
+The flow-sensitive extension for LIO is capable of encoding a generalized version
 of {\nsu} by using an extra level of indirection.  To illustrate that, we
-consider all the references as a three-level nested labeled values---perfectly
+consider all the references as three-level nested labeled values---perfectly
 expressible in \liofs{}. Specifically, we utilize flow-sensitive references of
 type |LIORef S (Labeled l a)|, where |mS(a) = LabeledTCB l (LabeledTCB l
 (LabeledTCB l' t))| for a given flow-sensitive reference at address |a|. Observe
 that the first and second label of the nested structure are the same---this is
-as effectively having the first and second level of the structure collapsed. For
+effectively like having collapsed the first and second levels of the structure. For
 creating a reference, we call |r <- newRef S lcurr lv|, where |lcurr| is the
 current label and |lv| is just a labeled value of the form |LabeledTCB l'' t|
-for an arbitrary label |l''|.  The new created reference is of the form
+for an arbitrary label |l''|.  The newly created reference is of the form
 |LabeledTCB lcurr (LabeledTCB lcurr lv)|.  As in {\nsu}, writing a (labeled)
-value into r, |writeRef S r lv'|, demands that the current label flows into
+value into r using |writeRef S r lv'|, demands that the current label flows into
 |lcurr|, i.e., the label on the label at the time of creating |r|. This
-restriction rules out situations where, if |r| was creating in a public
+restriction rules out situations where, if |r| was created in a public
 environment (|low|), it is not possible to modify it in a secret context
 (|high|). These are exactly the forbidden label changes in {\nsu}. Additionally,
-|writeRef S r lv'| allows to change the initially stored labeled value |lv| by
+|writeRef S r lv'| allows changing the initially stored labeled value |lv| for
 another one |lv'| with an arbitrary label. This label change (on the last
 labeled value of the nested structure) might be rejected by {\nsu}, where it is
 only possible to change the label of a reference if the new label is 
