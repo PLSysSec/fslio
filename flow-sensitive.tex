@@ -139,15 +139,25 @@ fact that the label of the reference |l'| is a value at sensitivity level |l|,
 i.e., we raise the current label to the join of the current label and the label
 on the label.
 %
-The rules for reading and writing to flow-sensitive refernces are standard;
-|readRef S| raise the current label to the label of the reference (which is
-above the label on the label) and |writeRef S| ensure that the current
-computation can write to the reference.
+The rules for reading and writing to flow-sensitive references are mostly
+standard; |readRef S| raise the current label to the label of the reference
+(which is above the label on the label) and |writeRef S| ensure that the
+current computation can write to the reference.
 %
-Note that |writeRef S| does not modify the label of the reference.
+One peculiarity with |writeRef S| is the case when the current label does not
+flow to the join of the reference label, i.e., |lcurr canFlowTo l lub l' ~>*
+false|, and thus the write should fail.
 %
-This is, in part, because we wish to keep the inferace between flow-insensitive
-and flow-sensitive references as close as possible.
+If our program simply gets stuck, the current label does not reflect the fact
+that the rule relies, and thus observes, the label on the reference |l'| which
+is itself protected by |l|; hence, we provide an explicit rule for this failure
+case that first raises the current label (through |unlabel|) and then
+divergence (we do not provide a reduction rule for |divergence|).
+%
+Additionally, we note that |writeRef S| does not modify the label of the reference.
+%
+This is, in part, because we wish to keep the infer ace between
+flow-insensitive and flow-sensitive references as close as possible.
 %
 Instead, we provide |upgradeR| precisely for this purpose; this primitive is
 used to raise the label of the reference.
@@ -161,7 +171,7 @@ canFlowTo l'|).
 \small
 \begin{code}
 v    ::= cdots  | LIORefTCB S t
-t    ::= cdots  | upgradeR t t
+t    ::= cdots  | upgradeR t t | diverge
 Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \end{code}
 
@@ -194,6 +204,15 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
   |c' = (lcurr, mI, mS')|
 }
 { |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[return ()])| }
+
+\and
+
+\inferrule[writeRef-|S|-fail]
+{ |c = (lcurr, mI mS)|\\
+  |mS(a) = LabeledTCB l (LabeledTCB l' t)| \\
+  |lcurr canFlowTo (l lub l') ~>* false|
+}
+{ |conf c (E[writeRef S (LIORefTCB S a) t]) --> conf c' (E[unlabel (LabeledTCB l diverge)])| }
 
 \and
 
