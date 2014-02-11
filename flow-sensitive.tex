@@ -157,57 +157,7 @@ checking that the current label flows to the label on the label (|lcurr
 canFlowTo l'|).
 
 
-
-%%This problem can be addressed in several ways. Prior work proposed the
-%%\emph{no-sensitive-upgrade} strategy~\citep{?} and the
-%%\emph{permissive-upgrade} strategy~\citep{?}. The no-sensitive-upgrade
-%%check forbids assignment to a public reference in a secret context. In
-%%contrast, the permissive-upgrade check allows the assignment but marks
-%%it as a partial leak; if there is a subsequent conditional branch on
-%%partially leaked data, the program stops.  We adapt the
-%%permissive-upgrade idea to our floating-label model, which results in
-%%a slightly more permissive enforcement that allows the conditional
-%%branch.
-%%
-%%In order to express our flow-sensitive enforcement, we extend the
-%%formalization of |LIO| to include flow-sensitive LIORefs with an
-%%|upgrade| operation. Figure~\ref{fig:fs-exts-syntax} introduces the
-%%syntax for values, terms and types that we require in order to account
-%%for both flow-sensitive and flow-insensitive references.
-%%
-%%The expression |m1 merge m2| merges the two stores, using elements
-%%from |m1| to override those of |m2|.
-
-% Figure~\ref{fig:fs-exts-semantics} introduces the semantics for LIORef
-% operations. Rule $\textsc{NewRef}$ creates a new LIORef with a given
-% initial label and value, adding it to the mutable reference store
-% $\RTS$. The following rules come in two versions, one for
-% flow-insensitive variables and another one for flow-sensitive ones,
-% marked as $\textsc{FI}$ and $\textsc{FS}$ respectively. Rules
-% $\textsc{ReadRef-FI}$, $\textsc{WriteRef-FI}$ and
-% $\textsc{LabelOf-FI}$ are exactly like in previous versions of the
-% library. In rule $\textsc{ReadRef-FS}$, in addition to the usual
-% tainting of the current label $\env.\lbl$, we have a taint on
-% $\env.\fel$, which is used to keep track of the taint caused by
-% flow-sensitive variables within |toLabeled| blocks. Rule
-% $\textsc{WriteRef-FS}$ causes the label in the flow-sensitive
-% reference to be replaced by the current label, allowing operations
-% that would otherwise trigger a security violation exception on a
-% flow-insensitive variable. Rule $\textsc{LabelOf-FS}$ works by
-% tainting the current label with the label of the reference being
-% inspected, before returning this label.
-
-%
-% ReadRef and LabelOf rules that propagate the taint outside toLabeled
-%
-% \inferrule{l\flows\env.\clr \\ \env' = \env[\lbl\mapsto \env.\lbl \lub l] \\ \env'' = \neg u ? \env'[\fel\mapsto \env'.\lbl] : \env' \\  \Lb{l}{u}{v} = \RTS(x)}
-% {\defRTS{E[\readRefFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{E[\returnLIO{v}]}}[\textsc{ReadRef-FS}]
-% \and
-% \inferrule{l \flows \env.\clr \and \Lb{l}{u}{\_} = \RTS(x) \\ \env' = \env[\lbl\mapsto\env.\lbl \lub l] \and \env''= \neg u ? \env'[\fel\mapsto\env'.\lbl] : \env'}
-% {\defRTS{E[\labelOfFS{(\LIORefRTS{l}{x})}]} \lto \wEnvRTS{\env''}{\RTS}{r}{E[\returnLIO{l}]}}[\textsc{LabelOf-FS}]
-
-
-\begin{figure}[!ht] % semantics
+\begin{figure} % semantics
 \small
 \begin{code}
 v    ::= cdots  | LIORefTCB S t
@@ -219,11 +169,11 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \inferrule[newRef-|S|]
 { |c = (lcurr, mI, mS)|\\
   |lcurr canFlowTo l ~> true|\\
+  |fresh a|\\
   |mS' = mS[a mapsto LabeledTCB lcurr (LabeledTCB l t)]|\\
   |c' = (lcurr, mI, mS')|
 }
 { |conf c (E[newRef S l t]) --> conf c' (E[return (LIORefTCB S a)])| }
-{ |fresh a| }
 
 \and
 
@@ -268,22 +218,17 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 \caption{\liofs{}: \lio{} with flow-sensitive references.\label{fig:sos:fs}}
 \end{figure}
 
-%
-% ToLabeled rule that propagates FS taints
-%
-% \inferrule{\env.\lbl \flows l \flows \env.\clr \\ \eEnvRTS{\env}{\RTS}{r'}{t}\lto^*\wEnvRTS{\env'}{r''}{\RTS'}{\lioValp{t'}} \\ \env'' = \env[\lbl\mapsto\env.\lbl \lub \env'.\fel, \fel\mapsto\env'.\fel]}
-% {\defRTS{E[\toLabeled{l}{t}]} \lto \\ \wEnvRTS{\env''}{\RTS'}{r}{E[\returnLIO{(\Lb{l}{\bot}{t'})}]}}[\textsc{toLabeled}]
 
+\subsection{Automatic upgrades}
+\label{sec:flow-sensitive:auto}
 
-\begin{figure}[!ht] % semantics
-\vspace*{-5pt}
+\begin{figure} % semantics
+\small
 \begin{code}
 v    ::= cdots  | set (v, ...) | nil
-t    ::= cdots  | set (t, ...) | withRefs t t | toLabeled' t t t
+t    ::= cdots  | set (t, ...) | withRefs t t
 tau  ::= cdots  | set (tau, ...)
-     
 Ep   ::= cdots  | set (Ep, t, ...) | set(v, Ep, t, ...) | withRefs Ep t 
-                | toLabeled' Ep t t | toLabeled' v Ep t
 
 addrs (nil)                                       @= emptyset
 addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
@@ -297,98 +242,50 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 }
 {|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
 \and
-%%XXX: REMOVE THIS:
-\inferrule[toLabeled']
-{|c = (lcurr, mI, mS)|\\
- |lcurr canFlowTo l ~> true|\\
- |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|\\
- |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
- |lcurr' canFlowTo l ~> true|\\
- |c''' = (lcurr, mI', mS'' merge mS)|
-}
-{|conf c (E[toLabeled' l v t]) --> conf c'' (E[label l t']|}
-\end{mathpar}
-\begin{code}
-toLabeled' l v t  @= withRefs v (toLabeled l t) 
-                  == toLabeled l (withRefs v t)
-\end{code}
-\caption{Semantics for |toLabeled|.\label{fig:toLabeled-semantics}}
-\end{figure}
-\hl{We should note somewhere that trying to access a non-existant ref results
-in program getting stuck}
-
-\begin{figure}
-\small
-\begin{mathpar}
 \inferrule[upgradeStore]
 {|c = (lcurr, mI, mS)|\\
  |mS = {a1 mapsto v1, ..., a_n mapsto v_n}|\\
- |t = upgradeR (LIORefTCB S a1) lcurr >> ... >> upgradeR (LIORefTCB S a_n) lcurr|
+ |ti = upgradeR (LIORefTCB S a_i) lcurr|\\
+ |t = t1 >> ... >> tn|
 }
 {|conf c (E[upgradeM]) --> conf c (E[t])|}
-\end{mathpar}
-\caption{Semantics for |upgradeM|}
-\end{figure}
-
-\begin{figure}
-\vspace*{-5pt}
-\begin{code}
-toLabeledWith :: Label l =>
-      l -> a -> (LIORef FS l a -> LIO l b)
-  ->  LIO l (Labeled FS l b)
-toLabeledWith l def f =
-    do  y    <-  newLIORef l def
-        upgrade y l -- set the upgraded flag
-        ret  <-  toLabeled [y] (f y)
-        destroyLIORef y
-        return ret
-\end{code}
-\caption{Definition of |toLabeledWith|.\label{fig:toLabeledWith-semantics}}
-\vspace*{-5pt}
-\end{figure}
-
-\begin{figure}
-\vspace*{-5pt}
-\begin{mathpar}
+\and
 \inferrule[unlabel-AU]
 { |c = (lcurr, mI, mS)|\\
   |lcurr lub l ~> lcurr'|\\
-  |c' = (lcurr', mI, mS)|
+  |c' = (lcurr', mI, mS)|\\
+  |t' = upgradeM >> return t|
 }
 {
-|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[upgradeM >> return t])|
+|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[t'])|
 }
 \end{mathpar}
-\caption{Semantics for |unlabel| with automatic upgrades.\label{fig:unlabel-autoupgrade}}
-\vspace*{-5pt}
+\caption{\lioafs{}: Extending \liofs{} with auto-upgrades.\label{fig:sos:afs}}
 \end{figure}
 
-% Figure~\ref{fig:toLabeled-semantics} shows the reduction rule for
-% |toLabeled| operations. In this rule, we see that the $\env.\fel$
-% label is used to taint the current label after the |toLabeled|
-% operation is complete. This allows any partially-leaked information
-% (due to flow-sensitive references) to be taken into account in future
-% label checks.
 
-\begin{definition}
-We define the equivalence relation oblivious to flow-sensitive reference
-implemnetation as:
-\begin{itemize}
-\item |LIORefTCB S t &=  LIORefTCB S t'| for any |t|, |t'|.
-\item |t &=  t'| iff |t = t'|.
-\item |LIOTCB t &=  LIOTCB t'| iff |t &=  t'|.
-\item |LabeledTCB l t &= LabeledTCB l t'| iff |t &=  t'| and |l &=  l'|.
-\item etc.
-\end{itemize}
-\end{definition}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{theorem}[Equivalence]
-For all |t, v| in \lio{} and |t', v'| in \liofs{},
-and |v &= v'|, it must be that
-%
-|conf (lcurr,mI) t  ==> conf (lcurr',...) diverge| $\Leftrightarrow$
-|conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) diverge| and 
-%
-|conf (lcurr,mI) t  ==> conf (lcurr',...) v| $\Leftrightarrow$
-|conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) v'|.
-\end{theorem}
+%% \begin{definition}
+%% We define the equivalence relation oblivious to flow-sensitive reference
+%% implemnetation as:
+%% \begin{itemize}
+%% \item |LIORefTCB S t &=  LIORefTCB S t'| for any |t|, |t'|.
+%% \item |t &=  t'| iff |t = t'|.
+%% \item |LIOTCB t &=  LIOTCB t'| iff |t &=  t'|.
+%% \item |LabeledTCB l t &= LabeledTCB l t'| iff |t &=  t'| and |l &=  l'|.
+%% \item etc.
+%% \end{itemize}
+%% \end{definition}
+%% 
+%% \begin{theorem}[Equivalence]
+%% For all |t, v| in \lio{} and |t', v'| in \liofs{},
+%% and |v &= v'|, it must be that
+%% %
+%% |conf (lcurr,mI) t  ==> conf (lcurr',...) diverge| $\Leftrightarrow$
+%% |conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) diverge| and 
+%% %
+%% |conf (lcurr,mI) t  ==> conf (lcurr',...) v| $\Leftrightarrow$
+%% |conf (lcurr,mI,emptyset) t' ==> conf (lcurr',...) v'|.
+%% \end{theorem}
