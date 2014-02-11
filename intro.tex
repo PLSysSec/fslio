@@ -151,7 +151,7 @@ elements: a label describing the confidentiality of the stored value, and
 another label, called \emph{the label on the label}, which describes the
 confidentiality of the value's label. The calculus then forbids changing a
 label of a reference if \emph{the label on the label is below the
-  floating-label} (i.e. following the {\nsu}
+  floating-label} (i.e. similar to the {\nsu}
 discipline~\citep{Austin:Flanagan:PLAS10}). Inspired by~\citep{Hedin13}, we add
 an instruction capable of \emph{upgrading} labels under certain safe conditions in
 order to boost permissiveness. As one of our main insights and results, we prove
@@ -196,8 +196,7 @@ More concretely, the contributions of this paper are:
   knowledge, we are the first ones to analyze the challenges of purely dynamic
   monitors with flow-sensitive references in the presence of concurrency.
 
-\item Provable non-interference. Our formal results hold for arbitrary
-  security lattices. 
+\item Provable non-interference for arbitrary security lattices.
 
 % \item An implementation of our ideas in Haskell, where programmers can write
 %   routines \emph{parametric} on the flow-sensitivity of data---a novelty for IFC
