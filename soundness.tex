@@ -45,7 +45,7 @@ impl (readRef S) c @= \r -> readRef I (unwrap r) >>= unlabel
 impl (writeRef S) c @= \r t -> let  r'  = unwrap r
                                     l   = labelOf r' in do
   lcurr <- getLabel
-  toLabeled l $ do
+  toLabeled (l lub lcurr) $ do
      v   <- readRef I r'
      whenDiv (lcurr canFlowTo l lub (labelOf v)) $ do
        v'  <- label (labelOf v) t
@@ -92,8 +92,9 @@ with the flow-sensitive semantics.
 
 \begin{theorem}\label{thm:eq} Let |t| in \liofs{}.
   Then if |conf c t ==> conf c' v|, we have |conf (impl1 c) (impl t c)
-  ==> conf (impl1 c') (impl v c)|, and if |conf c t diverge|, then
-  |conf (impl1 c) (impl t c) diverge|.
+  ==> conf (impl1 c') (impl v c)|, and if 
+  |conf c t ==> conf c' diverge|, then
+  |conf (impl1 c) (impl t c) ==> conf (impl1 c') diverge|.
   % \textrm{\hl{this is not right:
   %     the constructors for FS references are different (one wraps FI
   %     references, the other doesn't), so syntactic equiality is not
