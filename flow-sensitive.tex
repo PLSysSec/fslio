@@ -268,14 +268,14 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 }
 {|conf c (E[upgradeM l]) --> conf c (E[t1 >> ... >> t_n])|}
 \and
-\inferrule[auto-upgrade]
+\inferrule[unlabel-au]
 { |c = (lcurr, mI, mS)|\\
-  |conf c t --> conf c' t'|\\
-  |c' = (lcurr', mI', mS')|\\
-  |t'' = if lcurr == lcurr' then t' else upgradeM lcurr' >> t'|
+  |lcurr' = lcurr lub l|\\
+  |conf c (upgradeM lcurr') ==> conf (lcurr, mI, mS') (LIOTCB ())|\\
+  |c' = (lcurr', mI, mS')|
 }
 {
-|conf c t --> conf c' t''|
+|conf c (E[unlabel (LabeledTCB l t)]) --> conf c' (E[return t])|
 }
 \end{mathpar}
 \caption{\lioafs{}: Extending \liofs{} with auto-upgrades.\label{fig:sos:afs}}
@@ -302,63 +302,58 @@ be used to automatically upgrade references.
 %
 This extension, called \lioafs{}, is given in Figure~\ref{fig:sos:afs}.
 %
-As given by rules \ruleref{auto-upgrade}, whenever the current label is about
-to be raised, we first upgrade all the references (with |upgradeM|) in the
-store and then raise the current label.\footnote{
-We encode the auto-upgrade policy as in rule \ruleref{auto-upgrade} for
-brevity, despite the introduction of non-determinism in the semantics.
+Intuitively, whenever the current label is about to be raised, we first upgrade
+all the references in the |mS| store, with |upgradeM|, in the store and then
+raise the current label.
 %
-Importantly, and as done in our implementation, the store upgrade is
-individually added to the functions that actually raise the current label
-(e.g., |unlabel|).
-}
+Since in our calculus |unlabel| is the only function that raises the current
+label, we augment the \rule{unlabel} rule with \rule{unlabel-au} given in
+Figure~\ref{fig:sos:afs}.
 %
-Intuitively, this ensures that as the computation progresses it does not
+In doing so, this ensures that as the computation progresses it does not
 ``lose'' write access to its references.
 %
-Continuing our logging example, with auto-upgrades the reference used to the log
-never needs to be explicitly upgraded and can truly present an interface of a
-logger!
+Returning to our logging example, with auto-upgrades, the reference used as the
+log never needs to be explicitly upgraded and can always be written to---an
+interface expected of a log.
 
 \concept{store creep}
 Recall, however, that |toLabeled| provides a means for temporarily raising the
-current label.
+current label, allowing thereby allowing us to write programs that do not have
+label creep.
 %
-This allows us to write programs without the label creep.
+Unfortunately, with auto-upgrades, when the current label within a |toLabeled|
+block is raised, the upgrades of the flow-sensitive references remain even
+after the current label is restored.
 %
-Unfortunately, when raising the current label within a |toLabeled| block, the
-upgrades of the flow-sensitive references remain even after the current label
-is restored.
-%
-Thus, when reading from any flow-sensitive reference after the |toLabeled|
+Thus, reading from any flow-sensitive reference after the |toLabeled|
 block will raise the current label to, at least, the current label at the end
 of the |toLabeled| block (since all references are upgraded).
 %
-This can be used to carry out a ``poison pill'' attack~\tocite{breeze}, wherein
+This can be used to carry out a ``poison pill''-like attack~\tocite{breeze}, wherein
 the (usually untrusted) computation executing within the |toLabeled| block will
 render the outer computation useless by imposing label creep.
 
 \concept{withRefs}
-Hence, our \lioafs{} calculus further extends \liofs{} with |withRefs v t| which
-takes a bag |v| of references and a computation |t|, and executes |t| in a
-configuration where the flow-sensitive reference store only contains the subset
-of references |v|.
+To address this issue, our \lioafs{} calculus further extends \liofs{} with
+|withRefs v t| which takes a bag |v| of references and a computation |t|, and
+executes |t| in a configuration where the flow-sensitive reference store only
+contains the subset of references |v|.
 %
-A bag is either empty |nil|, or a number of references |set (v,..)| (of
-potentially different types).
+A bag is either empty |nil|, or a number of references |set (v,..)|, where each
+element in the bag may have a distinct type.
 %
-Rule \ruleref{withRefs} precisely defines the semantics of the new terminal,
-where |addrs| converts a bag of references to a set of their corresponding
-addresses, and |merge| is used to merge the stores, giving preferences to the
-left-hand-side store.
+Rule \ruleref{withRefs} precisely defines the semantics of this new primitive,
+where meta function |addrs| converts a bag of references to a set of their
+corresponding addresses, and |merge| is used to merge the stores, giving
+preferences to the left-hand-side store.
 %
-The function is mostly standard and provides a programming pattern similar to
-that already present in some mainstream languages (e.g., C++'s \Red{ASK DM}),
-we do not discuss it further.
+The primitive is mostly standard and provides a programming paradigm similar to
+that already present in some mainstream languages (e.g., C++'s \Red{ASK DM}).
 %
-We lastly remark that to address the poison pill attack, we can now simply wrap
-|toLabeled| with |withRefs|, restricting the (untrusted) code from upgrading
-arbitrary references.
+We lastly remark that by simply wrapping |toLabeled| with |withRefs|, and
+thereby restrict the (untrusted) code within the |toLabeled| block from
+upgrading arbitrary references, we eliminate the aforementioned attack.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
