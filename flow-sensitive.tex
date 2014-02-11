@@ -339,7 +339,7 @@ the (usually untrusted) computation executing within the |toLabeled| block will
 render the outer computation useless by imposing label creep.
 
 \concept{withRefs}
-Hence, our \lioafs{} calculus further extends \liofs{} with |withRef v t| which
+Hence, our \lioafs{} calculus further extends \liofs{} with |withRefs v t| which
 takes a bag |v| of references and a computation |t|, and executes |t| in a
 configuration where the flow-sensitive reference store only contains the subset
 of references |v|.
