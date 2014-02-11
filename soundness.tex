@@ -11,10 +11,17 @@ labeled value |LabeledTCB l_d v|.
 
 Figure~\ref{fig:fs-exts-semantics-impl} shows our implementation of
 the flow-sensitive reference operations in this setting.  For a given
-store |c|, we define the |impl (-) (c)| function, which given a term |t|
-in \liofs{}, produces a term |impl (t) (c)| in \lio{}, which is obtained
-by expanding the definitions of the flow-sensitive operations. The
-function is applied homomorphically in all other cases.
+store |c|, we define the |impl (-) (c)| function, which given a term
+|t| in \liofs{}, produces a term |impl (t) (c)| in \lio{}, which is
+obtained by expanding the definitions of flow-sensitive operations in
+terms of flow-insensitive ones. This function is applied
+homomorphically in all other cases. We use the tag |WrapRef| to mark
+the flow-insensitive references that are being used to represent
+flow-sensitive ones, so as to distinguish them from ordinary
+flow-insensitive references. The functions |wrap| and |unwrap| are
+used to add and remove this tag. For the sake of brevity, we do not
+explain this mapping in detail, but we remark that it is directly
+based on the rules in Figure~\ref{fig:sos:fs}.
 
 \begin{figure}
 \small
@@ -62,7 +69,7 @@ impl (upgradeR) c @= \r l -> let  r'  = unwrap r
 We extend this definition naturally to convert \liofs{} environments into
 \lio{} environments, by having |impl1 ((lcurr, mI, mS)) @= (lcurr, mI')|
 where |mI' = mI[ a1 mapsto v1, ..., a_n mapsto v_n ]| for each binding
-of the form |a_i mapsto LabeledTCB l v_i| in |mS|.
+of the form |a_i mapsto LabeledTCB li v_i| in |mS|.
 
 In order to prove that our implementation is correct with respect to
 the semantics, we show that, if we take a program with flow-sensitive
@@ -70,18 +77,18 @@ operations, and expand those operations, replacing them by the code in
 Figure~\ref{fig:fs-exts-semantics-impl}, then its behavior corresponds
 with the flow-sensitive semantics.
 
-For the proof, we will require a lemma stating that, for every
-flow-sensitive reference, the label-on-the-label always flows to the
-label of the reference at every program point.
+% For the proof, we will require a lemma stating that, for every
+% flow-sensitive reference, the label-on-the-label always flows to the
+% label of the reference at every program point.
 
-\begin{lemma} Let |t| be a term in \liofs{}, |c = (lcurr, mI, mS)| an
-  initial environment and |r| a flow-sensitive reference in |c|.
-  Then, for every configuration |conf ((lcurr',mI',mS')) t'| reachable
-  from |conf c t|, if we consider |mS'(r) = LabeledTCB l_o (LabeledTCB
-  l_d v)|, we have that |l_o canFlowTo l_d|.
-\end{lemma}
+% \begin{lemma} Let |t| be a term in \liofs{}, |c = (lcurr, mI, mS)| an
+%   initial environment and |r| a flow-sensitive reference in |c|.
+%   Then, for every configuration |conf ((lcurr',mI',mS')) t'| reachable
+%   from |conf c t|, if we consider |mS'(r) = LabeledTCB l_o (LabeledTCB
+%   l_d v)|, we have that |l_o canFlowTo l_d|.
+% \end{lemma}
 
-We can now state our equivalence theorem.
+% We can now state our equivalence theorem.
 
 \begin{theorem}\label{thm:eq} Let |t| in \liofs{}.
   Then if |conf c t ==> conf c' v|, we have |conf (impl1 c) (impl t c)
@@ -95,17 +102,20 @@ We can now state our equivalence theorem.
 
 From previous results, we know that LIO has termination-insensitive
 non-interference in the sequential setting, and termination-sensitive
-non-interference in the concurrent setting. By combining the previous
+non-interference in the presence of concurrency. By combining the previous
 theorem with these results, we can show that they hold for LIO with
 flow-sensitive references.
 
-Our security results rely on the notion of |l|-equivalence for terms
-and configurations, which captures the idea of terms that cannot be
-distinguished by an attacker which can observe data at level |l|. A
-pair of terms |t1, t2| is said to be |l|-equivalent (written |t1 &~
-t2|) if, after erasing all the information more sensitive than |l|
-from |t1| and |t2|, we obtain syntactically equivalent terms. This
-definition extends naturally to configurations.
+In order to make this paper self-contained, we now present our
+soundness theorems, as straightforward applications of the theorems in
+previous work. Our security results rely on the notion of
+|l|-equivalence for terms and configurations, which captures the idea
+of terms that cannot be distinguished by an attacker which can observe
+data at level |l|. A pair of terms |t1, t2| is said to be
+|l|-equivalent (written |t1 &~ t2|) if, after erasing all the
+information more sensitive than |l| from |t1| and |t2|, we obtain
+syntactically equivalent terms. This definition extends naturally to
+configurations.
 
 Intuitively, non-interference means that an attacker at level |l|
 cannot distinguish among different runs of a program with
@@ -127,7 +137,7 @@ cannot distinguish among different runs of a program with
   definition given in Figure~\ref{fig:fs-exts-semantics-impl}, we get
   a term in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
   semantics. Therefore, the result follows from the
-  termination-insensitive non-interference of \lio{}.
+  termination-insensitive non-interference of \lio{}~\citep{stefan:lio}.
 \end{proofsketch}
 
 In the concurrent setting, we have a stronger result, where the
@@ -146,8 +156,10 @@ termination and internal timing covert channels are closed.
   Figure~\ref{fig:fs-exts-semantics-impl}, we get a term in concurrent
   \lio{}.  \hl{Show that toLabeled is fine.}
   Therefore, the result follows from the termination-sensitive
-  non-interference of \lio{}.
+  non-interference of concurrent \lio{}~\citep{stefan:addressing-covert}.
 \end{proofsketch}
+
+\hl{include link to extended version}
 
 \hl{NOTE}
 
