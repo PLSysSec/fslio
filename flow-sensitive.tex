@@ -227,27 +227,30 @@ One peculiarity with |writeRef S| is the case when the current label does not
 flow to the join of the reference label, i.e., |lcurr cantFlowTo l lub l'|, and
 thus the write should fail.
 %
-If our semantics simply gets stuck, there is a termination leak which reveals
-information about the possible changes on label |l'| (itself protected by |l|).
-Observe that those changes could have occurred in a more sensitive context than
-|lcurr|. For sequential LIO, this is not a problem since the security guarantees
-ignore termination leaks~\cite{stefan:lio}. However, in a concurrent setting,
-such leaks are a concern~\cite{stefan:addressing-covert}. Aiming to apply our
-flow-sensitive approach for concurrency almost without modifications (see
-Section~\ref{sec:conc}), we introduce a failure rule for |writeRef S|
-which
+If the semantics got stuck in \ruleref{writeRef-fs}, the current label would
+not reflect the fact that the success of applying such rule depends on the
+label |l'| (itself protected by |l|), which might lead to information leaks;
+hence, we provide an explicit rule for this failure case that first raises the
+current label (through |unlabel|) and then diverges, see rule
+\ruleref{writeref-fs-fail} where |diverge| represents a divergent computation
+(we do not provide a reduction rule for |diverge|).
+
+% there is a termination leak which reveals
+% information about the possible changes on label |l'| (itself protected by |l|).
+% Observe that those changes could have occurred in a more sensitive context than
+% |lcurr|. For sequential LIO, this is not a problem since the security guarantees
+% ignore termination leaks~\cite{stefan:lio}. However, in a concurrent setting,
+% such leaks are a concern~\cite{stefan:addressing-covert}. Aiming to apply our
+% flow-sensitive approach for concurrency almost without modifications (see
+% Section~\ref{sec:conc}), we introduce a failure rule for |writeRef S|
+% which
 %does not reflect the fact
 %that the rule relies, and thus observes, the label on the reference |l'| which
-%is itself protected by |l|; hence, we provide an explicit rule for this failure
-%case that 
-first raises the current label (through |unlabel|) and then
-divergence, see rule 
-\ruleref{writeref-fs-fail} where |diverge| represents a divergent computation
- (we do not provide a reduction rule for |diverge|).
+%is itself protected by |l|
 %
-The effects of this rule in a sequential settings is analogous to getting
-stuck\footnote{This is not true if we consider exceptions, a feature 
-out of the scope of this paper}. 
+%The effects of this rule in a sequential settings is analogous to getting
+%stuck\footnote{This is not true if we consider exceptions, a feature 
+%out of the scope of this paper}. 
 Additionally, we note that |writeRef S| does not modify the label of the reference.
 %
 This is, in part, because we wish to keep the difference between
