@@ -184,8 +184,9 @@ the term. We partially specify the state of \lio as being composed of the
 current label |lcurr|, i.e., |c = (lcurr, ...)| where |...| denotes other parts
 of the state not relevant at this point.
 %
-Under this definition, a well-typed \lio{} term has the form | D, G :- t : LIO
-tau|, where |D| is the store typing, and |G| is the usual type environment.
+Under this definition, a top-level well-typed \lio{} term has the form | D, G
+:- t : LIO tau|, where |D| is the store typing, and |G| is the usual type
+environment.
 %
 % As a result of this encoding, the definition for |return| and |(>>=)|
 % are trivial: the former simply reduces to a monadic value by wrapping
