@@ -107,39 +107,37 @@ for sequential programming languages.
 
 
 %% Operating system community
-Before the time of language-based techniques for IFC, the operating system
-community has traditionally handled the problem inherent in combining mutable
-labels and purely dynamic monitors. Modern examples of that are the operating
-systems Asbestos~\cite{Efstathopoulos:2005}, HiStar~\cite{zeldovich:histar},
-and Flume~\cite{krohn:flume}. In a nutshell, those systems are composed of
-subjects (e.g. processes) and objects (e.g. files or sockets) with security
+The operating system IFC
+community has also handled the problem inherent to combining mutable
+labels and purely dynamic monitors. Modern examples of this are
+Asbestos~\cite{Efstathopoulos:2005}, HiStar~\cite{zeldovich:histar},
+and Flume~\cite{krohn:flume}. In a nutshell, these systems are composed of
+subjects, i.e., processes, and objects (e.g., files or sockets) with security
 labels. While security labels for objects are immutable, labels for subjects can
-be changed---often by a more restrictive one. Making label changes implicit
-(e.g. as a result of observing data from objects) is known as
-\emph{tainting}. Subjects' labels restrict read and write actions in order to
+be changed---usually to more restrictive ones. This changing of the subject label 
+is commonly referred to as ``tainting.''
+%
+The subjects' labels restrict read and write actions in order to
 preserve confidentiality. For instance, if a process reads a file labeled as
-|high|, it gets tainted and its label becomes |high|, which makes it unable to
-write into public files. As before, changing labels might become a covert
-channel itself. To avoid it, HiStar and Flume require label changes to be done
-explicitly.  Asbestos, on the other hand, allows changes in security labels as
-the result of receiving messages under specific and safe conditions. Different
-from language-based approaches, OS work rarely comes with soundness guarantees
-(except for~\cite{Krohn,seL4IF}). Bear in mind that an operating system is not
-a simple piece of software to prove correct.
+|high|, it gets tainted and its label becomes |high|, which prevents it from subsequently
+writing to public files. As in the language case, changing labels can become a covert
+channel itself, if not handled accordingly. To avoid it, HiStar and Flume require label changes to be done
+explicitly.  Asbestos, on the other hand, allowed changes in security labels as
+the result of receiving messages under specific and safe conditions.
 
 
 %% LIO brings together OS and LB  
-LIO is an IFC system that brings ideas from the OS domain into a language-based
+LIO is an IFC system that brings ideas from the operating systems domain into a language-based
 setting~\cite{stefan:lio,stefan:addressing-covert}.  LIO is a floating-label
 system, where the label of a computation can be safely raised to accommodate
 reading sensitive data. This action can be seen as raising the program counter
 (\emph{pc}) in more traditional language-based
-systems~\cite{sabelfeld:language-based-iflow} or as tainting in secure OS.  In
-this light, it is not surprising that LIO treats objects (e.g. references,
+systems~\cite{sabelfeld:language-based-iflow} or as tainting in IFC OSes.  In
+this light, it is not surprising that LIO treats objects (e.g., references,
 synchronization variables, etc.) as flow-insensitive entities. Different from
 other IFC tools~\cite{jif,FlowCaml,Hedin13}, LIO allows programs to query
 objects' labels without affecting the floating-label---a useful feature to
-increase permissiveness when interacting with external databases~\cite{giffin:hails}.
+increase permissiveness when interacting building practical systems~\cite{giffin:hails}.
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
