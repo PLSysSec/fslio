@@ -137,7 +137,7 @@ cannot distinguish among different runs of a program with
 |l|-equivalent initial configurations.
 
 \begin{theorem}[TINI for \liofs{}]
-  Consider two well-typed terms |t1 : LIO tau| and |t2 : LIO tau| in
+  Consider two well-typed terms |t1| and |t2| in
   \liofs{} which do not contain any TCB syntax nodes, such that |t1 &~
   t2|. We assume there is an attacker that observes data at level
   |l|. Let |c| be an initial environment, and let
@@ -182,7 +182,7 @@ at least as sensitive as the label on the label of |r|.
 
 \begin{lemma} \label{lem:lolFlowslCurr}
   Let |t| be a well-typed term in \lioconc{}, |c = (lcurr, mI, mS)| an initial
-  environment and |r| a flow-sensitive reference in |c|, where |mS(r)
+  environment and |a| the address of a flow-sensitive reference in |c|, where |mS(a)
   = LabeledTCB l_o (LabeledTCB l_d v)|. Then, if |conf c t ==> conf
   ((lcurr',mI',mS')) t'|, we have that |l_o canFlowTo lcurr'|.
 \end{lemma}
@@ -207,12 +207,15 @@ stronger than TINI, since it implies that there can be no termination
 or internal timing leaks.
 
 \begin{theorem}[TSNI for \lioconc{}]
-  Consider two well-typed terms |t1 : LIO tau| and |t2 : LIO tau| in
+  Consider two well-typed terms |t1| and |t2| in
   \lioconc{} which do not contain any TCB syntax nodes, such that |t1
   &~ t2|. We assume there is an attacker that observes data at level
-  |l|. Let |c| be an initial environment, and let |conf c1 t1 ==> conf
-  c1' t1'|.  Then, there exist |c2'| and |t2'| such that |conf c2 t2
-  ==> conf c2' t2'| and |t1' &~ t2'|.
+  |l|. Let |c = (lcurr, mI, mS)| be an initial environment, and let
+\[
+ |tconf mI mS (thread lcurr (refs (dom mS)) t1) ==> M1|
+\]
+  Then, there exists some configuration |M2| such that |tconf mI mS (thread lcurr (refs (dom mS)) t2)
+  ==> M2| and |M1 &~ M2|.
 \end{theorem}
 
 \begin{proofsketch} Because of Lemma~\ref{lem:lolFlowslCurr}, and
