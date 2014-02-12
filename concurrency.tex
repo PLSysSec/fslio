@@ -15,7 +15,7 @@ concurrrency.
 %
 Concretely, we extend our sequential \liofs{} and \lioafs{} calcului with
 threads and a new terminal, |forkLIO|, for dynamically creating new threads, as
-in the concurrent version of LIO~\tocite{ifcp}.
+in the concurrent version of LIO~\tocite{stefan:addressing-covert}.
 %
 Intuitively, this concurrent calculus \lioconc{} simply defines scheduler over
 sequential threads, such that taking a step in the concurrent calculus amounts
@@ -152,10 +152,11 @@ Subsequently, we add the new thread to the thread pool.
 \hl{HERE}
 %
 To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
-from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{
-As discussed in~\tocite{icfp}, |forkLIO| with synchronization primitives can be
-used to provide functionality equivalent to that of |toLabeled|, especially
-addressing the label creep problem discussed in Section~\ref{sec:background}.
+from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{ As
+discussed in~\tocite{stefan:addressing-covert}, |forkLIO| with synchronization
+primitives can be used to provide functionality equivalent to that of
+|toLabeled|, especially addressing the label creep problem discussed in
+Section~\ref{sec:background}.
 }
 %
 
@@ -309,14 +310,3 @@ addressing the label creep problem discussed in Section~\ref{sec:background}.
 % TeX-master: "main.tex"
 % TeX-command-default: "Make"
 % End:
-
-Under this definition, \lio{} type-judgements have the form | D, G :- t : LIO
-tau|, where |D| is the store typing, and |G| is the usual type environment.
-\begin{mathpar}
-\inferrule
-{ |D' = {a mapsto D(a) inlinesep a element dom D and (addrs v) }|\\
-  |D', G :- v :  set (LIORef S tau1, ...)|\\
-  |D', G :- t :  LIO tau|
-}
-{ |D, G :- withRefs v t : LIO tau| }
-\end{mathpar}

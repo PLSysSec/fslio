@@ -316,6 +316,13 @@ addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \inferrule[withRefs-Done]
 { }
 {|conf c (E[withRefs v v']) --> conf c (E[v']|}
+\and
+\inferrule[Type-withRef]
+{ |D' = {a mapsto D(a) inlinesep a element dom D and (addrs v) }|\\
+  |D', G :- v :  set (LIORef S tau1, ...)|\\
+  |D', G :- t :  LIO tau|
+}
+{ |D, G :- withRefs v t : LIO tau| }
 \end{mathpar}
 \caption{Extending \liofs{} and \lioafs{} with |withRefs|.\label{fig:sos:withRefs}}
 \end{figure}
@@ -393,7 +400,10 @@ t| which takes a bag |v| of references and a computation |t|, and executes |t|
 in a configuration where the flow-sensitive reference store only contains the
 subset of references |v|.
 %
-This extension is shown in Figure~\ref{fig:sos:withRefs}
+%
+This extension and type rule \ruleref{Type-withRef}, which ensures that a term
+cannot access a reference outside it's store, are shown in
+Figure~\ref{fig:sos:withRefs}
 %
 A bag is either empty |nil|, or a number of references |set (v,..)|, where each
 element in the bag may be a reference of a distinct type.
