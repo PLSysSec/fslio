@@ -232,7 +232,7 @@ or internal timing leaks.
   we note that all the critical sections in our operations consist in
   a |readRef I| followed by a |writeRef I|. Therefore, we argue that
   the problem could be addressed by replacing these operations with
-  |atomicModifyRef I|, an atomic operation that is part of the actual
+  |atomicModifyRef|, an atomic operation that is part of the actual
   implementation of LIO, but which we elide in order to simplify our
   presentation.
 
