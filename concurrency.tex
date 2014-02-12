@@ -15,7 +15,7 @@ concurrrency.
 %
 Concretely, we extend our sequential \liofs{} and \lioafs{} calcului with
 threads and a new terminal, |forkLIO|, for dynamically creating new threads, as
-in the concurrent version of LIO~\tocite{stefan:addressing-covert}.
+in the concurrent version of LIO~\cite{stefan:addressing-covert}.
 %
 Intuitively, this concurrent calculus \lioconc{} simply defines scheduler over
 sequential threads, such that taking a step in the concurrent calculus amounts
@@ -152,10 +152,11 @@ Subsequently, we add the new thread to the thread pool.
 \hl{HERE}
 %
 To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
-from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{ As
-discussed in~\tocite{stefan:addressing-covert}, |forkLIO| with synchronization
-primitives can be used to provide functionality equivalent to that of
-|toLabeled|, especially addressing the label creep problem discussed in
+from the underlying sequential calculus, as
+in~\cite{stefan:addressing-covert}.\footnote{ As discussed
+in~\cite{stefan:addressing-covert}, |forkLIO| with synchronization primitives
+can be used to provide functionality equivalent to that of |toLabeled|,
+especially addressing the label creep problem discussed in
 Section~\ref{sec:background}.
 }
 %
