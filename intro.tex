@@ -58,16 +58,16 @@ value to be published to a public channel.
 
 %% Why one instead of the other one 
 %%%%% FS+ Permissiveness in dynamic approaches, limited resources, 
-Flow-sensitive analyses are beneficial for different reasons. In presence of
-scarce resources, for instance CPU registers, it is not feasible to think that
-they will be assigned a fixed security label throughout program
+Flow-sensitive analyses are useful in many scenarios. When considering scarce
+resources (e.g., CPU registers) it is not feasible to assume that each
+reference will be assigned a fixed security label throughout program
 execution~\cite{BonelliCM05}. More importantly, flow-sensitive analyses often
-boost permissiveness by leveraging the changes on labels to reduce the number of
-rejected programs (recall program $P$ above). 
+boost permissiveness by leveraging the changes on labels to reduce the number
+of rejected programs (recall program |P| above). 
 
 
 %% Problems with Flow-sensitivity and purely dynamic IFC
-Unfortunately, purely dynamic IFC
+Unfortunately, introducing flow-sensitive references to purely dynamic IFC
 systems can turn label changes into a covert channel~\cite{Russo:2010}. 
 \begin{wrapfigure}{r}{0.5\columnwidth}
 |l := 1 ; t := 0 ;| \\
@@ -76,10 +76,10 @@ systems can turn label changes into a covert channel~\cite{Russo:2010}.
 |publish(l)| 
 \caption{\small\label{fig:fsattackintro} Flow-sensitive attack}
 \end{wrapfigure}
-Figure \ref{fig:fsattackintro} illustrates the problem of enabling arbitrary
+Figure \ref{fig:fsattackintro} illustrates the problem of allowing arbitrary
 label changes.  In the attack, variables |l| and |h| do not change their
-security levels---|low| and |high|, respectively. In contrast, variable |t| can
-change its security level to |high|. For purely dynamic monitors, where
+security levels, which are respectively |low| and |high|y. In contrast, variable |t|
+changes its security level to |high| from |low|. For purely dynamic monitors, where
 non-taken branches are not inspected, the attack successfully leaks information
 about |h|. More precisely, when |h| is true, the initial labels for |l| and |t|
 are |low| since they initially store constants (|l :=1 ; t := 0|).  Due to 
