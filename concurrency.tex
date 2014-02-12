@@ -276,13 +276,13 @@ t    ::= cdots  | forkLIO t | noToLabeled
 % TeX-command-default: "Make"
 % End:
 
+Under this definition, \lio{} type-judgements have the form | D, G :- t : LIO
+tau|, where |D| is the store typing, and |G| is the usual type environment.
 \begin{mathpar}
 \inferrule
-{ |c = (lcurr, mI, mS)|\\
-  |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
-  |c' = (lcurr, mI, mS')|\\
-  |c', G :- v :  set (LIORef S tau1, ...)|\\
-  |c', G :- t :  LIO tau|
+{ |D' = {a mapsto D(a) inlinesep a element dom D and (addrs v) }|\\
+  |D', G :- v :  set (LIORef S tau1, ...)|\\
+  |D', G :- t :  LIO tau|
 }
-{ |c, G :- withRefs v t : LIO tau| }
+{ |D, G :- withRefs v t : LIO tau| }
 \end{mathpar}
