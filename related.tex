@@ -12,7 +12,7 @@ monitors require static analysis in order to be more permissive than traditional
 flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
 Flanagan~\citep{Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10} provide the
 label-change policies \emph{\nsu} and \emph{\pu}, where the latter is provably
-more permissive than the former (i.e. it rejects fewer suspicious programs). The
+more permissive than the former, i.e., it rejects fewer programs. The
 {\nsu} discipline stops  execution on any attempt to change the label of a
 public variable inside a secret context. In contrast, {\pu} allows such changes,
 marking the altered variables so that the program cannot subsequently branch on
@@ -28,7 +28,7 @@ it would require tracking occurrences of branches across threads, which
 challenges scalability.
 
 The flow-sensitive extension for LIO is capable of encoding a generalized version
-of {\nsu} by using an extra level of indirection.  To illustrate that, we
+of {\nsu} by using an extra level of indirection.  To illustrate this, we
 consider all the references as three-level nested labeled values---perfectly
 expressible in \liofs{}. Specifically, we utilize flow-sensitive references of
 type |LIORef S (Labeled l a)|, where |mS(a) = LabeledTCB l (LabeledTCB l
@@ -99,7 +99,7 @@ instead, |writeRef S r lv'| always succeeds when the current label is
 
 %% Breeze
 Recently, Hritcu et al.~\citep{10.1109/SP.2013.10} propose a floating-label
-system called Breeze. It allows label changes in the current label (i.e. pc) and
+system called Breeze. It allows label changes in the current label (i.e., |pc|) and
 considers flow-insensitive values. Given the design similarities with
 LIO~\citep{stefan:lio}, we believe that our results could be easily adapted to
 Breeze.
@@ -111,7 +111,7 @@ monitor for JavaScript. The monitor utilizes the {\nsu} label changing
 policy. To overcome some of the restrictions imposed by this discipline, the
 primitive \textbf{upgrade} is introduced to explicitly change labels. Our
 upgrade operation resembles that proposed by Hedin et el. Moreover, the
-extension to |toLabeled| in Section \ref{sec:flow-sensitive} can be seen as an
+extension to |unlabel| in Section \ref{sec:flow-sensitive} can be seen as an
 automatic application of \textbf{upgrade} every time that the current label gets
 raised. Using testing, Birgisson et al.~\citep{Arnar2012} automatically insert
 \textbf{upgrade} instructions to boost the permissiveness of {\nsu}. We show how
@@ -123,12 +123,12 @@ the concept of upgrade can be extended to work in a concurrent setting.
 Coarse-grained IFC enforcements, similar to the ones found in OS work, have been
 applied to web browsers. BFlow~\citep{Yip:2009} tracks flows of information at
 the granularity of secure zones, i.e., compartments composed of one or several
-iframes. The zones' labels (i.e. subjects) must be explicitly updated---no
+iframes. The zones' labels, i.e., subjects' labels, must be explicitly updated---no
 implicit tainting. The data-confined sandbox (DCS)
 system~\citep{conf/esorics/AkhaweLHSS13}, on the other hand, allows implicit
 tainting while restricting the propagation of information by using iframes and
-mediating crossdomain operations (e.g. access to local storage, fragment-IDs,
-network communication, etc.). It is unclear that flow-sensitive objects would be
+mediating crossdomain operations (e.g., access to local storage, fragment-IDs, and
+network communication). It is unclear that flow-sensitive objects would be
 useful in such scenarios. Naturally, the DOM-tree could be thought of as being
 composed of flow-sensitive objects, which change security labels based on the
 dynamic behavior of the web page~\citep{Russo:2009}. However, the
@@ -142,8 +142,6 @@ flow-sensitive~\citep[e.g.][]{Amtoft:2006,Nanevski:2011}. Different from dynamic
 approaches, these logics have the ability to observe all the execution paths and
 safely approximate label changes. As a result, no leaks due to label changes are
 present in provably secure programs.
-
-
 %% Hybrid approaches
 Le Guernic et al.~\citep{LeGuernic:2006,Guernic:2007:ACM} combine dynamic and
 static checks in a flow-sensitive execution monitor.
