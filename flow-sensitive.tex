@@ -24,7 +24,7 @@ log. For instance, suppose that the computation never reads sensitive data, yet 
 read the log content to, e.g., format it, then it needs to taint itself to $\top$!
 %
 It is clear that even in the case of simple scenarios, having references with
-mutable labels that vary according to the sensitive of what is stored in the
+mutable labels that vary according to the sensitivity of what is stored in the
 reference is useful.
 
 %\concept{naive approach doesn't work}
@@ -60,7 +60,7 @@ leakRef href = do
   return (labelOfR space tmp == high)
 \end{code}
 \cut{$}
-\caption{Attack in LIO with naive flow-sensitive reference extension. We ommit
+\caption{Attack in LIO with naive flow-sensitive reference extension. We omit
 subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 \end{figure}
 
@@ -71,7 +71,7 @@ In this attack, |leakRef| can be used to leak the value stored in a |high| refer
 |href|, while keeping the current label |low|, by leveraging a new
 covert channel: the label of references.
 %
-Concretely, in |leakRef| we create a public reference |tmp| and withing the
+Concretely, in |leakRef| we create a public reference |tmp| and, within the
 |toLabeled| block, which is used to ensure that the current label remains
 |low|, the label of this reference is changed to |H| if the secret stored in
 |href| is |true|, and left intact (|L|) if the secret is |false|.
@@ -178,7 +178,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 
 %\concept{\liofs{}}
-Thus, to extend LIO with flow-sensitive reference, we must account for the label
+Thus, to extend LIO with flow-sensitive references, we must account for the label
 on the label of the reference at the time of creation, |lcurr|.
 %
 (This label is, however, immutable.)
@@ -219,8 +219,8 @@ i.e., we raise the current label to the join of the current label and the label
 on the label.
 %
 The rules for reading and writing to flow-sensitive references are mostly
-standard; |readRef S| raise the current label to the label of the reference
-(which is above the label on the label) and |writeRef S| ensure that the
+standard; |readRef S| raises the current label to the label of the reference
+(which is above the label on the label) and |writeRef S| ensures that the
 current computation can write to the reference (|lcurr canFlowTo (l lub l')|).
 %
 One peculiarity with |writeRef S| is the case when the current label does not
@@ -254,7 +254,7 @@ current label (through |unlabel|) and then diverges, see rule
 Additionally, we note that |writeRef S| does not modify the label of the reference.
 %
 This is, in part, because we wish to keep the difference between
-flow-insensitive and flow-sensitive references as close as possible.
+flow-insensitive and flow-sensitive references as small as possible.
 %
 Instead, we provide |upgradeR| precisely for this purpose; this primitive is
 used to raise the label of the reference.
@@ -339,10 +339,10 @@ similar to, but more permissive than, no-sensitive upgrades.)
 Using \liofs{}, we can also safely implement our logging application using a
 flow-sensitive reference.
 %
-Unfortunately, our system (and other like it) requires that we insert
+Unfortunately, our system (and others like it) requires that we insert
 |upgrade|s before we raise the current label so that it is possible to 
 write references in a more-sensitive context, e.g., to modify a public reference
-(with label on the label as |L|) after reading a secret. 
+(with label on the label |L|) after reading a secret. 
 
 %\concept{auto upgrade}
 Inspired by~\citep{Hedin13}, we thus provide an extension to \liofs{} that can
@@ -374,7 +374,7 @@ interface expected of a log.
 
 %\concept{store creep}
 Recall, however, that |toLabeled| provides a means for temporarily raising the
-current label, allowing thereby allowing us to write programs avoiding 
+current label, thereby allowing us to write programs avoiding 
 label creep.
 %
 Unfortunately, with auto-upgrades, when the current label gets raised 
@@ -425,8 +425,8 @@ The |withRefs| primitive is mostly standard and provides a programming paradigm
 similar to that already present in some mainstream languages (e.g., C++'s
 lambda closures require the programmer to specify the captured references).
 %
-We lastly remark that by simply wrapping |toLabeled| with |withRefs|, and
-thereby restrict the (untrusted) code within the |toLabeled| block from
+We lastly remark that by simply wrapping |toLabeled| with |withRefs|,
+thereby preventing the (untrusted) code within the |toLabeled| block from
 upgrading arbitrary references, we eliminate the aforementioned attack.
 
 
