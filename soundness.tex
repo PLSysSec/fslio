@@ -102,7 +102,7 @@ with the flow-sensitive semantics.
 
 % We can now state our equivalence theorem.
 
-\begin{theorem}\label{thm:eq} Let |t| in \liofs{}.
+\begin{theorem}\label{thm:eq} Let |t : LIO tau| be a well-typed term in \liofs{}.
   Then if |conf c t ==> conf c' v|, we have |conf (impl1 c) (impl t c)
   ==> conf (impl1 c') (impl v c)|, and if 
   |conf c t ==> conf c' diverge|, then
@@ -137,10 +137,10 @@ cannot distinguish among different runs of a program with
 |l|-equivalent initial configurations.
 
 \begin{theorem}[TINI for \liofs{}]
-  Consider two well-typed terms |t1| and |t2| in \liofs{} which do not
-  contain any TCB syntax nodes, such that |t1 &~ t2|. We assume there
-  is an attacker that observes data at level |l|. Let |c| be an
-  initial environment, and let
+  Consider two well-typed terms |t1 : LIO tau| and |t2 : LIO tau| in
+  \liofs{} which do not contain any TCB syntax nodes, such that |t1 &~
+  t2|. We assume there is an attacker that observes data at level
+  |l|. Let |c| be an initial environment, and let
 \[
     |conf c (t1) ==> conf c1 v1|\mbox{ and }
     |conf c (t2) ==> conf c2 v2|
@@ -181,7 +181,7 @@ reference |r| is bound, it must be the case that the current label is
 at least as sensitive as the label on the label of |r|.
 
 \begin{lemma} \label{lem:lolFlowslCurr}
-  Let |t| be a term in \lioconc{}, |c = (lcurr, mI, mS)| an initial
+  Let |t| be a well-typed term in \lioconc{}, |c = (lcurr, mI, mS)| an initial
   environment and |r| a flow-sensitive reference in |c|, where |mS(r)
   = LabeledTCB l_o (LabeledTCB l_d v)|. Then, if |conf c t ==> conf
   ((lcurr',mI',mS')) t'|, we have that |l_o canFlowTo lcurr'|.
@@ -207,12 +207,12 @@ stronger than TINI, since it implies that there can be no termination
 or internal timing leaks.
 
 \begin{theorem}[TSNI for \lioconc{}]
-  Consider two well-typed terms |t1| and |t2| in \lioconc{} which do not
-  contain any TCB syntax nodes, such that |t1 &~ t2|. We assume there
-  is an attacker that observes data at level |l|. Let |c| be an
-  initial environment, and let |conf c1 t1 ==> conf c1' t1'|.
-  Then, there exist |c2'| and |t2'| such that |conf c2 t2 ==> conf
-  c2' t2'| and |t1' &~ t2'|.
+  Consider two well-typed terms |t1 : LIO tau| and |t2 : LIO tau| in
+  \lioconc{} which do not contain any TCB syntax nodes, such that |t1
+  &~ t2|. We assume there is an attacker that observes data at level
+  |l|. Let |c| be an initial environment, and let |conf c1 t1 ==> conf
+  c1' t1'|.  Then, there exist |c2'| and |t2'| such that |conf c2 t2
+  ==> conf c2' t2'| and |t1' &~ t2'|.
 \end{theorem}
 
 \begin{proofsketch} Because of Lemma~\ref{lem:lolFlowslCurr}, and
@@ -229,8 +229,12 @@ or internal timing leaks.
   We also remark that our embedding includes no synchronization to
   ensure atomicity of the flow-sensitive operations, so certain
   interleavings that break semantic equivalence are possible. However,
-  adding the necessary synchronization is straightforward and does not
-  affect security, so we elide it in order to simplify our presentation.
+  we note that all the critical sections in our operations consist in
+  a |readRef I| followed by a |writeRef I|. Therefore, we argue that
+  the problem could be addressed by replacing these operations with
+  |atomicModifyRef I|, an atomic operation that is part of the actual
+  implementation of LIO, but which we elide in order to simplify our
+  presentation.
 
   So by expanding all the flow-sensitive operations in |t1| and |t2|
   using their definition given in
