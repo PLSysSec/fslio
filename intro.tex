@@ -96,12 +96,12 @@ and the assigned value is a constant. Finally, the monitor executes
 |publish(l)|, which produces the public event |0|. As a result, the monitor 
 missed to catch the information leak about |h|.  
 
-To close this covert channel, there exist mainly three different proposals:
+To close this covert channel, there have been three main approaches:
 incorporate some static analysis/information into the execution
-monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}, forbid certain label
-changes ---a policy known as \emph{no-sensitive
-  upgrades}~\cite{Austin:Flanagan:PLAS10}---, and deny branches on certain
-variables which have mutated their labels---a policy named \emph{permissive
+monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}; forbid certain label
+changes, a policy known as \emph{no-sensitive
+  upgrades}~\cite{Austin:Flanagan:PLAS10}; and, deny branches on certain
+variables which have mutated their labels, a policy named \emph{permissive
   upgrades}~\cite{Austin:Flanagan:PLAS10}. All of these solutions are proposed
 for sequential programming languages.
 
