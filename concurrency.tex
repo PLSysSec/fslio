@@ -70,13 +70,21 @@ for threads can can be that  for of \liofs{} or \lioafs{}.
 t    ::= cdots  | forkLIO t | noToLabeled
 \end{code}
 \begin{mathpar}
-\inferrule[(forkLIO)]
+\inferrule[forkLIO]
 { }
 {
 |conf c (E[forkLIO t]) .-->  conf c (E[return ()])|
 }
 \and
-\inferrule[(T-step)]
+\inferrule[withRefs-Opt]
+{ 
+|v = refs ((addrs(v1)) and (addrs(v2)))|
+}
+{
+|conf c (E[withRefs v1 (withRefs v2 t)]) -->  conf c (E[withRefs v t])|
+}
+\and
+\inferrule[T-step]
 {
 |c = (lcurr, mI, mS)|\\
 |conf c (withRefs v t) -->  conf c' t'|\\
@@ -87,20 +95,20 @@ t    ::= cdots  | forkLIO t | noToLabeled
 |tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t')|
 }
 \and
-\inferrule[(T-noStep)]
+\inferrule[T-noStep]
 { }
 {
 |tconf mI mS (thread lcurr v diverge, k2, ...) --> tconf mI mS (k2, ...)|
 }
 \and
-\inferrule[(T-done)]
+\inferrule[T-done]
 { }
 {
 |tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
 }
 
 \and
-\inferrule[(T-fork)]
+\inferrule[T-fork]
 {
 |c = (lcurr, mI, mS)|\\
 |conf c (withRefs v t) .-.->  conf c' t''|\\
