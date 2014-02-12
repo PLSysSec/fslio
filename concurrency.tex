@@ -26,45 +26,7 @@ For brevity, we restrict our discussion in this section to the case where the
 underlying sequential calculus is \lioafs{}, since this calculus extends
 \liofs.
 
-Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
-%
-A concurrent programs configuration has the form |tconf mI mS (k1, k2,...)|,
-where |mI| and |mS| are respectively the flow-insensitive and flow-sensitive
-stores shared by all the threads threads |k1, k2, ...| in the program.
-%
-Since the memory stores are global, a thread |k| is simply a tuple
-encapsulating the current label of the thread |lcurr|, the term under
-evaluation |t|, and a bag of references |v| the thread may access, i.e.,
-|k=thread lcurr v t|.
-
-The reduction rules for concurrent programs are mostly standard.
-%
-Rule \ruleref{T-step} describes the case where the thread at at the front of
-the thread pool takes a step in  \lioafs{}: term |t| is executed with a current
-label |lcurr| and a of the store, by encapsulating it
-\hl{here}
-
-
-%
-Firstly, we extend the underlying sequential calculus terms with |forkLIO t|,
-which simply sends the scheduler a message to create a new thread in which |t|
-should be executed, and remove |toLabeled|.
-%
-To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
-from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{
-As discussed in~\tocite{icfp}, |forkLIO| with synchronization primitives can be
-used to provide functionality equivalent to that of |toLabeled|, especially
-addressing the label creep problem discussed in Section~\ref{sec:background}.
-}
-%
-(To this end we extend the reduction relation of the underlying sequential
-calculus with events; since |fork| is the only event, we do not disucss this
-further.)
-%
-\lioconc{} is parametric in the flow-sensitivy policy, i.e., the reduction rule
-for threads can can be that  for of \liofs{} or \lioafs{}.
-%
-\begin{figure}[ht]
+\begin{figure}
 \small
 \begin{code}
 t    ::= cdots  | forkLIO t | noToLabeled
@@ -96,7 +58,7 @@ t    ::= cdots  | forkLIO t | noToLabeled
 |tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t')|
 }
 \and
-\inferrule[T-noStep]
+\inferrule[T-stuck]
 { }
 {
 |tconf mI mS (thread lcurr v diverge, k2, ...) --> tconf mI mS (k2, ...)|
@@ -124,6 +86,74 @@ t    ::= cdots  | forkLIO t | noToLabeled
   \caption{Semantics for \lioconc{}, parametric in the flow-sensitivity policy,
   i.e., with and without auto-upgrade\label{fig:sos:conc}.}
 \end{figure}
+
+\concept{con progs}
+Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
+%
+A concurrent programs configuration has the form |tconf mI mS (k1, k2,...)|,
+where |mI| and |mS| are respectively the flow-insensitive and flow-sensitive
+stores shared by all the threads threads |k1, k2, ...| in the program.
+%
+Since the memory stores are global, a thread |k| is simply a tuple
+encapsulating the current label of the thread |lcurr|, the term under
+evaluation |t|, and a bag of references |v| the thread may access, i.e.,
+|k=thread lcurr v t|.
+
+\concept{step}
+The reduction rules for concurrent programs are mostly standard.
+%
+Rule \ruleref{T-step} specifies that if the first thread in the the thread pool
+takes a step in \lioafs{}, the whole concurrent program takes a step, moving
+the thread to the end of the pool.
+%
+We note that the thread term |t| executed with its stored current label
+|lcurr|, and a subset of the flow-sensitive memory store, by wrapping it in
+|withRefs|.
+%
+While the use of |withRefs| makes the extension straight forward, one
+peculiarity arises: since \ruleref{T-step} always wraps the thread term |t|
+with |withRefs|, if |t| does not reduce in one step to a value, and instead
+reduces to |t'|, the next time the thread is scheduled we will superfolously
+wrap |withRefs t'| with yet another |withRefs|---thus preventing the thread
+from making progress!
+%
+To address this we extend the calculus with rule \ruleref{withRefs-Opt} that
+collapses nested |withRefs| blocks.\footnote{
+This change also requires modifying \ruleref{withRefs-Ctx} to not trigger when
+the term being evaluated is a |withRefs| term.
+}
+ 
+\concept{done/stuck}
+Rules \ruleref{T-done} and \ruleref{T-stuck} specify that once a thread term
+has reduced to a value or got stuck, which is represented by |diverge|, the
+scheduler removes it from the thread pool and schedules the next thread.
+
+\concept{fork}
+%
+To allow for dynamic thread creation, we extended the \lioafs{} syntax to add
+|forkLIO|, and added a new reduction rule that send an event to the scheduler, specifying the term to execute in a new thread.
+%
+
+
+%
+Firstly, we extend the underlying sequential calculus terms with |forkLIO t|,
+which simply sends the scheduler a message to create a new thread in which |t|
+should be executed, and remove |toLabeled|.
+%
+To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
+from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{
+As discussed in~\tocite{icfp}, |forkLIO| with synchronization primitives can be
+used to provide functionality equivalent to that of |toLabeled|, especially
+addressing the label creep problem discussed in Section~\ref{sec:background}.
+}
+%
+(To this end we extend the reduction relation of the underlying sequential
+calculus with events; since |fork| is the only event, we do not disucss this
+further.)
+%
+\lioconc{} is parametric in the flow-sensitivy policy, i.e., the reduction rule
+for threads can can be that  for of \liofs{} or \lioafs{}.
+ 
 
 
 %% In this section, we analyze our flow-sensitivity extensions in presence of
