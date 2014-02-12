@@ -130,15 +130,26 @@ scheduler removes it from the thread pool and schedules the next thread.
 
 \concept{fork}
 %
-To allow for dynamic thread creation, we extended the \lioafs{} syntax to add
-|forkLIO|, and added a new reduction rule that send an event to the scheduler, specifying the term to execute in a new thread.
+As shown in Figure~\ref{fig:sos:conc}, to allow for dynamic thread creation, we
+extend \lioafs{}'s terms with |forkLIO|, and add a new reduction rule that send
+an event to the scheduler, specifying the term to execute in a new
+thread.\footnote{
+In fact the reduction rule for \lioafs{} must be changed to account for events.
+However, since |fork| is the only event in our system, we treat |-->| as
+implicitly carrying an empty event.
+}
 %
-
-
+Rule \ruleref{T-fork} describes the corresponding scheduler rule, triggered
+when a |fork(t')| event is received.
 %
-Firstly, we extend the underlying sequential calculus terms with |forkLIO t|,
-which simply sends the scheduler a message to create a new thread in which |t|
-should be executed, and remove |toLabeled|.
+Here, we create a new thread |knew| whose current label |lcurr'| and partition
+of the store, i.e., bag of references |v'|, is the same as that of the parent
+thread; the term evaluated in the newly created thread is provided in the
+event: |t'|.
+%
+Subsequently, we add the new thread to the thread pool.
+
+\hl{HERE}
 %
 To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
 from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{
@@ -147,13 +158,6 @@ used to provide functionality equivalent to that of |toLabeled|, especially
 addressing the label creep problem discussed in Section~\ref{sec:background}.
 }
 %
-(To this end we extend the reduction relation of the underlying sequential
-calculus with events; since |fork| is the only event, we do not disucss this
-further.)
-%
-\lioconc{} is parametric in the flow-sensitivy policy, i.e., the reduction rule
-for threads can can be that  for of \liofs{} or \lioafs{}.
- 
 
 
 %% In this section, we analyze our flow-sensitivity extensions in presence of
