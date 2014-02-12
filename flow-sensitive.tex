@@ -41,7 +41,7 @@ has read sensitive data such that the current label is |H|, now writing to the
 log raises the label of the reference to |H|.
 %
 As identified by other language-based IFC systems
-(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}, this
+(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}), this
 approach is not safe; consider the code in Figure~\ref{fig:fs-attack}.
 %While this approach was clearly shown to be unsafe, due to implicit-flows, in
 %language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
@@ -109,6 +109,7 @@ changed!
 \begin{figure} % semantics
 \small
 \begin{code}
+s    ::= cdots  | S
 v    ::= cdots  | LIORefTCB S t
 t    ::= cdots  | upgradeR t t | diverge
 Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
@@ -188,11 +189,8 @@ from the context at the time of the change, whose label is |lcurr'|, is leaked
 into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
 i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
 %
-Formally, we extend the \lio{} syntax shown in Figure~\ref{fig:sos:refs}
-with |s=S| and Figure~\ref{fig:sos:fs};
-%
-the reduction rules for this extended calculus, called \liofs{}, are also
-given in Figure~\ref{fig:sos:fs}.
+Formally, we extend the \lio{} syntax and reduction rules as shown in
+Figure~\ref{fig:sos:fs}; we call this calculus \liofs{}.
 
 %\concept{\liofs{} semantics}
 When creating a flow-sensitive reference, |newRef S l t| creates a labeled
@@ -201,7 +199,7 @@ value that guards |t| with label |l| (|LabeledTCB l t|).
 However, since we wish to allow programmers to modify the label |l| of the
 reference, we additionally store the label on |l|, i.e., |lcurr|, by simply
 labeling the already-guarded term (|mS' = mS[a mapsto LabeledTCB lcurr
-(LabeledTCB l t)]|), as as shown in rule~\ruleref{newRef-|S|} .
+(LabeledTCB l t)]|), as shown in rule~\ruleref{newRef-|S|} .
 %
 Primitive |newRef S| returns a |LIORefTCB S a| which simply encapsulates the fresh
 reference address where the doubly-labeled term is stored.
@@ -396,7 +394,7 @@ requires the attacker to manually insert all the upgrades.)
 
 %\concept{withRefs}
 To address this issue, we extend \liofs{} (and thus \lioafs{}) with |withRefs v
-t| which takes a bag |v| of references and a computation |t|, and executes |t|
+t| which takes a bag (strict heterogeneous list) |v| of references and a computation |t|, and executes |t|
 in a configuration where the flow-sensitive reference store only contains the
 subset of references |v|.
 %

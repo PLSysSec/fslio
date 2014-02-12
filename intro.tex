@@ -2,50 +2,55 @@
 \label{sec:intro}
 
 %% Information-flow control as a promising technology 
-Information-flow control (IFC) emerges as a promising technology to preserve
+Information-flow control (IFC) is a promising approach to preserving
 confidentiality and integrity of data in the presence of untrusted code.  In
 particular, it has become attractive for web 
-applications~\citep[e.g.][]{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
-  yang:2013:towards, conf/esorics/AkhaweLHSS13, Hedin13} and mobile phone
-platforms ~\citep[e.g.][]{Enck:2010,android:esorics13}, where the challenge is
+applications (e.g.,\cite{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
+  yang:2013:towards, conf/esorics/AkhaweLHSS13, Hedin13}) and mobile phone
+platforms (e.g., \cite{Enck:2010,android:esorics13}), where the challenge is
 to allow untrusted code to access confidential information while restricting its
 manipulation.
 
 % Intro to non-interference 
-IFC focuses on preventing, or limiting, leaks of secret data into public
-channels. When no leaks are desired, the chosen baseline policy is
-\emph{non-interference}~\citep{Goguen:Meseguer:Noninterference}, which 
-essentially demands no dependence of public events on secrets. In scenarios where
-non-interference is a strong policy, means for declassification, or intended
-release of information, are introduced~\citep{Sabelfeld:Sands:CSFW05}. In this
-article, we focus on \emph{non-interference}. 
+In its simplest form the role of IFC is to prevent (or bound) the leaking of
+sensitive, or secret, data into public channel.  When no leaks are desired, the
+chosen baseline policy is
+\emph{non-interference}~\cite{Goguen:Meseguer:Noninterference}, which
+essentially demands that there be no dependence between public events and
+secrets. In scenarios where non-interference is too restricting, means for
+declassification, or intended release of information, are
+introduced~\cite{Sabelfeld:Sands:CSFW05}. In this article, we focus on
+\emph{non-interference}. 
 
 %% Language-based enforcement 
 Recently, it has become popular to provide language-based IFC enforcements in
-the form of execution monitors~\citep{Hedin2011}. This decision is mainly
+the form of execution monitors~\cite{Hedin2011}. This decision is mainly
 motivated by (i) the permissiveness of dynamic techniques over static
-ones~\citep{Sabelfeld:Russo:PSI09}, and (ii) the simplicity for treating notions
+ones~\cite{Sabelfeld:Russo:PSI09}, and (ii) the simplicity for treating notions
 like dynamic code evaluation---a feature commonly present in modern scripting
 languages. To fulfill confidentiality demands, IFC monitors maintain a
-mapping from variables to security labels~\citep{myers:dlm,Stefan:2011}.  
-For simplicity of exposition, we consider only two labels: |high| (high), which
-denotes secrets, and |low| (low), which denotes public data. The partial ordering
-|low canFlowTo high| and |high cantFlowTo low| expresses that information
-can only flow from public data into secret entities.
+mapping from variables to security labels~\cite{myers:dlm,Stefan:2011}.  
+Without loss of generality, in this paper, we consider only two labels: |high|
+(high), which denotes secret, and |low| (low), which denotes public data. The
+partial ordering |low canFlowTo high| and |high cantFlowTo low| expresses that
+information can only flow from public data into secret entities.
 
 %% Treatment of variables 
 %% Definition flow-sensitive, flow-insensitive 
 One of the facets of IFC analysis lies in the treatment of
-variables~\citep{Hunt:2006}. Some analyses, which are known as \emph{flow-insensitive},
+variables~\cite{Hunt:2006}. Some system, known as \emph{flow-insensitive},
 prevent variables from changing their security labels at execution time, i.e., labels
-are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} enforcements
-admit changes on labels to reflect the confidentiality of the stored data, i.e.,
-labels are considered to be \emph{mutable}. For instance, assuming variable |h|,
-with security level |high|, variable |l|, with security level |low|, and
-function |publish(v)|, which produces a public event of value |v|, the program
-|P = h := l ; publish(h)| is accepted by such an enforcement. The reason for
-that is the change of |h|'s label, which becomes |low| after
-the assignment (|h := l|).
+are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} systems
+allow changes on labels to reflect the confidentiality of the stored data, i.e.,
+labels \emph{mutable} according to the data stored in them.
+Consider, for instance, program |P @= h := l ; publish(h)|, where variables |h| and |l| respectively have labels |H| and |L|, and
+function |publish(v)| that writes value |v| to a public channel.
+%
+While flow-insensitive systems do not permit this program since it appears as
+if we are leaking |h| into a public channel (at the point of |publish(h)|), |P|
+is a valid program in the more-permissive flow-sensitive systems: |h|'s label
+changes from |H| to |L| after the assignment (|h := l|), thus allowing the
+value to be published to a public channel.
 
 %Although static flow-sensitive and flow-insensitive analysis are
 %equivalent in expressiveness (module code rewriting)~\citep{Hunt:2006}, the 
@@ -56,14 +61,14 @@ the assignment (|h := l|).
 Flow-sensitive analyses are beneficial for different reasons. In presence of
 scarce resources, for instance CPU registers, it is not feasible to think that
 they will be assigned a fixed security label throughout program
-execution~\citep{BonelliCM05}. More importantly, flow-sensitive analyses often
+execution~\cite{BonelliCM05}. More importantly, flow-sensitive analyses often
 boost permissiveness by leveraging the changes on labels to reduce the number of
 rejected programs (recall program $P$ above). 
 
 
 %% Problems with Flow-sensitivity and purely dynamic IFC
 Unfortunately, purely dynamic IFC
-systems can turn label changes into a covert channel~\citep{Russo:2010}. 
+systems can turn label changes into a covert channel~\cite{Russo:2010}. 
 \begin{wrapfigure}{r}{0.5\columnwidth}
 |l := 1 ; t := 0 ;| \\
 |if h then t := 1;| \\
@@ -93,11 +98,11 @@ missed to catch the information leak about |h|.
 
 To close this covert channel, there exist mainly three different proposals:
 incorporate some static analysis/information into the execution
-monitor~\citep{Russo:2010,stefan:lio,10.1109/SP.2013.10}, forbid certain label
+monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}, forbid certain label
 changes ---a policy known as \emph{no-sensitive
-  upgrades}~\citep{Austin:Flanagan:PLAS10}---, and deny branches on certain
+  upgrades}~\cite{Austin:Flanagan:PLAS10}---, and deny branches on certain
 variables which have mutated their labels---a policy named \emph{permissive
-  upgrades}~\citep{Austin:Flanagan:PLAS10}. All of these solutions are proposed
+  upgrades}~\cite{Austin:Flanagan:PLAS10}. All of these solutions are proposed
 for sequential programming languages.
 
 
@@ -105,8 +110,8 @@ for sequential programming languages.
 Before the time of language-based techniques for IFC, the operating system
 community has traditionally handled the problem inherent in combining mutable
 labels and purely dynamic monitors. Modern examples of that are the operating
-systems Asbestos~\citep{Efstathopoulos:2005}, HiStar~\citep{zeldovich:histar},
-and Flume~\citep{krohn:flume}. In a nutshell, those systems are composed of
+systems Asbestos~\cite{Efstathopoulos:2005}, HiStar~\cite{zeldovich:histar},
+and Flume~\cite{krohn:flume}. In a nutshell, those systems are composed of
 subjects (e.g. processes) and objects (e.g. files or sockets) with security
 labels. While security labels for objects are immutable, labels for subjects can
 be changed---often by a more restrictive one. Making label changes implicit
@@ -119,22 +124,22 @@ channel itself. To avoid it, HiStar and Flume require label changes to be done
 explicitly.  Asbestos, on the other hand, allows changes in security labels as
 the result of receiving messages under specific and safe conditions. Different
 from language-based approaches, OS work rarely comes with soundness guarantees
-(except for~\citep{Krohn,seL4IF}). Bear in mind that an operating system is not
+(except for~\cite{Krohn,seL4IF}). Bear in mind that an operating system is not
 a simple piece of software to prove correct.
 
 
 %% LIO brings together OS and LB  
 LIO is an IFC system that brings ideas from the OS domain into a language-based
-setting~\citep{stefan:lio,stefan:addressing-covert}.  LIO is a floating-label
+setting~\cite{stefan:lio,stefan:addressing-covert}.  LIO is a floating-label
 system, where the label of a computation can be safely raised to accommodate
 reading sensitive data. This action can be seen as raising the program counter
 (\emph{pc}) in more traditional language-based
-systems~\citep{sabelfeld:language-based-iflow} or as tainting in secure OS.  In
+systems~\cite{sabelfeld:language-based-iflow} or as tainting in secure OS.  In
 this light, it is not surprising that LIO treats objects (e.g. references,
 synchronization variables, etc.) as flow-insensitive entities. Different from
-other IFC tools~\citep{jif,FlowCaml,Hedin13}, LIO allows programs to query
+other IFC tools~\cite{jif,FlowCaml,Hedin13}, LIO allows programs to query
 objects' labels without affecting the floating-label---a useful feature to
-increase permissiveness when interacting with external databases~\citep{giffin:hails}.
+increase permissiveness when interacting with external databases~\cite{giffin:hails}.
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
@@ -152,13 +157,13 @@ another label, called \emph{the label on the label}, which describes the
 confidentiality of the value's label. The calculus then forbids changing a
 label of a reference if \emph{the label on the label is below the
   floating-label} (i.e. similar to the {\nsu}
-discipline~\citep{Austin:Flanagan:PLAS10}). Inspired by~\citep{Hedin13}, we add
+discipline~\cite{Austin:Flanagan:PLAS10}). Inspired by~\cite{Hedin13}, we add
 an instruction capable of \emph{upgrading} labels under certain safe conditions in
 order to boost permissiveness. As one of our main insights and results, we prove
 that the policy {\nsu} and upgrade operations can be already expressed using
 flow-insensitive concepts---the key idea being leveraging nested labeled
 values.  In order to extend our calculus to concurrency, where the termination
-channel should not be neglected~\citep{stefan:addressing-covert}, our upgrade
+channel should not be neglected~\cite{stefan:addressing-covert}, our upgrade
 operation \emph{does not fail}. Instead, it taints the floating-label with the
 label on the label regardless the success of the operation.
 
@@ -203,9 +208,10 @@ More concretely, the contributions of this paper are:
 %   tools. 
 \end{itemize}
 
-Although developed for LIO, we believe that our approaches for the sequential
-and concurrent settings might be applied to other language-based floating-label
-systems~\citep[e.g.][]{10.1109/SP.2013.10} as well as IFC OS work.
+Although developed for LIO, our approaches for the sequential
+and concurrent settings are applied to other language-based floating-label
+systems (e.g., \cite{10.1109/SP.2013.10, Efstathopoulos:2005, zeldovich:histar,
+krohn:flume}).
 
 % Local Variables:
 % TeX-master: "main.tex"

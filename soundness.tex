@@ -155,13 +155,13 @@ cannot distinguish among different runs of a program with
   Then, we have that |conf c1 v1 &~ conf c2 v2|.
 \end{theorem}
 
-\begin{proofsketch}
+\begin{proof}
   By expanding all the flow-sensitive operations in |t1| and |t2| using their
   definition given in Figure~\ref{fig:fs-exts-semantics-impl}, we get
   terms in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
   semantics. Therefore, the result follows from the
   termination-insensitive non-interference of \lio{}~\citep{stefan:lio}.
-\end{proofsketch}
+\end{proof}
 
 \begin{corollary}[TINI for \lioafs{}]
   The previous non-interference result can be extended to \lioafs{} in
@@ -194,7 +194,7 @@ at least as sensitive as the label on the label of |r|.
   conf (lcurr',mI',mS') t'|, we have that |l_o canFlowTo lcurr'|.
 \end{lemma}
 
-\begin{proofsketch}
+\begin{proof}
   Note that the result holds immediately after creating |r|, since
   the current label becomes the label on the label of |r|, i.e., |l_o =
   lcurr|. It is easy to show that |l_o| is immutable, since there are
@@ -207,7 +207,7 @@ at least as sensitive as the label on the label of |r|.
   |r|. As a result, if we were to pass |r| to another thread in this
   way, then the target thread would also have to be tainted by
   |lcurr|, and the result would still hold.
-\end{proofsketch}
+\end{proof}
 
 We can now prove our non-interference theorem for \lioconc. This result is
 slightly stronger than TINI, since it implies that there can be no termination
@@ -225,7 +225,7 @@ or internal timing leaks.
   ==> M2| and |M1 &~ M2|.
 \end{theorem}
 
-\begin{proofsketch} Because of Lemma~\ref{lem:lolFlowslCurr}, and
+\begin{proof} Because of Lemma~\ref{lem:lolFlowslCurr}, and
   looking at the embedding of |writeRef S| and |upgradeR|, we note
   that the first |readRef I| operation in each |toLabeled| block will
   be trying to raise the current label to |l|. However, since |l
@@ -252,7 +252,7 @@ or internal timing leaks.
   \lio{}.  Therefore, the result follows from the
   termination-sensitive non-interference of concurrent
   \lio{}~\citep{stefan:addressing-covert}.
-\end{proofsketch}
+\end{proof}
 
 The detailed proofs for the results in this section can be found in the
 extended version of the paper~\cite{extended}.

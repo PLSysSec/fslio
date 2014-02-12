@@ -517,6 +517,7 @@ reading from a reference taints the current label with the reference label.
 \begin{figure}[t]
 \small
 \begin{code}
+s    ::= I
 v    ::= cdots  | LIORefTCB I l a
 t    ::= cdots  | newRef s t t | writeRef s t t | readRef s t
                 | labelOfR s t
@@ -559,17 +560,16 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 { }
 { |Ep[labelOfR I (LIORefTCB I l a)]) --> Ep[l]| }
 \end{mathpar}
-\caption{Extending \lio{} with references. The reduction rules for
-flow-sensitive (|S|) references are given in Figure~\ref{fig:sos:fs}.
+\caption{Extending \lio{} with references.
 \label{fig:sos:refs}}
 \end{figure}
 %\concept{new syntax}
 %
 The syntactic extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
 %
-We use subscript |s ::= I inlinesep S| to respectively distinguish
-flow-insensitive and flow-sensitive productions (the former are explained in this
-section, and the latter in Section \ref{sec:flow-sensitive}.)
+We use subscript |s| to respectively distinguish flow-insensitive and
+flow-sensitive productions (the former are explained in this section, and the
+latter in Section \ref{sec:flow-sensitive}.)
 %, the semantics for latter are
 %described in Section~\ref{sec:flow-sensitive}.
 %
