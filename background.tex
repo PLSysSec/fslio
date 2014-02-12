@@ -140,7 +140,7 @@ label operations (|t lop t|, where |lub| is the join, |glb| is the meet, and
 t| and |t >>= t|), and |getLabel|, to be explained below.
 %
 Terms with the annotation |TCB| as superscript are not part of the surface
-syntax, i.e. they are not made available to programmers -- these syntax nodes
+syntax, i.e. they are not made available to programmers---these syntax nodes
 are only used internally in the semantics.
 %
 Types consist of Booleans, unit, function types, labels, and |LIO|
@@ -183,10 +183,10 @@ Specifically, a top-level computation is a \emph{configuration} of the form
 the term. We partially specify the state of \lio as being composed of the
 current label |lcurr|, i.e., |c = (lcurr, ...)| where |...| denotes other parts
 of the state not relevant at this point.
-
 %
-%(Under this definition, \lio{} type-judgements have the form | G, c :-
-%t : LIO tau|, where |G| is the usual type environment.)
+Under this definition, a top-level well-typed \lio{} term has the form | D, G
+:- t : LIO tau|, where |D| is the store typing, and |G| is the usual type
+environment.
 %
 % As a result of this encoding, the definition for |return| and |(>>=)|
 % are trivial: the former simply reduces to a monadic value by wrapping
@@ -517,6 +517,7 @@ reading from a reference taints the current label with the reference label.
 \begin{figure}[t]
 \small
 \begin{code}
+s    ::= I
 v    ::= cdots  | LIORefTCB I l a
 t    ::= cdots  | newRef s t t | writeRef s t t | readRef s t
                 | labelOfR s t
@@ -559,17 +560,16 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 { }
 { |Ep[labelOfR I (LIORefTCB I l a)]) --> Ep[l]| }
 \end{mathpar}
-\caption{Extending \lio{} with references. The reduction rules for
-flow-sensitive (|S|) references are given in Figure~\ref{fig:fs-exts-semantics}.
+\caption{Extending \lio{} with references.
 \label{fig:sos:refs}}
 \end{figure}
 %\concept{new syntax}
 %
 The syntactic extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
 %
-We use subscript |s ::= I inlinesep S| to respectively distinguish
-flow-insensitive and flow-sensitive productions (the former are explained in this
-section, and the latter in Section \ref{sec:flow-sensitive}.)
+We use subscript |s| to respectively distinguish flow-insensitive and
+flow-sensitive productions (the former are explained in this section, and the
+latter in Section \ref{sec:flow-sensitive}.)
 %, the semantics for latter are
 %described in Section~\ref{sec:flow-sensitive}.
 %

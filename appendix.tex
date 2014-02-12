@@ -2,7 +2,7 @@
 \section{Semantics for the base calculus}
 \label{sec:app:sem}
 
-\begin{figure}[t] % sos:rules
+\begin{figure} % sos:rules
 \small
 \begin{code}
 Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
@@ -73,7 +73,7 @@ latter evaluates the left-hand term and supplies the result to the right-hand
 term, as usual.
 
 
-\section{An alternative attack on naive flow-sensitive implementation}
+\section{attack on naive flow-sensitive references}
 \label{sec:app:fs-attack2}
 \begin{figure}
 \small
@@ -92,9 +92,9 @@ leakRef href = do
 extension without |labelOfR space|.\label{fig:fs-attack2}}
 \end{figure}
 %
-As in the attack of Figure~\ref{fig:fs-attack}, |leakRef| can be used to leak
-the value stores in a |high| reference |href|, while keeping the current label
-|low|.
+As in the attack of Figure~\ref{fig:fs-attack}, the |leakRef| of
+Figure~\ref{fig:fs-attack2} can be used to leak the value stores in a |high|
+reference |href|, while keeping the current label |low|, without using |labelOfR space|.
 %
 Internally, the value is leaked into public reference |lref| by leveraging the
 fact that based on a secret value the label of a public reference (|tmp|) can

@@ -8,11 +8,12 @@ previous results about LIO.
 
 \subsection{Embedding into \lio{}}
 
-We will now show that we can implement our flow-sensitive semantics in
-terms of flow-insensitive references. More concretely, every
-flow-sensitive reference stored as |LabeledTCB l_o (LabeledTCB l_d
-v)|, can be represented by a flow-insensitive reference with label
-|l_o|, whose contents are the labeled value |LabeledTCB l_d v|.
+We now show that we can implement our flow-sensitive semantics in terms of
+flow-insensitive references. More concretely, every flow-sensitive reference
+with label |l_d| created in a context where the current label is |l_o| (and
+thus stored in |mS| as |LabeledTCB l_o (LabeledTCB l_d t)|), can be represented
+by a flow-insensitive reference with label |l_o|, whose contents are the
+labeled value |LabeledTCB l_d t|.
 
 Figure~\ref{fig:fs-exts-semantics-impl} shows our implementation of
 the flow-sensitive reference operations in this setting.  For a given
@@ -20,20 +21,22 @@ store |c|, we define the |impl (-) (c)| function, which given a term
 |t| in \liofs{}, produces a term |impl (t) (c)| in \lio{}, which is
 obtained by expanding the definitions of flow-sensitive operations in
 terms of flow-insensitive ones. This function is applied
-homomorphically in all other cases. We use the tag |WrapRef| to mark
+homomorphically in all other cases. We use the |WrapRef| to mark
 the flow-insensitive references that are being used to represent
 flow-sensitive ones, so as to distinguish them from ordinary
 flow-insensitive references. The functions |wrap| and |unwrap| are
-used to add and remove this tag. For the sake of brevity, we do not
-explain this mapping in detail, but we remark that it is directly
-based on the rules in Figure~\ref{fig:sos:fs}.
+used to add and remove this boundary encoding
+%
+For the sake of brevity, we do not explain the mapping in detail, but remark
+that it is directly based on the rules in Figure~\ref{fig:sos:fs}.
+%
 
 \begin{figure}
 \small
 \begin{code}
 wrap r @= WrapRef r
 unwrap (WrapRef r) @= r
-whenDiv t t1 @= if t then t1 else fix (\x. x)
+whenDiv t t1 @= if t then t1 else diverge
 
 impl (LIORefTCB S r) ((lcurr,mI,mS)) @= wrap (LIORefTCB I (labelOf mS(r)) r)
 
@@ -67,6 +70,10 @@ impl (upgradeR) c @= \r l . let  r'  = unwrap r
      v'  <- upgrade v l
      writeRef I r' v'
 
+impl (withRefs v t) ((lcurr,mI,mS)) @= impl t ((lcurr, mI, mS'))
+   where
+    mS'  = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }
+
 \end{code}
 \caption{Implementation mapping for flow-sensitive references. For all other terms, the function is applied homomorphically.\label{fig:fs-exts-semantics-impl}}
 \end{figure}
@@ -98,7 +105,8 @@ with the flow-sensitive semantics.
 
 % We can now state our equivalence theorem.
 
-\begin{theorem}\label{thm:eq} Let |t| in \liofs{}.
+\begin{theorem}[Embedding \liofs{} in \lio{}]
+\label{thm:eq} Let |t| be a well-typed term in \liofs{}.
   Then if |conf c t ==> conf c' v|, we have |conf (impl1 c) (impl t c)
   ==> conf (impl1 c') (impl v c)|, and if 
   |conf c t ==> conf c' diverge|, then
@@ -108,6 +116,9 @@ with the flow-sensitive semantics.
   %     references, the other doesn't), so syntactic equiality is not
   %     right.  we need the equivalence relation I defined before}}
 \end{theorem}
+While straight forward, this theorem highlights an important result: in
+floating label systems, flow-sensitive references can be encoded in a calculus
+with flow-insensitive references and explicitly labeled values!
 
 \subsection{Security guarantees for \liofs{}, \lioafs{} and \lioconc{}}
 
@@ -133,10 +144,10 @@ cannot distinguish among different runs of a program with
 |l|-equivalent initial configurations.
 
 \begin{theorem}[TINI for \liofs{}]
-  Consider two well-typed terms |t1| and |t2| in \liofs{} which do not
-  contain any TCB syntax nodes, such that |t1 &~ t2|. We assume there
-  is an attacker that observes data at level |l|. Let |c| be an
-  initial environment, and let
+  Consider two well-typed terms |t1| and |t2| in
+  \liofs{} which do not contain any |TCB| syntax nodes, such that |t1 &~
+  t2|. We assume there is an attacker that observes data at level
+  |l|. Let |c| be an initial environment, and let
 \[
     |conf c (t1) ==> conf c1 v1|\mbox{ and }
     |conf c (t2) ==> conf c2 v2|
@@ -144,49 +155,107 @@ cannot distinguish among different runs of a program with
   Then, we have that |conf c1 v1 &~ conf c2 v2|.
 \end{theorem}
 
-\begin{proofsketch}
-  By expanding all the flow-sensitive operations in |t| using their
+\begin{proof}
+  By expanding all the flow-sensitive operations in |t1| and |t2| using their
   definition given in Figure~\ref{fig:fs-exts-semantics-impl}, we get
-  a term in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
+  terms in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
   semantics. Therefore, the result follows from the
   termination-insensitive non-interference of \lio{}~\citep{stefan:lio}.
-\end{proofsketch}
+\end{proof}
 
 \begin{corollary}[TINI for \lioafs{}]
   The previous non-interference result can be extended to \lioafs{} in
   a straightforward manner. In \lioafs{}, the |unlabel| operation
   triggers the automatic upgrades mechanism, which consists in
   performing the |upgrade| operation for every flow-sensitive
-  reference in scope before actually raising the current
-  label. Additionally, the |withRefs| primitive allows the programmer
-  to restrict the set of references in scope, reducing the number of
-  |upgrade|s that need to be performed when |unlabel| occurs.
-  Regardless of how |unlabel| and |withRefs| are used, we note that
-  the resulting term (after inserting the necessary |upgrade|s), is just an
-  \liofs{} term. Therefore, the main TINI result for \liofs{} applies.
+  reference in scope before actually raising the current label.
+  Regardless of how |unlabel| is used, we note that the resulting term
+  (after inserting the necessary |upgrade|s), is just an \liofs{}
+  term. Therefore, the main TINI result for \liofs{} applies.
+
+ % Additionally, the |withRefs| primitive allows the programmer
+ %  to restrict the set of references in scope, reducing the number of
+ %  |upgrade|s that need to be performed when |unlabel| occurs.
+
+% \hl{move
+%    withRefs}
 \end{corollary}
 
-In the concurrent setting, we have a stronger result, where the
-termination and internal timing covert channels are closed.
+In the concurrent setting, we need to prove a lemma about the
+relationship between the current label and the label on the label of
+flow-sensitive references. We show that, in every context where a
+reference |r| is bound, it must be the case that the current label is
+at least as sensitive as the label on the label of |r|.
+
+\begin{lemma} \label{lem:lolFlowslCurr}
+  Let |t| be a well-typed term in \lioconc{}, |c = (lcurr, mI, mS)| an initial
+  environment and |a| the address of a flow-sensitive reference |r| in |c|,
+  where |mS(a) = LabeledTCB l_o (LabeledTCB l_d v)|. Then, if |conf c t ==>
+  conf (lcurr',mI',mS') t'|, we have that |l_o canFlowTo lcurr'|.
+\end{lemma}
+
+\begin{proof}
+  Note that the result holds immediately after creating |r|, since
+  the current label becomes the label on the label of |r|, i.e., |l_o =
+  lcurr|. It is easy to show that |l_o| is immutable, since there are
+  no reduction rules that modify it. Moreover, given that the current
+  label is monotonic, the only way in which |l_o canFlowTo lcurr| can
+  cease to hold is if |r| is accessed from a different thread. But in
+  order to pass |r| to a different thread, a labeled object must be
+  used as intermediary, and the label of such object would have to be
+  at least |lcurr|, the current label in the thread that created
+  |r|. As a result, if we were to pass |r| to another thread in this
+  way, then the target thread would also have to be tainted by
+  |lcurr|, and the result would still hold.
+\end{proof}
+
+We can now prove our non-interference theorem for \lioconc. This result is
+slightly stronger than TINI, since it implies that there can be no termination
+or internal timing leaks.
 
 \begin{theorem}[TSNI for \lioconc{}]
-  Consider two well-typed terms |t1| and |t2| in \lioconc{} which do not
-  contain any TCB syntax nodes, such that |t1 &~ t2|. We assume there
-  is an attacker that observes data at level |l|. Let |c| be an
-  initial environment, and let |conf c1 t1 ==> conf c1' t1'|.
-  Then, there exist |c2'| and |t2'| such that |conf c2 t2 ==> conf
-  c2' t2'| and |t1' &~ t2'|.
+  Consider two well-typed terms |t1| and |t2| in
+  \lioconc{} which do not contain any |TCB| syntax nodes, such that |t1
+  &~ t2|. We assume there is an attacker that observes data at level
+  |l|. Let |c = (lcurr, mI, mS)| be an initial environment, and let
+\[
+ |tconf mI mS (thread lcurr (refs (dom mS)) t1) ==> M1|
+\]
+  Then, there exists some configuration |M2| such that |tconf mI mS (thread lcurr (refs (dom mS)) t2)
+  ==> M2| and |M1 &~ M2|.
 \end{theorem}
 
-\begin{proofsketch} \hl{Revise} By expanding all the flow-sensitive
-  operations in |t| using their definition given in
-  Figure~\ref{fig:fs-exts-semantics-impl}, we get a term in concurrent
-  \lio{}.  \hl{Show that toLabeled is fine.}
-  Therefore, the result follows from the termination-sensitive
-  non-interference of concurrent \lio{}~\citep{stefan:addressing-covert}.
-\end{proofsketch}
+\begin{proof} Because of Lemma~\ref{lem:lolFlowslCurr}, and
+  looking at the embedding of |writeRef S| and |upgradeR|, we note
+  that the first |readRef I| operation in each |toLabeled| block will
+  be trying to raise the current label to |l|. However, since |l
+  canFlowTo lcurr|, these operations will never effectively raise the
+  current label. This means that using |toLabeled| is not necessary to
+  preserve the semantics, because there is no need to restore the
+  current label afterwards. As a result, and after removing
+  |toLabeled| in these two cases, we note that the embedding produces
+  valid concurrent \lio{} terms (which does not have |toLabeled|).
 
-\hl{include link to extended version}
+  We remark that our embedding includes no synchronization to
+  ensure atomicity of the flow-sensitive operations, so certain
+  interleavings that break semantic equivalence are possible. However,
+  we note that all the critical sections in our operations consist in
+  a |readRef I| followed by a |writeRef I|. Therefore, we argue that
+  the problem could be addressed by replacing these operations with
+  |atomicModifyRef I|, an atomic operation that performs the read and write and
+  is part of the actual implementation of LIO, but which we elide in order to
+  simplify our presentation.
+
+  Finally, by expanding all the flow-sensitive operations in |t1| and |t2|
+  using their definition given in
+  Figure~\ref{fig:fs-exts-semantics-impl}, we get terms in concurrent
+  \lio{}.  Therefore, the result follows from the
+  termination-sensitive non-interference of concurrent
+  \lio{}~\citep{stefan:addressing-covert}.
+\end{proof}
+
+The detailed proofs for the results in this section can be found in the
+extended version of the paper~\cite{extended}.
 
 % \hl{NOTE}
 

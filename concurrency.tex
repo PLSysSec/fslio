@@ -1,63 +1,45 @@
 \section{Concurrency}
 \label{sec:conc}
 
-\Red{Outline:
-- Note that concurrent lio with naive flow-sensitive refs has the same atack.
-- Hence we consider the FS refs as define in the previous section.
-- Our rules for the concurrent LIO have withRefs by default; this is generally
-  useful and allows us to be parametric in the underlying FS upgrade policy.
-- Discuss extension to flow-sensitive LMVars.
-}
-
 \concept{extending \lioafs{}}
-In this section, we consider flow-sensitive references in the precence of
-concurrrency.
+In this section, we consider flow-sensitive references in the presence of
+concurrency.
 %
-Concretely, we consider a subset of the concurrent version of
-LIO~\tocite{ifcp}, to extend our sequential \liofs{} and \lioafs{} calcului
-with threads and a new terminal, |forkLIO|, for dynamically creating new
-threads.
+Concretely, we extend our sequential \liofs{} and \lioafs{} calculi with
+threads and a new terminal, |forkLIO|, for dynamically creating new threads, as
+in the concurrent version of LIO~\cite{stefan:addressing-covert}.
 %
-Intuitively, our concurrent calculus simply defines scheduler over sequential
-threads; taking a step in the concurrent calculus amounts to taking a step in a
-sequential thread and context switching to a different thread.
+Intuitively, this concurrent calculus \lioconc{} simply defines a scheduler over
+sequential threads, such that taking a step in the concurrent calculus amounts
+to taking a step in a sequential thread and context switching to a different
+thread.
 %
 For brevity, we restrict our discussion in this section to the case where the
-underlying calculus is \lioafs{}, which is itself an extension of \liofs.
+underlying sequential calculus is \lioafs{}, since this calculus extends
+\liofs.
 
-Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
-%
-Firstly, we extend the underlying sequential calculus terms with |forkLIO t|,
-which simply sends the scheduler a message to create a new thread in which |t|
-should be executed, and remove |toLabeled|.
-%
-To guarantee termination-sensitive non-interfernce, we must remove |toLabeled|
-from the underlying sequential calculus, as in~\tocite{ifcp}.\footnote{
-As discussed in~\tocite{icfp}, |forkLIO| with synchronization primitives can be
-used to provide functionality equivalent to that of |toLabeled|, especially
-addressing the label creep problem discussed in Section~\ref{sec:background}.
-}
-%
-(To this end we extend the reduction relation of the underlying sequential
-calculus with events; since |fork| is the only event, we do not disucss this
-further.)
-%
-\lioconc{} is parametric in the flow-sensitivy policy, i.e., the reduction rule
-for threads can can be that  for of \liofs{} or \lioafs{}.
-%
-\begin{figure}[ht]
+\begin{figure}
 \small
 \begin{code}
 t    ::= cdots  | forkLIO t | noToLabeled
 \end{code}
 \begin{mathpar}
-\inferrule[(forkLIO)]
+\inferrule[forkLIO]
 { }
 {
 |conf c (E[forkLIO t]) .-->  conf c (E[return ()])|
 }
 \and
-\inferrule[(T-step)]
+\inferrule[withRefs-Opt]
+{ 
+|v = refs ((addrs(v1)) and (addrs(v2)))|\\
+|conf c (E[withRefs v t] --> conf c' (E[t'])|
+}
+{
+|conf c (E[withRefs v1 (withRefs v2 t)]) --> conf c' (E[t'])|
+}
+\and
+\inferrule[T-step]
 {
 |c = (lcurr, mI, mS)|\\
 |conf c (withRefs v t) -->  conf c' t'|\\
@@ -68,13 +50,20 @@ t    ::= cdots  | forkLIO t | noToLabeled
 |tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t')|
 }
 \and
-\inferrule[(T-noStep)]
+\inferrule[T-stuck]
 { }
 {
 |tconf mI mS (thread lcurr v diverge, k2, ...) --> tconf mI mS (k2, ...)|
 }
 \and
-\inferrule[(T-fork)]
+\inferrule[T-done]
+{ }
+{
+|tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
+}
+
+\and
+\inferrule[T-fork]
 {
 |c = (lcurr, mI, mS)|\\
 |conf c (withRefs v t) .-.->  conf c' t''|\\
@@ -85,162 +74,129 @@ t    ::= cdots  | forkLIO t | noToLabeled
 {
 |tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t'', knew)|
 }
-\and
-\inferrule[(T-done)]
-{ }
-{
-|tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
-}
-
 \end{mathpar}
   \caption{Semantics for \lioconc{}, parametric in the flow-sensitivity policy,
   i.e., with and without auto-upgrade\label{fig:sos:conc}.}
 \end{figure}
 
+\concept{con progs}
+Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
+%
+A concurrent program configuration has the form |tconf mI mS (k1, k2,...)|,
+where |mI| and |mS| are respectively the flow-insensitive and flow-sensitive
+stores shared by all the threads |k1, k2, ...| in the program.
+%
+Since the memory stores are global, a thread |k| is simply a tuple
+encapsulating the current label of the thread |lcurr|, the term under
+evaluation |t|, and a bag of references |v| the thread may access, i.e.,
+|k=thread lcurr v t|.
 
-%% In this section, we analyze our flow-sensitivity extensions in presence of
-%% concurrency. We firstly give a brief introduction to a subset of the concurrent
-%% version of |LIO|.
-%% % which includes operations for creating threads and expressing
-%% % communication among them.
-%% 
-%% Concurrent |LIO|~\cite{?} extends the sequential version of |LIO| with
-%% operations for creating threads and expressing communication among
-%% them, as seen in Figure~\ref{fig:conc-syntax}.
-%% 
-%% |LMVar|s are an IFC-aware version of |MVar|s, which are
-%% well-established primitives for synchronization in
-%% Haskell~\cite{CH96}.  A value of type |LMVar l a| is a mutable
-%% location that is either empty or contains a value of type |a| labeled
-%% with |l|. They are created with |newLMVar|, and they are accessed with
-%% |takeLMVar| and |putLMVar|. Function |takeLMVar| raises the current
-%% label and empties an |LMVar| if it is full, and blocks
-%% otherwise. Function |putLMVar| fills an |LMVar| with a value if it is
-%% empty and the current label flows to the label of the |LMVar|, and
-%% blocks otherwise. These are the only synchronization and communication
-%% primitives for concurrent |LIO|. For the sake of brevity, we elide a
-%% full presentation of the semantics of |LMVars| since it is standard.
-%% 
-%% The expression |forkLIO l t| forks a new thread to perform the
-%% computation |t|, where |l| is an upper bound on the current label of
-%% the computation in the spawned thread. Essentially, |forkLIO| is a
-%% concurrent version of |toLabeled|. When a thread is spawned, the
-%% parent receives a value of type |Result l a|, which serves as a
-%% handler that allows to access the labeled result produced by |t|. The
-%% function |waitLIO| allows threads to inspect these values, i.e. the
-%% values returned by spawned computations, in a manner similar to
-%% |unlabel|. After calling |waitLIO|, the current label is raised to the
-%% label of its argument, and the program waits for the target thread to
-%% produce a result, which is then returned. As shown in~\cite{?}, these
-%% primitives serve to close the termination channel, since in order to
-%% observe (non-)termination of a forked thread, we must first raise our
-%% current label. The semantics for these operations are shown in
-%% Figure~\ref{fig:conc-semantics}. Note that we rely on the
-%% implementation of |LMVar|s in order to implement these
-%% operations. Every thread writes its result to an |LMVar|, from which
-%% other threads can read using |waitLIO|.
-%% 
-%% 
-%% \subsection{Flow-sensitive references}
-%% 
-%% The results from previous sections extend naturally to the concurrent
-%% setting. However, under the \emph{auto-upgrade} semantics, having a
-%% store which is shared among all threads implies that all references
-%% get upgraded whenever any thread raises its current label. As this
-%% might be too restrictive in practice, we offer |forkLIO'|, an
-%% alternative version of |forkLIO| with an additional parameter which
-%% represents the list of flow-sensitive references into which the thread
-%% is allowed to write. This function is analogous to |toLabeled'| in
-%% that it restricts the scope of the store available to the spawned
-%% thread. Figure~\ref{fig:forkS-semantics} shows the semantics for this
-%% operation. The |addrs| operation is the same as in |toLabeled'| from
-%% the previous section.
-%% 
-%% \begin{figure}[ht]
-%%   \centering
-%% %%  \begin{mathpar}
-%% %%\inferrule[forkLIO']
-%% %%{|c = (lcurr, mI, mS)|\\
-%% %% |mS' = {a mapsto mS(a) inlinesep a element dom mS and addrs(v) }|
-%% %%}
-%% %%{|conf c (E[forkLIO' v t]) .-.-> conf c (E[return ()])|}
-%% %%    
-%% %%  \end{mathpar}
-%% \begin{code}
-%% forkLIO' v t  @= withRefs v (forkLIO t) 
-%%               == forkLIO (withRefs v t)
-%% \end{code}
-%% 
-%%   \caption{Semantics for the |forkLIO'| primitive.}
-%%   \label{fig:forkS-semantics}
-%% \end{figure}
-%% 
-%% \hl{Mention that the typical use case for forkLIO' would be with a fresh store.}
-%% 
-%% 
-%% % In a sequential setting, the attack in Figure~\ref{fig:fs-attack} is disabled by
-%% % the enforcement presented in the previous section, allowing us to prove
-%% % termination-insensitive non-interference. However, as described before, the
-%% % concurrent version of |LIO| requires the property of
-%% % \emph{termination-sensitive} non-interference. In this section, we show ohow
-%% % threads and label changes on shared references jeopardizes security.  
-%% % Specifically, we present how to exploit the termination channel in concurrent 
-%% % |LIO|.
-%% 
-%% % \begin{figure}
-%% % \begin{code}
-%% % do  forkLIO H $ -- Thread A
-%% %        do  v <- readLIORef secretM
-%% %           when v (readLIORef secretH)
-%% %     forkLIO H $ -- Thread B
-%% %        do  upgrade shared_ref M
-%% %            writeLIORef public True
-%% % \end{code}  
-%% % \caption{Flow-sensitive attack in a concurrent setting.\label{fig:fs-conc-attack}}
-%% % \end{figure}
-%% % Figure~\ref{fig:fs-conc-attack} shows the attack. This piece of code illustrates
-%% % that our approach for sequential |LIO| does not naturally generalize for
-%% % concurrency.  
-%% % %how to exploit the termination
-%% % %channel to leak information in this context. 
-%% % We assume that threads are interleaved so that thread A's code runs to
-%% % completion before thread B's code. Otherwise, it is enough to insert dummy
-%% % instructions before forking thread B. We also assume the standard three-point
-%% % lattice |low canFlowTo medium canFlowTo high|. Thread A firstly read a secret at
-%% % label |medium|, thereby upgrading |shared_ref| to that label. Depending on the
-%% % read value, the thread then reads a secret with label |high|, which further
-%% % upgrades |shared_ref| to |high|. Thread B, on the other hand, firstly try to
-%% % upgrade |shared_ref| to level |medium|. It is this instruction which exploits
-%% % the termination channel. If |secretM| was |False|, the upgrade operation
-%% % succeeds since |share_ref| is already at level |medium|. In contrast, if
-%% % |secretM| was |True|, the instruction fails due to |shared_ref| having the label
-%% % |high|. This implies that the operation that follows the upgrade instruction,
-%% % which writes a value to a public reference at level |low| (|writeLIORef public
-%% % True|), will either be executed or not depending on a value at level |medium|.
-%% % The fact of stopping thread B at different execution points, depending on
-%% % |secretM|, constitutes a termination leak. 
-%% 
-%% % In general terms, the attack shows that threads, with different floating-labels,
-%% % might refer to the same shared flow-sensitive reference. If the reference is
-%% % upgraded in one thread based on some confidential data, then it might taint the
-%% % other ones when the reference is read. Such taints might then stop the execution
-%% % of the threads, which consequently could exploit the termination covert channel.
-%% 
-%% % In order to address this attack, we can either remove shared state altogether,
-%% % or use the \emph{no-sensitive-upgrades} policy without explicit or automatic
-%% % upgrades. At the semantics level, restricting sharing is achieved when forking.
-%% 
-%% % \hl{Pablo, can you put the rule here avoiding sharing?}
-%% 
-%% % Once sharing is restricted, it is safe to upgrade flow-sensitive references as 
-%% % we did for the sequential setting of LIO. 
-%% 
-%% % \hl{Ale: Not sure about the next paragraph, is it the automatically upgrade what 
-%% % does not work? I believe it is the upgrade, so no upgrade then of any kind}
-%% % The strategy of {\nsu} avoid the attack in Figure~\ref{fig:fs-conc-attack}.  The
-%% % reason for that is that |shared_ref| would not be \emph{automatically} upgraded
-%% % by thread A. Consequently, command |upgrade share_ref medium| succeeds and so
-%% % both threads would always run to completion, producing no leaks.
+\concept{step}
+The reduction rules for concurrent programs are mostly standard.
+%
+Rule \ruleref{T-step} specifies that if the first thread in the thread pool
+takes a step in \lioafs{}, the whole concurrent program takes a step, moving
+the thread to the end of the pool.
+%
+We note that the thread term |t| executed with its stored current label
+|lcurr|, and a subset of the flow-sensitive memory store, by wrapping it in
+|withRefs|.
+%
+While the use of |withRefs| makes the extension straight forward, one
+peculiarity arises: since \ruleref{T-step} always wraps the thread term |t|
+with |withRefs|, if |t| does not reduce in one step to a value, and instead
+reduces to |t'|, the next time the thread is scheduled we will superfluously
+wrap |withRefs t'| with yet another |withRefs|---thus preventing the thread
+from making progress!
+%
+To address this we extend the calculus with rule \ruleref{withRefs-Opt} that
+collapses nested |withRefs| blocks.\footnote{
+This change also requires modifying \ruleref{withRefs-Ctx} to not trigger when
+the term being evaluated is a |withRefs| term.
+}
+ 
+\concept{done/stuck}
+Rules \ruleref{T-done} and \ruleref{T-stuck} specify that once a thread term
+has reduced to a value or got stuck, which is represented by |diverge|, the
+scheduler removes it from the thread pool and schedules the next thread.
+
+\concept{fork}
+%
+As shown in Figure~\ref{fig:sos:conc}, to allow for dynamic thread creation, we
+extend \lioafs{}'s terms with |forkLIO|, and add a new reduction rule that sends
+an event to the scheduler, specifying the term to execute in a new
+thread.\footnote{
+In fact the reduction rule for \lioafs{} must be changed to account for events.
+However, since |fork| is the only event in our system, we treat |-->| as
+implicitly carrying an empty event.
+}
+%
+Rule \ruleref{T-fork} describes the corresponding scheduler rule, triggered
+when a |fork(t')| event is received.
+%
+Here, we create a new thread |knew| whose current label |lcurr'| and partition
+of the store, i.e., bag of references |v'|, is the same as that of the parent
+thread; the term evaluated in the newly created thread is provided in the
+event: |t'|.
+%
+Subsequently, we add the new thread to the thread pool.
+
+\concept{no toLabeled}
+The final modification in extending \lioafs{} to \lioconc{} shown in
+Figure~\ref{fig:sos:conc} is the removal of |toLabeled| from the underlying
+calculus.
+%
+As described in~\cite{stefan:addressing-covert}, we must remove |toLabeled| to
+guarantee termination-sensitive non-interference.
+%
+Importantly, however |forkLIO| with synchronization primitives (e.g.,
+flow-insensitive labeled MVars, as discussed
+in~\cite{stefan:addressing-covert}) can be used to provide functionality
+equivalent to that of |toLabeled|;
+%
+we omit synchronization primitives from \lioconc{} for simplicity of
+exposition.\footnote{
+Our approach to safely adding flow-sensitive references can directly
+be applied to other objects.
+%
+Extending \lioconc{} to provide flow-sensitive labeled MVars of follows
+identically, and similar to the embedding of \liofs{} into \lio{}, we can embed
+\lioconc{} with flow-sensitive MVars into \lioconc.
+}
+
+\concept{still have attack}
+The flow-sensitive attack in Figure~\ref{fig:fs-attack} relied on |toLabeled|
+to restore the current label and thus allow for the leak of |high| data to be
+observed in a |low| context.
+%
+A natural question, given that we remove |toLabeled|, is whether we can use the
+naive flow-sensitive reference semantics of Section~\ref{sec:flow-sensitive}
+for concurrent LIO.
+%
+As shown by the attack code in Figure~\ref{fig:fs-conc-attack}, in which we use
+|forkLIO| instead of |toLabeled| to address a potential label creep, the
+fundamental problem remains: the label on the reference label is not protected!
+%
+\begin{figure}
+\small
+\begin{code}
+leakRef :: LIORefTCB space Bool -> LIO Bool
+leakRef href = do
+  tmp   <- newRef space low ()
+  forkLIO $ do  h <- readRef space href
+                when h (writeRef space tmp ())
+  delay
+  return (labelOfR space tmp == high)
+\end{code}
+\cut{$}
+\caption{Attack in concurrent LIO with naive flow-sensitive reference
+extension. We omit subscripts on reference terminals for clarity.
+\label{fig:fs-conc-attack}}
+\end{figure}
+%
+This precisely motivated our principled approach of extending \lioafs{} to a
+concurrent setting as opposed to extending concurrent LIO with flow-sensitive
+references.
 
 
 % Local Variables:

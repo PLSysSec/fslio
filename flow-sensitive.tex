@@ -24,7 +24,7 @@ log. For instance, suppose that the computation never reads sensitive data, yet 
 read the log content to, e.g., format it, then it needs to taint itself to $\top$!
 %
 It is clear that even in the case of simple scenarios, having references with
-mutable labels that vary according to the sensitive of what is stored in the
+mutable labels that vary according to the sensitivity of what is stored in the
 reference is useful.
 
 %\concept{naive approach doesn't work}
@@ -41,7 +41,7 @@ has read sensitive data such that the current label is |H|, now writing to the
 log raises the label of the reference to |H|.
 %
 As identified by other language-based IFC systems
-(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}, this
+(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}), this
 approach is not safe; consider the code in Figure~\ref{fig:fs-attack}.
 %While this approach was clearly shown to be unsafe, due to implicit-flows, in
 %language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
@@ -60,7 +60,7 @@ leakRef href = do
   return (labelOfR space tmp == high)
 \end{code}
 \cut{$}
-\caption{Attack in LIO with naive flow-sensitive reference extension. We ommit
+\caption{Attack in LIO with naive flow-sensitive reference extension. We omit
 subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 \end{figure}
 
@@ -71,7 +71,7 @@ In this attack, |leakRef| can be used to leak the value stored in a |high| refer
 |href|, while keeping the current label |low|, by leveraging a new
 covert channel: the label of references.
 %
-Concretely, in |leakRef| we create a public reference |tmp| and withing the
+Concretely, in |leakRef| we create a public reference |tmp| and, within the
 |toLabeled| block, which is used to ensure that the current label remains
 |low|, the label of this reference is changed to |H| if the secret stored in
 |href| is |true|, and left intact (|L|) if the secret is |false|.
@@ -109,6 +109,7 @@ changed!
 \begin{figure} % semantics
 \small
 \begin{code}
+s    ::= cdots  | S
 v    ::= cdots  | LIORefTCB S t
 t    ::= cdots  | upgradeR t t | diverge
 Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
@@ -178,7 +179,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 
 
 %\concept{\liofs{}}
-Thus, to extend LIO with flow-sensitive reference, we must account for the label
+Thus, to extend LIO with flow-sensitive references, we must account for the label
 on the label of the reference at the time of creation, |lcurr|.
 %
 (This label is, however, immutable.)
@@ -188,11 +189,8 @@ from the context at the time of the change, whose label is |lcurr'|, is leaked
 into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
 i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
 %
-Formally, we extend the \lio{} syntax shown in Figure~\ref{fig:sos:refs}
-with |s=S| and Figure~\ref{fig:sos:fs};
-%
-the reduction rules for this extended calculus, called \liofs{}, are also
-given in Figure~\ref{fig:sos:fs}.
+Formally, we extend the \lio{} syntax and reduction rules as shown in
+Figure~\ref{fig:sos:fs}; we call this calculus \liofs{}.
 
 %\concept{\liofs{} semantics}
 When creating a flow-sensitive reference, |newRef S l t| creates a labeled
@@ -201,7 +199,7 @@ value that guards |t| with label |l| (|LabeledTCB l t|).
 However, since we wish to allow programmers to modify the label |l| of the
 reference, we additionally store the label on |l|, i.e., |lcurr|, by simply
 labeling the already-guarded term (|mS' = mS[a mapsto LabeledTCB lcurr
-(LabeledTCB l t)]|), as as shown in rule~\ruleref{newRef-|S|} .
+(LabeledTCB l t)]|), as shown in rule~\ruleref{newRef-|S|} .
 %
 Primitive |newRef S| returns a |LIORefTCB S a| which simply encapsulates the fresh
 reference address where the doubly-labeled term is stored.
@@ -219,8 +217,8 @@ i.e., we raise the current label to the join of the current label and the label
 on the label.
 %
 The rules for reading and writing to flow-sensitive references are mostly
-standard; |readRef S| raise the current label to the label of the reference
-(which is above the label on the label) and |writeRef S| ensure that the
+standard; |readRef S| raises the current label to the label of the reference
+(which is above the label on the label) and |writeRef S| ensures that the
 current computation can write to the reference (|lcurr canFlowTo (l lub l')|).
 %
 One peculiarity with |writeRef S| is the case when the current label does not
@@ -231,8 +229,8 @@ If the semantics got stuck in \ruleref{writeRef-fs}, the current label would
 not reflect the fact that the success of applying such rule depends on the
 label |l'| (itself protected by |l|), which might lead to information leaks;
 hence, we provide an explicit rule for this failure case that first raises the
-current label (through |unlabel|) and then diverges, see rule
-\ruleref{writeref-fs-fail} where |diverge| represents a divergent computation
+current label (through |unlabel|) and then diverges; see rule
+\ruleref{writeref-fs-fail}, where |diverge| represents a divergent computation
 (we do not provide a reduction rule for |diverge|).
 
 % there is a termination leak which reveals
@@ -254,7 +252,7 @@ current label (through |unlabel|) and then diverges, see rule
 Additionally, we note that |writeRef S| does not modify the label of the reference.
 %
 This is, in part, because we wish to keep the difference between
-flow-insensitive and flow-sensitive references as close as possible.
+flow-insensitive and flow-sensitive references as small as possible.
 %
 Instead, we provide |upgradeR| precisely for this purpose; this primitive is
 used to raise the label of the reference.
@@ -304,13 +302,25 @@ addrs (nil)                                       @= emptyset
 addrs (set(LIORefTCB S a1, LIORefTCB S a2, ...))  @= {a1, a2, ...}
 \end{code}
 \begin{mathpar}
-\inferrule[withRefs]
+\inferrule[withRefs-Ctx]
 {|c = (lcurr, mI, mS)|\\
  |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
- |conf (lcurr, mI, mS') t ==> conf (lcurr', mI', mS'') (LIOTCB t')|\\
- |c'' = (lcurr', mI', mS'' merge mS)|
+ |conf (lcurr, mI, mS') (E[t]) --> conf (lcurr', mI', mS'') (E[t'])|\\
+ |c'' = (lcurr', mI', mS'' merge mS)|\\
+ |v' = refs(dom mS'')|
 }
-{|conf c (E[withRefs v t]) --> conf c'' (E[return t']|}
+{|conf c (E[withRefs v t]) --> conf c'' (E[withRefs v' t']|}
+\and
+\inferrule[withRefs-Done]
+{ }
+{|conf c (E[withRefs v v']) --> conf c (E[v']|}
+\and
+\inferrule[Type-withRef]
+{ |D' = {a mapsto D(a) inlinesep a element dom D and (addrs v) }|\\
+  |D', G :- v :  set (LIORef S tau1, ...)|\\
+  |D', G :- t :  LIO tau|
+}
+{ |D, G :- withRefs v t : LIO tau| }
 \end{mathpar}
 \caption{Extending \liofs{} and \lioafs{} with |withRefs|.\label{fig:sos:withRefs}}
 \end{figure}
@@ -327,10 +337,10 @@ similar to, but more permissive than, no-sensitive upgrades.)
 Using \liofs{}, we can also safely implement our logging application using a
 flow-sensitive reference.
 %
-Unfortunately, our system (and other like it) requires that we insert
+Unfortunately, our system (and others like it) requires that we insert
 |upgrade|s before we raise the current label so that it is possible to 
 write references in a more-sensitive context, e.g., to modify a public reference
-(with label on the label as |L|) after reading a secret. 
+(with label on the label |L|) after reading a secret. 
 
 %\concept{auto upgrade}
 Inspired by~\citep{Hedin13}, we thus provide an extension to \liofs{} that can
@@ -362,7 +372,7 @@ interface expected of a log.
 
 %\concept{store creep}
 Recall, however, that |toLabeled| provides a means for temporarily raising the
-current label, allowing thereby allowing us to write programs avoiding 
+current label, thereby allowing us to write programs avoiding 
 label creep.
 %
 Unfortunately, with auto-upgrades, when the current label gets raised 
@@ -384,27 +394,37 @@ requires the attacker to manually insert all the upgrades.)
 
 %\concept{withRefs}
 To address this issue, we extend \liofs{} (and thus \lioafs{}) with |withRefs v
-t| which takes a bag |v| of references and a computation |t|, and executes |t|
+t| which takes a bag (strict heterogeneous list) |v| of references and a computation |t|, and executes |t|
 in a configuration where the flow-sensitive reference store only contains the
 subset of references |v|.
 %
-This extension is shown in Figure~\ref{fig:sos:withRefs}
+%
+This extension and type rule \ruleref{Type-withRef}, which ensures that a term
+cannot access a reference outside it's store, are shown in
+Figure~\ref{fig:sos:withRefs}
 %
 A bag is either empty |nil|, or a number of references |set (v,..)|, where each
 element in the bag may be a reference of a distinct type.
 %
-Rule \ruleref{withRefs} precisely defines the semantics of this new primitive,
-where meta function |addrs| converts a bag of references to a set of their
-corresponding addresses, and |merge| is used to merge the stores, giving
-preferences to the left-hand-side store, i.e., when there is a discrepancy on a
-stored value between both stores, it chooses the one appearing on the
-left-hand-side.
+Rules \ruleref{withRefs-Ctx} and \ruleref{withRefs-Done} precisely define the
+semantics of this new primitive, where meta function |addrs| converts a bag of
+references to a set of their corresponding addresses, |refs| performs the
+inverse conversion, and |merge| is used to merge the stores, giving preferences
+to the left-hand-side store, i.e., when there is a discrepancy on a stored
+value between both stores, it chooses the one appearing on the left-hand-side.
 %
-The primitive is mostly standard and provides a programming paradigm similar to
-that already present in some mainstream languages (e.g., C++'s \Red{ASK DM}).
+We note that \ruleref{withRefs-Ctx} is triggered until the term under
+evaluation is reduced to a value, at which point \ruleref{withRefs-Done} is
+triggered, returning said value; we specify this big-step rule in terms of
+small-steps to facilitate the formalization of our concurrent calculus (see
+Section~\ref{sec:conc}).
 %
-We lastly remark that by simply wrapping |toLabeled| with |withRefs|, and
-thereby restrict the (untrusted) code within the |toLabeled| block from
+The |withRefs| primitive is mostly standard and provides a programming paradigm
+similar to that already present in some mainstream languages (e.g., C++'s
+lambda closures require the programmer to specify the captured references).
+%
+We lastly remark that by simply wrapping |toLabeled| with |withRefs|,
+thereby preventing the (untrusted) code within the |toLabeled| block from
 upgrading arbitrary references, we eliminate the aforementioned attack.
 
 
