@@ -13,19 +13,38 @@
 In this section, we consider flow-sensitive references in the precence of
 concurrrency.
 %
-Concretely, we consider a subset of the concurrent version of
-LIO~\tocite{ifcp}, to extend our sequential \liofs{} and \lioafs{} calcului
-with threads and a new terminal, |forkLIO|, for dynamically creating new
-threads.
+Concretely, we extend our sequential \liofs{} and \lioafs{} calcului with
+threads and a new terminal, |forkLIO|, for dynamically creating new threads, as
+in the concurrent version of LIO~\tocite{ifcp}.
 %
-Intuitively, our concurrent calculus simply defines scheduler over sequential
-threads; taking a step in the concurrent calculus amounts to taking a step in a
-sequential thread and context switching to a different thread.
+Intuitively, this concurrent calculus \lioconc{} simply defines scheduler over
+sequential threads, such that taking a step in the concurrent calculus amounts
+to taking a step in a sequential thread and context switching to a different
+thread.
 %
 For brevity, we restrict our discussion in this section to the case where the
-underlying calculus is \lioafs{}, which is itself an extension of \liofs.
+underlying sequential calculus is \lioafs{}, since this calculus extends
+\liofs.
 
 Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
+%
+A concurrent programs configuration has the form |tconf mI mS (k1, k2,...)|,
+where |mI| and |mS| are respectively the flow-insensitive and flow-sensitive
+stores shared by all the threads threads |k1, k2, ...| in the program.
+%
+Since the memory stores are global, a thread |k| is simply a tuple
+encapsulating the current label of the thread |lcurr|, the term under
+evaluation |t|, and a bag of references |v| the thread may access, i.e.,
+|k=thread lcurr v t|.
+
+The reduction rules for concurrent programs are mostly standard.
+%
+Rule \ruleref{T-step} describes the case where the thread at at the front of
+the thread pool takes a step in  \lioafs{}: term |t| is executed with a current
+label |lcurr| and a of the store, by encapsulating it
+\hl{here}
+
+
 %
 Firstly, we extend the underlying sequential calculus terms with |forkLIO t|,
 which simply sends the scheduler a message to create a new thread in which |t|
@@ -74,6 +93,13 @@ t    ::= cdots  | forkLIO t | noToLabeled
 |tconf mI mS (thread lcurr v diverge, k2, ...) --> tconf mI mS (k2, ...)|
 }
 \and
+\inferrule[(T-done)]
+{ }
+{
+|tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
+}
+
+\and
 \inferrule[(T-fork)]
 {
 |c = (lcurr, mI, mS)|\\
@@ -85,13 +111,6 @@ t    ::= cdots  | forkLIO t | noToLabeled
 {
 |tconf mI mS (thread lcurr v t, k2, ...) --> tconf mI' mS' (k2, ..., thread lcurr' v' t'', knew)|
 }
-\and
-\inferrule[(T-done)]
-{ }
-{
-|tconf mI mS (thread lcurr v v', k2, ...) --> tconf mI mS (k2, ...)|
-}
-
 \end{mathpar}
   \caption{Semantics for \lioconc{}, parametric in the flow-sensitivity policy,
   i.e., with and without auto-upgrade\label{fig:sos:conc}.}
@@ -247,3 +266,14 @@ t    ::= cdots  | forkLIO t | noToLabeled
 % TeX-master: "main.tex"
 % TeX-command-default: "Make"
 % End:
+
+\begin{mathpar}
+\inferrule
+{ |c = (lcurr, mI, mS)|\\
+  |mS' = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }|\\
+  |c' = (lcurr, mI, mS')|\\
+  |c', G :- v :  set (LIORef S tau1, ...)|\\
+  |c', G :- t :  LIO tau|
+}
+{ |c, G :- withRefs v t : LIO tau| }
+\end{mathpar}
