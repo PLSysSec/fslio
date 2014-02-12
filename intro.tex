@@ -41,7 +41,7 @@ prevent variables from changing their security labels at execution time, i.e., l
 are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} enforcements
 admit changes on labels to reflect the confidentiality of the stored data, i.e.,
 labels are considered to be \emph{mutable}. For instance, assuming variable |h|,
-with security level |high|, variable |l|, with security levels |low|, and
+with security level |high|, variable |l|, with security level |low|, and
 function |publish(v)|, which produces a public event of value |v|, the program
 |P = h := l ; publish(h)| is accepted by such an enforcement. The reason for
 that is the change of |h|'s label, which becomes |low| after
