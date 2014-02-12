@@ -229,8 +229,8 @@ If the semantics got stuck in \ruleref{writeRef-fs}, the current label would
 not reflect the fact that the success of applying such rule depends on the
 label |l'| (itself protected by |l|), which might lead to information leaks;
 hence, we provide an explicit rule for this failure case that first raises the
-current label (through |unlabel|) and then diverges, see rule
-\ruleref{writeref-fs-fail} where |diverge| represents a divergent computation
+current label (through |unlabel|) and then diverges; see rule
+\ruleref{writeref-fs-fail}, where |diverge| represents a divergent computation
 (we do not provide a reduction rule for |diverge|).
 
 % there is a termination leak which reveals

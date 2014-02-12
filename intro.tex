@@ -154,22 +154,22 @@ elements: a label describing the confidentiality of the stored value, and
 another label, called \emph{the label on the label}, which describes the
 confidentiality of the value's label. The calculus then forbids changing a
 label of a reference if \emph{the label on the label is below the
-  floating-label} (i.e. similar to the {\nsu}
+  floating-label} (similar to the {\nsu}
 discipline~\cite{Austin:Flanagan:PLAS10}). Inspired by~\cite{Hedin13}, we add
-an instruction capable of \emph{upgrading} labels under certain safe conditions in
+a primitive for \emph{upgrading} labels under certain safe conditions in
 order to boost permissiveness. As one of our main insights and results, we prove
-that the policy {\nsu} and upgrade operations can be already expressed using
-flow-insensitive concepts---the key idea being leveraging nested labeled
-values.  In order to extend our calculus to concurrency, where the termination
-channel should not be neglected~\cite{stefan:addressing-covert}, our upgrade
-operation \emph{does not fail}. Instead, it taints the floating-label with the
-label on the label regardless the success of the operation.
+that the {\nsu} policy and upgrade operations can be already expressed using
+flow-insensitive concepts---the key idea being the ability have nested labeled
+values.  
+Our sequential semantics for flow-sensitive references directly extend to the
+concurrent setting, for which the termination channel must not be
+neglected~\cite{stefan:addressing-covert}.
 
 To reduce the programmer's burden of
 introducing upgrade annotations, the calculus provides means for automatically
 upgrading references at safe points, i.e., when the floating-label gets tainted.
 While secure, this feature facilitates label creep, i.e., all flow-sensitive
-references might end up with ``too high'' labels. To address that, we propose a
+references might end up with ``too high'' labels. To further address this, we propose a
 block-structured primitive which only upgrades the labels of declared
 flow-sensitive references, while disallowing access to undeclared ones.
 % using flow-sensitive entities without permanently tainting the floating label,
@@ -205,11 +205,10 @@ More concretely, the contributions of this paper are:
 %   routines \emph{parametric} on the flow-sensitivity of data---a novelty for IFC
 %   tools. 
 \end{itemize}
-
-Although developed for LIO, our approaches for the sequential
-and concurrent settings are applied to other language-based floating-label
-systems (e.g., \cite{10.1109/SP.2013.10, Efstathopoulos:2005, zeldovich:histar,
-krohn:flume}).
+%
+Although developed for LIO, we believe that our results generalize to other
+sequential and concurrent settings floating-label systems (e.g.,
+\cite{10.1109/SP.2013.10, Efstathopoulos:2005, zeldovich:histar, krohn:flume}).
 
 % Local Variables:
 % TeX-master: "main.tex"
