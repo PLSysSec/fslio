@@ -67,6 +67,10 @@ impl (upgradeR) c @= \r l . let  r'  = unwrap r
      v'  <- upgrade v l
      writeRef I r' v'
 
+impl (withRefs v t) ((lcurr,mI,mS)) @= impl t ((lcurr, mI, mS'))
+   where
+    mS'  = {a mapsto mS(a) inlinesep a element dom mS and (addrs v) }
+
 \end{code}
 \caption{Implementation mapping for flow-sensitive references. For all other terms, the function is applied homomorphically.\label{fig:fs-exts-semantics-impl}}
 \end{figure}
@@ -145,9 +149,9 @@ cannot distinguish among different runs of a program with
 \end{theorem}
 
 \begin{proofsketch}
-  By expanding all the flow-sensitive operations in |t| using their
+  By expanding all the flow-sensitive operations in |t1| and |t2| using their
   definition given in Figure~\ref{fig:fs-exts-semantics-impl}, we get
-  a term in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
+  terms in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
   semantics. Therefore, the result follows from the
   termination-insensitive non-interference of \lio{}~\citep{stefan:lio}.
 \end{proofsketch}
@@ -157,17 +161,50 @@ cannot distinguish among different runs of a program with
   a straightforward manner. In \lioafs{}, the |unlabel| operation
   triggers the automatic upgrades mechanism, which consists in
   performing the |upgrade| operation for every flow-sensitive
-  reference in scope before actually raising the current
-  label. Additionally, the |withRefs| primitive allows the programmer
-  to restrict the set of references in scope, reducing the number of
-  |upgrade|s that need to be performed when |unlabel| occurs.
-  Regardless of how |unlabel| and |withRefs| are used, we note that
-  the resulting term (after inserting the necessary |upgrade|s), is just an
-  \liofs{} term. Therefore, the main TINI result for \liofs{} applies.
+  reference in scope before actually raising the current label.
+  Regardless of how |unlabel| is used, we note that the resulting term
+  (after inserting the necessary |upgrade|s), is just an \liofs{}
+  term. Therefore, the main TINI result for \liofs{} applies.
+
+ % Additionally, the |withRefs| primitive allows the programmer
+ %  to restrict the set of references in scope, reducing the number of
+ %  |upgrade|s that need to be performed when |unlabel| occurs.
+
+% \hl{move
+%    withRefs}
 \end{corollary}
 
-In the concurrent setting, we have a stronger result, where the
-termination and internal timing covert channels are closed.
+In the concurrent setting, we need to prove a lemma about the
+relationship between the current label and the label on the label of
+flow-sensitive references. We show that, in every context where a
+reference |r| is bound, it must be the case that the current label is
+at least as sensitive as the label on the label of |r|.
+
+\begin{lemma} \label{lem:lolFlowslCurr}
+  Let |t| be a term in \lioconc{}, |c = (lcurr, mI, mS)| an initial
+  environment and |r| a flow-sensitive reference in |c|, where |mS(r)
+  = LabeledTCB l_o (LabeledTCB l_d v)|. Then, if |conf c t ==> conf
+  ((lcurr',mI',mS')) t'|, we have that |l_o canFlowTo lcurr'|.
+\end{lemma}
+
+\begin{proofsketch} Let us consider a flow-sensitive reference |r|.
+  We note that the result holds immediately after creating |r|, since
+  the current label becomes the label on the label of |r|, i.e. |l_o =
+  lcurr|. It is easy to show that |l_o| is immutable, since there are
+  no reduction rules that modify it. Moreover, given that the current
+  label is monotonic, the only way in which |l_o canFlowTo lcurr| can
+  cease to hold is if |r| is accessed from a different thread. But in
+  order to pass |r| to a different thread, a labeled object must be
+  used as intermediary, and the label of such object would have to be
+  at least |lcurr|, the current label in the thread that created
+  |r|. As a result, if we were to pass |r| to another thread in this
+  way, then the target thread would also have to be tainted by
+  |lcurr|, and the result would still hold.
+\end{proofsketch}
+
+We can now prove our non-interference theorem. This result is slightly
+stronger than TINI, since it implies that there can be no termination
+or internal timing leaks.
 
 \begin{theorem}[TSNI for \lioconc{}]
   Consider two well-typed terms |t1| and |t2| in \lioconc{} which do not
@@ -178,15 +215,34 @@ termination and internal timing covert channels are closed.
   c2' t2'| and |t1' &~ t2'|.
 \end{theorem}
 
-\begin{proofsketch} \hl{Revise} By expanding all the flow-sensitive
-  operations in |t| using their definition given in
-  Figure~\ref{fig:fs-exts-semantics-impl}, we get a term in concurrent
-  \lio{}.  \hl{Show that toLabeled is fine.}
-  Therefore, the result follows from the termination-sensitive
-  non-interference of concurrent \lio{}~\citep{stefan:addressing-covert}.
+\begin{proofsketch} Because of Lemma~\ref{lem:lolFlowslCurr}, and
+  looking at the embedding of |writeRef S| and |upgradeR|, we note
+  that the first |readRef I| operation in each |toLabeled| block will
+  be trying to raise the current label to |l|. However, since |l
+  canFlowTo lcurr|, these operations will never effectively raise the
+  current label. This means that using |toLabeled| is not necessary to
+  preserve the semantics, because there is no need to restore the
+  current label afterwards. As a result, and after removing
+  |toLabeled| in these two cases, we note that the embedding produces
+  valid concurrent \lio{} terms (without |toLabeled|).
+
+  We also remark that our embedding includes no synchronization to
+  ensure atomicity of the flow-sensitive operations, so certain
+  interleavings that break semantic equivalence are possible. However,
+  adding the necessary synchronization is straightforward and does not
+  affect security, so we elide it in order to simplify our presentation.
+
+  So by expanding all the flow-sensitive operations in |t1| and |t2|
+  using their definition given in
+  Figure~\ref{fig:fs-exts-semantics-impl}, we get terms in concurrent
+  \lio{}.  Therefore, the result follows from the
+  termination-sensitive non-interference of concurrent
+  \lio{}~\citep{stefan:addressing-covert}.
 \end{proofsketch}
 
-\hl{include link to extended version}
+The detailed proofs for the results in this section can be found in
+the extended version of the paper, at
+\texttt{http://www.cse.chalmers.se/~buiras/fslio.html}.
 
 % \hl{NOTE}
 
