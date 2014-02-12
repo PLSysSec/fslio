@@ -78,10 +78,11 @@ t    ::= cdots  | forkLIO t | noToLabeled
 \and
 \inferrule[withRefs-Opt]
 { 
-|v = refs ((addrs(v1)) and (addrs(v2)))|
+|v = refs ((addrs(v1)) and (addrs(v2)))|\\
+|conf c (E[withRefs v t] --> conf c' (E[t'])|
 }
 {
-|conf c (E[withRefs v1 (withRefs v2 t)]) -->  conf c (E[withRefs v t])|
+|conf c (E[withRefs v1 (withRefs v2 t)]) --> conf c' (E[t'])|
 }
 \and
 \inferrule[T-step]
