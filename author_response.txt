@@ -4,7 +4,7 @@ Author response CSF '14
 Review 3 questions:
 
 1) In the related work section, we describe how to encode non-sensitive upgrades
-in our flow-sensitive (FS) calculus. As a result, it is clear that it is (at
+in our flow-sensitive (FS) calculus. As a result, we can say that it is (at
 least) as permissive as non-sensitive upgrades. With respect to our own work,
 our FS calculus is as permissive as flow-insensitive (FI) LIO. Any FI LIO
 program can be trivially converted to a FS LIO program (without auto-upgrades)
