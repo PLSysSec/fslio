@@ -1,17 +1,19 @@
 Author response CSF '14
 =======================
 
-Review 3 questions:
+Review 3
 
-1) In the related work section, we describe how to encode non-sensitive upgrades
+> What about "normal" programs?
+> Can you prove a permissiveness theorem?
+
+In the related work section, we describe how to encode no-sensitive-upgrades
 in our flow-sensitive (FS) calculus. As a result, we can say that it is (at
-least) as permissive as non-sensitive upgrades. With respect to our own work,
+least) as permissive as no-sensitive-upgrades. With respect to our own work,
 our FS calculus is as permissive as flow-insensitive (FI) LIO. Any FI LIO
 program can be trivially converted to a FS LIO program (without auto-upgrades)
 by using flow-sensitive references instead of flow-insensitive ones. Since these
 references would never be upgraded, they will behave just like their
 flow-insensitive counterparts.
-
 
 As an example of a "normal" program that could be run in our flow-sensitive
 monitor, we note the case of GitStar, a code-hosting web platform that uses FI
@@ -24,7 +26,12 @@ flow-sensitivity to the full version of LIO.
 (maybe we could add a short description of Deian's new use case as
 another example?)
 
-4) We see no major problems with writing mechanised proofs for our
+Review 4
+
+> What would be the major challenges in
+> proving correctness of the semantics mechanically?
+
+We see no major problems with writing mechanised proofs for our
 results in a proof assistant. We have already gotten some experience 
 encoding part of the FI LIO proofs into Coq [CoqLIO]. 
 
