@@ -32,19 +32,6 @@ like privileges and exceptions that we have not directly implemented
 in this version of the flow-sensitive monitor, but we see no major
 challenges in incorporating flow-sensitivity to the full version of LIO.
 
-In fact, we are using the flow-sensitivity result from this paper to
-improve the Hails database interface. We intend to expand on this, but
-for now consider the blog app LearnByHacking (though this
-similarly applies to GitStar), where a user may want to make a blog
-post public or private. This change amounts to modifying the policy
-(label) on the post; Hails currently implements a conservative
-'update' function that has explicit label checks ensuring that only
-the (code running on behalf of the) owner of the post can modify the
-post policy. By using the semantics of the FS references we can
-remove the (somewhat ad-hoc) label checks checks in 'update' and
-instead use label of the reference to serve as the policy on who can
-modify the label of the post!
-
 > A natural example to carry through the paper is a logging application, ...
 
 We do agree that threading the logging application through the rest of
@@ -59,13 +46,10 @@ While the SSA approach to handling the register allocation problem is
 a very good way to address the problem, other work has considered
 flow-sensitive as an alternative viable solution.  Our work
 complements these latter approaches and thus share a similar
-motivation.
-
-However, we welcome the feedback and will revise the introduction to
-both include better examples and other motivation. In particular, we
-find the FS approach to addressing the policy update concern in Hails
-(described above) very appealing, especially since it generalizes
-beyond the Hails use-case.
+motivation.  However, we welcome the feedback and will revise the
+introduction to both include better examples and other motivation
+(e.g., how this FS approach addressing policy update concerns in Hails
+web apps).
 
 > What would be the major challenges in
 > proving correctness of the semantics mechanically?
