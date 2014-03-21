@@ -4,7 +4,7 @@ recommendations. Below we address some of the major
 concerns/questions:
 
 
-Review 3
+# Review 3
 
 > What about "normal" programs?
 > Can you prove a permissiveness theorem?
@@ -34,44 +34,45 @@ challenges in incorporating flow-sensitivity to the full version of LIO.
 
 In fact, we are using the flow-sensitivity result from this paper to
 improve the Hails database interface. We intend to expand on this, but
-for simplicity consider the blog app LearnByHacking (though this
+for now consider the blog app LearnByHacking (though this
 similarly applies to GitStar), where a user may want to make a blog
 post public or private. This change amounts to modifying the policy
 (label) on the post; Hails currently implements a conservative
 'update' function that has explicit label checks ensuring that only
 the (code running on behalf of the) owner of the post can modify the
 post policy. By using the semantics of the FS references we can
-remove the label, but somewhat ad-hoc, checks in 'update': the label
-of the reference serves as the policy on who can modify the label of
-the post!
+remove the (somewhat ad-hoc) label checks checks in 'update' and
+instead use label of the reference to serve as the policy on who can
+modify the label of the post!
 
+> A natural example to carry through the paper is a logging application, ...
 
-Finally, we do agree with the reviewer in threading the logging
-application through the rest of the paper to give a better intuition
-for both the safety ad permissiveness of the approach.
+We do agree that threading the logging application through the rest of
+the paper to give a better intuition for both the safety and
+permissiveness of the approach will improve the paper.
 
-Review 4
+# Review 4
 
 > ... I don't feel that it does a good job of exposing the problem. ...
 
-We note that while the SSA approach to handling the register
-allocation problem is a very good way to address the problem, other
-work has considered flow-sensitive as an alternative viable solution.
-Our work complements these latter approaches.
+While the SSA approach to handling the register allocation problem is
+a very good way to address the problem, other work has considered
+flow-sensitive as an alternative viable solution.  Our work
+complements these latter approaches and thus share a similar
+motivation.
 
-However, we welcome the feedback and will revise the intro to both
-include better examples and other motivation. In particular, we find
-the FS approach to addressing the policy update concern in Hails
-(described above) a very appealing and clean solution, especially
-since it generalizes beyond the Hails use case.
+However, we welcome the feedback and will revise the introduction to
+both include better examples and other motivation. In particular, we
+find the FS approach to addressing the policy update concern in Hails
+(described above) very appealing, especially since it generalizes
+beyond the Hails use-case.
 
 > What would be the major challenges in
 > proving correctness of the semantics mechanically?
 
-We encoded a large part of the FI LIO and non-interference theorems
-in Coq [CoqLIO]. Based on this experience, and similar efforts on
-Breeze [Hritcu], we see no major problems with writing mechanising our
-result.
+We encoded a large part of the FI LIO and non-interference theorems in
+Coq [CoqLIO]. Based on this experience, and similar efforts on Breeze
+[Hritcu], we see no major problems with mechanising our result.
 
 > Sec I: I don't understand how the program in Fig. 1 illustrates how
 > label changes are used as a covert channel. The program seems to
@@ -80,7 +81,7 @@ result.
 > not changed from "H" to "L", as claimed in the discussion of the
 > example.
 
-That's a bug: "t" changes from "L" to "H"
+That is a bug: "t" changes from "L" to "H"
 
 > Sec. II A: the paragraph on monadic terms does not give a good
 > motivation for the need for monads. In particular, the explanation of
@@ -96,11 +97,11 @@ description of LIO, but we will consider simplifying this as suggested.
 > like the labels should form a join-semilattice.
 
 LIO is polymorphic in the label type; labels forming a
-join-semilattice is necessary.  We belove that assuming the existence
-of a top element to be an unnecessary restriction: HiStar labels and
-variants of the DCLabels (e.g., based on sets) do not have a top
-element. We will adjust the language to express this concern
-('impractical' is too strong).
+join-semilattice is necessary.  We believe that assuming a top element
+is unnecessarily restrictive: HiStar labels and variants of the
+DCLabels (e.g., based on sets) do not have a top element. However, we
+will adjust the language to express this concern: 'impractical' is too
+strong.
 
 > Sec. III: In the rule for writeRefFS, I could not get a good intuition
 > for why the side condition is "l_{cur} flows-to l join l'" and not,
@@ -112,9 +113,10 @@ element. We will adjust the language to express this concern
 
 The condition "l_{cur} flows-to l join l'" holds because the label
 "l'" always flows to "l". However, in the embedding the "label" and
-"writeRefFI" actions effectively impose the condition you are
-suggesting: "l_{cur} flows-to l AND l_{cur} flows-to l'". We will
-revise the rule and, as suggested, expand the embedding discussion.
+"writeRefFI" actions effectively (and additionally) impose the
+condition the reviewer suggests: "l_{cur} flows-to l AND l_{cur}
+flows-to l'". We will revise the rule and, as suggested, expand the
+embedding discussion.
 
 
 References
