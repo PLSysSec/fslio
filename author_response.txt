@@ -1,26 +1,32 @@
 Author response CSF '14
 =======================
 
-1) Our system is as permissive as flow-insensitive LIO. Any FI LIO
-program can be trivially converted to a flow-sensitive LIO program
-(without auto-upgrades) by using flow-sensitive references instead of
-flow-insensitive ones. Since these references would never be upgraded,
-they will behave just like their flow-insensitive counterparts.
+Review 3 questions:
 
-As an example of a "normal" program that could be run in this monitor,
-we note the case of GitStar, a code-hosting web platform that uses LIO
-as its backend [Giffin2012]. GitStar's core could be run in our
-flow-sensitive monitor; the full system uses other features like
-privileges and exceptions that we have not directly implemented in
-this version of the flow-sensitive monitor, but we see no major
-challenges in incorporating flow-sensitivity to the full version of LIO.
+1) In the related work section, we describe how to encode non-sensitive upgrades
+in our flow-sensitive (FS) calculus. As a result, it is clear that it is (at
+least) as permissive as non-sensitive upgrades. With respect to our own work,
+our FS calculus is as permissive as flow-insensitive (FI) LIO. Any FI LIO
+program can be trivially converted to a FS LIO program (without auto-upgrades)
+by using flow-sensitive references instead of flow-insensitive ones. Since these
+references would never be upgraded, they will behave just like their
+flow-insensitive counterparts.
+
+
+As an example of a "normal" program that could be run in our flow-sensitive
+monitor, we note the case of GitStar, a code-hosting web platform that uses FI
+LIO as its backend [Giffin2012]. GitStar's core could be run in our
+flow-sensitive monitor; the full system uses other features like privileges and
+exceptions that we have not directly implemented in this version of the
+flow-sensitive monitor, but we see no major challenges in incorporating
+flow-sensitivity to the full version of LIO.
 
 (maybe we could add a short description of Deian's new use case as
 another example?)
 
 4) We see no major problems with writing mechanised proofs for our
-results in a proof assistant. We would like to do this in the future
-in order to improve the confidence in our results.
+results in a proof assistant. We have already gotten some experience 
+encoding part of the FI LIO proofs into Coq [CoqLIO]. 
 
 
 References
@@ -31,4 +37,6 @@ David Mazières, John Mitchell, Alejandro Russo . Hails: Protecting
 Data Privacy in Untrusted Web Applications. In Proceedings of 10th
 Symposium on Operating Systems Design and Implementation (OSDI) ,
 USENIX . 2012.
+
+[CoqLIO] https://github.com/deian/lio-semantics
 
