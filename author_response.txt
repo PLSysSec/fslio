@@ -105,6 +105,17 @@ element. We will adjust the language to express this concern
 > Sec. III: In the rule for writeRefFS, I could not get a good intuition
 > for why the side condition is "l_{cur} flows-to l join l'" and not,
 > say, "l_{cur} flows-to l AND l_{cur} flows-to l'."
+>
+> Sec. V A: I think that the explanation of the embedding here could
+> strongly benefit from some discussion of the non-trivial rewrite rules
+> in Fig. 13, in particular the rule for writeRefFS.
+
+The condition "l_{cur} flows-to l join l'" holds because the label
+"l'" always flows to "l". However, in the embedding the "label" and
+"writeRefFI" actions effectively impose the condition you are
+suggesting: "l_{cur} flows-to l AND l_{cur} flows-to l'". We will
+revise the rule and, as suggested, expand the embedding discussion.
+
 
 References
 ----------
