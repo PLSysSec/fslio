@@ -1,45 +1,69 @@
-Author response CSF '14
-=======================
+We thank the reviewers for their comments, references and very
+constructive feedback. We look forward to applying their
+recommendations. Below we address some of the major
+concerns/questions:
+
 
 Review 3
 
 > What about "normal" programs?
 > Can you prove a permissiveness theorem?
 
-In the related work section, we describe how to encode no-sensitive-upgrades
-in our flow-sensitive (FS) calculus. As a result, we can say that it is (at
-least) as permissive as no-sensitive-upgrades. With respect to our own work,
-our FS calculus is as permissive as flow-insensitive (FI) LIO. Any FI LIO
-program can be trivially converted to a FS LIO program (without auto-upgrades)
-by using flow-sensitive references instead of flow-insensitive ones. Since these
-references would never be upgraded, they will behave just like their
-flow-insensitive counterparts.
+In the related work section, we describe how to encode
+no-sensitive-upgrades in our flow-sensitive (FS) calculus.  As a
+result, we can say that it is at least as permissive as
+no-sensitive-upgrades.  (Though we do not prove this formally---in
+part, due to the lack of space---we do not expect any major problems
+in doing so.) With respect to our own work, our FS calculus is as
+permissive as flow-insensitive (FI) LIO. Any FI LIO program can be
+trivially converted to a FS LIO program (without auto-upgrades) by
+using flow-sensitive references instead of flow-insensitive ones.
+Since these references would never be upgraded, they will behave just
+like their flow-insensitive counterparts.
 
-As an example of a "normal" program that could be run in our flow-sensitive
-monitor, we note the case of GitStar, a code-hosting web platform that uses FI
-LIO as its backend [Giffin2012]. GitStar's core could be run in our
-flow-sensitive monitor; the full system uses other features like privileges and
-exceptions that we have not directly implemented in this version of the
-flow-sensitive monitor, but we see no major challenges in incorporating
-flow-sensitivity to the full version of LIO.
+As an example of a "normal" program that could be run in our
+flow-sensitive monitor, we highlight Hails [Giffin], a web framework
+using LIO, on top of which a number of applications have been built
+(e.g., GitStar, a code-hosting web platform, LearnByHacking, a
+blog/tutorial platform similar to School of Haskell, and LambdaChair,
+an EasyChair-like conference review system).  GitStar's core could be
+run in our flow-sensitive monitor; the full system uses other features
+like privileges and exceptions that we have not directly implemented
+in this version of the flow-sensitive monitor, but we see no major
+challenges in incorporating flow-sensitivity to the full version of LIO.
 
-(maybe we could add a short description of Deian's new use case as
-another example?)
+In fact, we are using the flow-sensitivity result from this paper to
+improve the Hails database interface. We intend to expand on this, but
+for simplicity consider the blog app LearnByHacking (though this
+similarly applies to GitStar), where a user may want to make a blog
+post public or private. This change ammounts to modifying the policy
+(label) on the post; Hails currently implements a conservative
+'update' function that has explicit label checks ensuring that only
+the (code running on behalf of the) owner of the post can modify the
+post policy. By using the semantics of the FS references we can
+remove the label, but somewhat ad-hoc, checks in 'update': the label
+of the reference serves as the policy on who can modify the label of
+the post!
+
+Finally, we do agree with the reviewer in threading the logging
+application through the rest of the paper to give a better intuition
+for both the safety ad permissiveness of the approach.
 
 Review 4
 
 > What would be the major challenges in
 > proving correctness of the semantics mechanically?
 
-We see no major problems with writing mechanised proofs for our
-results in a proof assistant. We have already gotten some experience 
-encoding part of the FI LIO proofs into Coq [CoqLIO]. 
+We encoded a large part of the FI LIO and non-interference theoremes
+in Coq [CoqLIO]. Based on this experience, and similar efforts on
+Breeze [Hritcu], we see no major problems with writing mechanising our
+result.
 
 
 References
 ----------
 
-[Giffin2012] Daniel B. Giffin, Amit Levy, Deian Stefan, David Terei,
+[Giffin] Daniel B. Giffin, Amit Levy, Deian Stefan, David Terei,
 David Mazières, John Mitchell, Alejandro Russo . Hails: Protecting
 Data Privacy in Untrusted Web Applications. In Proceedings of 10th
 Symposium on Operating Systems Design and Implementation (OSDI) ,
