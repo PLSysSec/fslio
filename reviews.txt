@@ -1,0 +1,213 @@
+----------------------- REVIEW 2 ---------------------
+PAPER: 59
+TITLE: On Dynamic Flow-sensitive Floating Label Systems
+AUTHORS: Pablo Buiras, Deian Stefan, Alejandro Russo and David Mazieres
+
+OVERALL EVALUATION: 2 (accept)
+REVIEWER'S CONFIDENCE: 3 (medium)
+
+----------- REVIEW -----------
+The paper presents a flow-sensitive information-flow control (IFC) analysis designed in order to overcome the drawbacks of purely dynamic IFC monitoring mechanisms. The key insight of the proposed solution is to decompose security labels into two elements: the actual security label of the resource and the label of the label. The authors emphasize as the main contributions of the paper: (1) a uniform IFC mechanism for treating flow-sensitive and flow insensitive references (in both a concurrent and a sequential setting) and (2) the fact that they are the first to address the challenges of purely dynamic monitors in a concurrent setting.   
+
+The basic enforcement mechanism (on top of which the authors develop a series of additional layers to cater for different problems, such as references, flow-sensitivity, and concurrency) borrows ideas from IFC operating systems. Concretely, the current pc-level is upgraded with the level of every resource that is read. Raising the current label allows computations to flexibly read data, at the cost of being more limited in where they can subsequently write. This can lead to a problem commonly known as label creep. To overcome such a problem the authors introduce a construct that allows for the evaluation of an expression in a separate context, thus avoiding label creep.  
+
+As said above, the main idea of the proposed approach is to divide the label of a reference into two elements: the label of the value that is referenced and the label of the label itself. While the label of the value can be flow-sensitive, the label of the label must be flow insensitive. Surprisingly, the authors show that the popular no-sensitive-upgrade discipline for designing purely dynamic monitors can be expressed in this way. 
+
+I find the key insights of the paper very appealing, especially the new perspective on the no-sensitive-upgrade discipline for designing purely dynamic monitors. Furthermore, the fact that the design of the monitor builds on techniques used for IFC in operating systems is also very interesting since it helps clarifying the relations between the mechanisms for IFC in operating systems and standard techniques in language based security. To the best of my knowledge, the authors are the first to propose a purely dynamic monitor for enforcing secure information flow in a concurrent setting. Hence, I find that the paper meets the high quality standards of a venue such as CSF and I recommend it to be accepted. 
+
+Minor remark: 
+
+The authors credit Austin and Flanagan with the design of the no-sensitive-upgrade strategy. Albeit being a widespread mistake, it is wrong. The no-sensitive-upgrade discipline, whose name was indeed coined by Austin and Flanagan (although not in the paper that is cited but rather in that of the previous year: Efficient Purely Dynamic Information Flow Analysis), was proposed by Zdancewic in his PhD thesis (which is pointed out by Austin and Flanagan in their paper).
+
+
+----------------------- REVIEW 3 ---------------------
+PAPER: 59
+TITLE: On Dynamic Flow-sensitive Floating Label Systems
+AUTHORS: Pablo Buiras, Deian Stefan, Alejandro Russo and David Mazieres
+
+OVERALL EVALUATION: 1 (weak accept)
+REVIEWER'S CONFIDENCE: 5 (expert)
+
+----------- REVIEW -----------
+This paper presents an extension to the LIO language, which supports
+dynamic information flow monitoring (implemented as a monad in
+Haskell). While LIO requires labels on references to be fixed, the
+present paper allows these labels to be upgraded flow-sensitively. The
+key idea is to remember the "current" label at the reference was
+created, and to forbid any dynamic label updates from going below this
+label; this prevents leakages through label changes. This support for
+flow-sensitivity translates to a concurrent setting, which seems to
+be a first. Interestingly, the paper shows that flow-sensitive
+references can be translated into a language without them, preserving
+behavior, and thus security. A few other constructs are developed to
+avoid label creep, and some examples are shown how they can prevent
+things like "poison pill" attacks.
+
+My assessment of the paper is generally positive. I think LIO's use of
+the "current label" provides an interesting alternative perspective on
+dynamic monitoring, and the way threads are handled is also quite
+neat. The present paper develops more interesting ideas that should
+continue to push the state of the art forward. I think the security
+theorem by translation is particularly elegant.
+
+On the other hand, the ramifications of the various rules were hard to
+follow. It wasn't so hard for me to see that the approach is safe;
+what is harder is to see why it is sufficiently permissive. There was
+no real evaluation in the paper aside from a few code snippets that
+might bump the current label too high. What about "normal" programs?
+Can you prove a permissiveness theorem?
+
+I also would have liked more examples just to help explain what was
+going on, both in terms of security and permissiveness. The prose in
+the paper largely restated the rules, without providing much insight
+beyond the statement of some implicit invariants. I found myself
+continually wondering whether the security requirements would end up
+being very restrictive.  A natural example to carry through the paper
+is a logging application, whose policy could be tuned as you go to
+highlight the different extensions, even extending out to the later
+sections with concurrency (concurrent readers / writers to different
+parts of the log).
+
+Related work:
+- The idea of labels on labels in an information-flow enforcement
+setting has been explored in this paper, "A Trust Management Approach
+for Flexible Policy Management in Security-Typed Languages," CSF'08.
+The setting here is quite different, but there might be some useful
+ideas here.
+- The idea of "withRefs" seems related to Foster's "restrict"
+primitive in the way it disallows access to labels that would confound
+stronger reasoning; cf. http://dl.acm.org/citation.cfm?id=512531
+Section 4.
+
+Typos/nits:
+p. 1: Hy --> H
+p. 2: the monitor missed to catch --> the monitor failed to catch
+p. 5: The \curlyvee operator seems poorly chosen: such an operator
+looks as if it should be symmetric, but in fact is it not. Perhaps
+change to be a directional operator, e.g., \searrow or \hookrightarrow
+?
+p. 5: The formatting of $Ref_s\ \tau$ looks poor. How about
+$\mathit{Ref}_s\ \tau$ instead?
+p. 5: to accommodate for references as follows --> to accommodate
+references as follows
+p. 6: You might explain the $ and when keywords in Fig. 7 for those
+who don't know Haskell.
+p. 7: The paragraph at the start of the page is quite long; can you
+break it up? Likewise, there is only one subsection in the section.
+p. 11: I didn't follow the relation to "no-sensitive upgrades" in the
+second paragraph of section VI. I wonder if you could provide an
+example?
+
+
+----------------------- REVIEW 4 ---------------------
+PAPER: 59
+TITLE: On Dynamic Flow-sensitive Floating Label Systems
+AUTHORS: Pablo Buiras, Deian Stefan, Alejandro Russo and David Mazieres
+
+OVERALL EVALUATION: 1 (weak accept)
+REVIEWER'S CONFIDENCE: 3 (medium)
+
+----------- REVIEW -----------
+Summary:
+
+This paper presents a language for enforcing information-flow control
+dynamically. The key feature of the language is that it allows a
+reference cell to store data with different levels of sensitivity over
+the execution of a program, and tracks the level of sensitivity
+precisely. The key challenge for designing the language is to allow a
+program to mutate the label of a given reference cell while ensuring
+that the label itself cannot be used as a channel to leak
+information. The key technique to address this challenge is to include
+in the program state a "current label" that tracks the sensitivity of
+all information read by the program (analogous to the label of an
+executing thread in a DIFC OS). The current label is checked when a
+program requests to allocate or mutate the label of a reference cell,
+which ensures that reference-cell labels are used safely.
+
+The paper presents a set of extensions to the core language that allow
+practical programs to be written in the language, in particular:
+
+-The language includes scoped terms in which the current label may
+ be raised while evaluating the term, and then at the end of the
+ scoped term, "reset" to the label before executing the scoped term.
+
+-The language includes a term for automatically lifting the labels of
+ all references in a store so that a program can easily continue to
+ write to reference cells as it upgrades its current label.
+
+-The language allows a program to execute a (in practice, untrusted)
+ term with access to a restricted set of reference cells, to prevent
+ the untrusted term from raising the labels of reference cells in the
+ program that must be read by the trusted segments of the program.
+
+-The language includes support for concurrency, in which scoped terms
+ that are executed sequentially in the core language are executed
+ concurrently in different threads.
+
+Critique:
+
+This paper presents a language with some interesting security features
+that I feel could give a nice foundation for writing DIFC programs
+with heavily optimized resource usage. I have some reservations about
+the paper in its current state (discussed below), but overall, I
+recommend it for publication.
+
+Sec. 1: My first concern is that while I feel that the paper addresses
+a potentially useful problem, I don't feel that it does a good job of
+exposing the problem. The introduction gives two arguments for
+languages with flow-sensitive labels: (1) labeling programs that
+operate over scarce resources, namely registers, and (2) defining a
+more permissive semantics that rejects fewer programs, in particular a
+small program. But regarding (1), I don't feel that registers in
+particular are a good application for this approach: it would seem
+much easier to let a programmer reason about flow-insensitive virtual
+registers, and then use standard compiler techniques to map these to
+the limited physical registers. Regarding (2), I appreciate having an
+example program that is as simple as possible, but I feel that the
+included program is too simple as to be unintuitive: it seems very
+weird to write a program that publishes a high variable under the
+implicit understanding that the variable will actually store
+low-sensitive data.
+
+I feel that the real strength of this paper is that it gives the
+programmer very fine-grained control of mutating the sensitivity of
+data in an essentially-arbitrary structure (not just flat variables
+stored in registers). It seems like a good illustration of this would
+be a simple program that mutates an unbounded data structure (e.g. a
+list or tree) over time: such a program could be used to show how the
+language allows a programmer to reuse the same data structure to store
+different information without having to expensively reallocate new
+data structures with similar structure.
+
+Sec I: I don't understand how the program in Fig. 1 illustrates how
+label changes are used as a covert channel. The program seems to
+illustrate an implicit flow based on control flow, but the label of no
+variable is changed, and in particular the label of variable "t" is
+not changed from "H" to "L", as claimed in the discussion of the
+example.
+
+Sec. II A: the paragraph on monadic terms does not give a good
+motivation for the need for monads. In particular, the explanation of
+"return" and "bind" does not explain why they are needed over simply
+pure terms and term application, respectively.
+
+Sec. III: Why is it impractical to assume that practical IFC systems
+do not include a top element? This seems odd, given that several of
+the inference rules in the paper rely on a join operation, so it seems
+like the labels should form a join-semilattice.
+
+Sec. III: In the rule for writeRefFS, I could not get a good intuition
+for why the side condition is "l_{cur} flows-to l join l'" and not,
+say, "l_{cur} flows-to l AND l_{cur} flows-to l'."
+
+Sec. V A: I think that the explanation of the embedding here could
+strongly benefit from some discussion of the non-trivial rewrite rules
+in Fig. 13, in particular the rule for writeRefFS.
+
+There seems to be a lot of momentum in verifying that the semantics of
+small but tricky core languages, like the one presented in this paper,
+satisfy properties like non-interference (see [17]), and this language
+has enough subtle corners that it would be nice to have high
+confidence in its semantics. What would be the major challenges in
+proving correctness of the semantics mechanically?
+
