@@ -6,18 +6,56 @@ AUTHORS: Pablo Buiras, Deian Stefan, Alejandro Russo and David Mazieres
 OVERALL EVALUATION: 2 (accept)
 REVIEWER'S CONFIDENCE: 3 (medium)
 
------------ REVIEW -----------
-The paper presents a flow-sensitive information-flow control (IFC) analysis designed in order to overcome the drawbacks of purely dynamic IFC monitoring mechanisms. The key insight of the proposed solution is to decompose security labels into two elements: the actual security label of the resource and the label of the label. The authors emphasize as the main contributions of the paper: (1) a uniform IFC mechanism for treating flow-sensitive and flow insensitive references (in both a concurrent and a sequential setting) and (2) the fact that they are the first to address the challenges of purely dynamic monitors in a concurrent setting.   
+----------- REVIEW ----------- 
+The paper presents a flow-sensitive
+information-flow control (IFC) analysis designed in order to overcome the
+drawbacks of purely dynamic IFC monitoring mechanisms. The key insight of the
+proposed solution is to decompose security labels into two elements: the actual
+security label of the resource and the label of the label. The authors emphasize
+as the main contributions of the paper: (1) a uniform IFC mechanism for treating
+flow-sensitive and flow insensitive references (in both a concurrent and a
+sequential setting) and (2) the fact that they are the first to address the
+challenges of purely dynamic monitors in a concurrent setting.
 
-The basic enforcement mechanism (on top of which the authors develop a series of additional layers to cater for different problems, such as references, flow-sensitivity, and concurrency) borrows ideas from IFC operating systems. Concretely, the current pc-level is upgraded with the level of every resource that is read. Raising the current label allows computations to flexibly read data, at the cost of being more limited in where they can subsequently write. This can lead to a problem commonly known as label creep. To overcome such a problem the authors introduce a construct that allows for the evaluation of an expression in a separate context, thus avoiding label creep.  
+The basic enforcement mechanism (on top of which the authors develop a series of
+additional layers to cater for different problems, such as references,
+flow-sensitivity, and concurrency) borrows ideas from IFC operating
+systems. Concretely, the current pc-level is upgraded with the level of every
+resource that is read. Raising the current label allows computations to flexibly
+read data, at the cost of being more limited in where they can subsequently
+write. This can lead to a problem commonly known as label creep. To overcome
+such a problem the authors introduce a construct that allows for the evaluation
+of an expression in a separate context, thus avoiding label creep.
 
-As said above, the main idea of the proposed approach is to divide the label of a reference into two elements: the label of the value that is referenced and the label of the label itself. While the label of the value can be flow-sensitive, the label of the label must be flow insensitive. Surprisingly, the authors show that the popular no-sensitive-upgrade discipline for designing purely dynamic monitors can be expressed in this way. 
+As said above, the main idea of the proposed approach is to divide the label of
+a reference into two elements: the label of the value that is referenced and the
+label of the label itself. While the label of the value can be flow-sensitive,
+the label of the label must be flow insensitive. Surprisingly, the authors show
+that the popular no-sensitive-upgrade discipline for designing purely dynamic
+monitors can be expressed in this way.
 
-I find the key insights of the paper very appealing, especially the new perspective on the no-sensitive-upgrade discipline for designing purely dynamic monitors. Furthermore, the fact that the design of the monitor builds on techniques used for IFC in operating systems is also very interesting since it helps clarifying the relations between the mechanisms for IFC in operating systems and standard techniques in language based security. To the best of my knowledge, the authors are the first to propose a purely dynamic monitor for enforcing secure information flow in a concurrent setting. Hence, I find that the paper meets the high quality standards of a venue such as CSF and I recommend it to be accepted. 
+I find the key insights of the paper very appealing, especially the new
+perspective on the no-sensitive-upgrade discipline for designing purely dynamic
+monitors. Furthermore, the fact that the design of the monitor builds on
+techniques used for IFC in operating systems is also very interesting since it
+helps clarifying the relations between the mechanisms for IFC in operating
+systems and standard techniques in language based security. To the best of my
+knowledge, the authors are the first to propose a purely dynamic monitor for
+enforcing secure information flow in a concurrent setting. Hence, I find that
+the paper meets the high quality standards of a venue such as CSF and I
+recommend it to be accepted.
 
 Minor remark: 
 
-The authors credit Austin and Flanagan with the design of the no-sensitive-upgrade strategy. Albeit being a widespread mistake, it is wrong. The no-sensitive-upgrade discipline, whose name was indeed coined by Austin and Flanagan (although not in the paper that is cited but rather in that of the previous year: Efficient Purely Dynamic Information Flow Analysis), was proposed by Zdancewic in his PhD thesis (which is pointed out by Austin and Flanagan in their paper).
+The authors credit Austin and Flanagan with the design of the
+no-sensitive-upgrade strategy. Albeit being a widespread mistake, it is
+wrong. The no-sensitive-upgrade discipline, whose name was indeed coined by
+Austin and Flanagan (although not in the paper that is cited but rather in that
+of the previous year: Efficient Purely Dynamic Information Flow Analysis), was
+proposed by Zdancewic in his PhD thesis (which is pointed out by Austin and
+Flanagan in their paper).
+
+TODO (Pablo)
 
 
 ----------------------- REVIEW 3 ---------------------
@@ -28,45 +66,52 @@ AUTHORS: Pablo Buiras, Deian Stefan, Alejandro Russo and David Mazieres
 OVERALL EVALUATION: 1 (weak accept)
 REVIEWER'S CONFIDENCE: 5 (expert)
 
------------ REVIEW -----------
-This paper presents an extension to the LIO language, which supports
-dynamic information flow monitoring (implemented as a monad in
-Haskell). While LIO requires labels on references to be fixed, the
-present paper allows these labels to be upgraded flow-sensitively. The
-key idea is to remember the "current" label at the reference was
-created, and to forbid any dynamic label updates from going below this
-label; this prevents leakages through label changes. This support for
-flow-sensitivity translates to a concurrent setting, which seems to
-be a first. Interestingly, the paper shows that flow-sensitive
-references can be translated into a language without them, preserving
-behavior, and thus security. A few other constructs are developed to
-avoid label creep, and some examples are shown how they can prevent
-things like "poison pill" attacks.
+----------- REVIEW ----------- 
 
-My assessment of the paper is generally positive. I think LIO's use of
-the "current label" provides an interesting alternative perspective on
-dynamic monitoring, and the way threads are handled is also quite
-neat. The present paper develops more interesting ideas that should
-continue to push the state of the art forward. I think the security
-theorem by translation is particularly elegant.
+This paper presents an extension to the LIO
+language, which supports dynamic information flow monitoring (implemented as a
+monad in Haskell). While LIO requires labels on references to be fixed, the
+present paper allows these labels to be upgraded flow-sensitively. The key idea
+is to remember the "current" label at the reference was created, and to forbid
+any dynamic label updates from going below this label; this prevents leakages
+through label changes. This support for flow-sensitivity translates to a
+concurrent setting, which seems to be a first. Interestingly, the paper shows
+that flow-sensitive references can be translated into a language without them,
+preserving behavior, and thus security. A few other constructs are developed to
+avoid label creep, and some examples are shown how they can prevent things like
+"poison pill" attacks.
+
+My assessment of the paper is generally positive. I think LIO's use of the
+"current label" provides an interesting alternative perspective on dynamic
+monitoring, and the way threads are handled is also quite neat. The present
+paper develops more interesting ideas that should continue to push the state of
+the art forward. I think the security theorem by translation is particularly
+elegant.
 
 On the other hand, the ramifications of the various rules were hard to
-follow. It wasn't so hard for me to see that the approach is safe;
-what is harder is to see why it is sufficiently permissive. There was
-no real evaluation in the paper aside from a few code snippets that
-might bump the current label too high. What about "normal" programs?
-Can you prove a permissiveness theorem?
+follow. It wasn't so hard for me to see that the approach is safe; what is
+harder is to see why it is sufficiently permissive. There was no real evaluation
+in the paper aside from a few code snippets that might bump the current label
+too high. What about "normal" programs?  Can you prove a permissiveness theorem?
 
-I also would have liked more examples just to help explain what was
-going on, both in terms of security and permissiveness. The prose in
-the paper largely restated the rules, without providing much insight
-beyond the statement of some implicit invariants. I found myself
-continually wondering whether the security requirements would end up
-being very restrictive.  A natural example to carry through the paper
-is a logging application, whose policy could be tuned as you go to
-highlight the different extensions, even extending out to the later
-sections with concurrency (concurrent readers / writers to different
-parts of the log).
+TODO: 
+
+  We address this point in the author response. We should integrate that into 
+  the paper. Pablo 
+
+I also would have liked more examples just to help explain what was going on,
+both in terms of security and permissiveness. The prose in the paper largely
+restated the rules, without providing much insight beyond the statement of some
+implicit invariants. I found myself continually wondering whether the security
+requirements would end up being very restrictive.  
+
+TODO: 
+   We address that in the author response as well (just integrate). Pablo. 
+
+A natural example to carry through the paper is a logging application, whose
+policy could be tuned as you go to highlight the different extensions, even
+extending out to the later sections with concurrency (concurrent readers /
+writers to different parts of the log).
 
 Related work:
 - The idea of labels on labels in an information-flow enforcement
@@ -74,10 +119,15 @@ setting has been explored in this paper, "A Trust Management Approach
 for Flexible Policy Management in Security-Typed Languages," CSF'08.
 The setting here is quite different, but there might be some useful
 ideas here.
+
+TOOD: (Ale) and I should check the relation with the "presence label"
+
 - The idea of "withRefs" seems related to Foster's "restrict"
 primitive in the way it disallows access to labels that would confound
 stronger reasoning; cf. http://dl.acm.org/citation.cfm?id=512531
 Section 4.
+
+TODO: (Ale)
 
 Typos/nits:
 p. 1: Hy --> H
@@ -98,6 +148,7 @@ p. 11: I didn't follow the relation to "no-sensitive upgrades" in the
 second paragraph of section VI. I wonder if you could provide an
 example?
 
+TODO: Pablo
 
 ----------------------- REVIEW 4 ---------------------
 PAPER: 59
@@ -162,12 +213,19 @@ small program. But regarding (1), I don't feel that registers in
 particular are a good application for this approach: it would seem
 much easier to let a programmer reason about flow-insensitive virtual
 registers, and then use standard compiler techniques to map these to
-the limited physical registers. Regarding (2), I appreciate having an
+the limited physical registers. 
+
+TODO: (Deian) we should change this!
+
+Regarding (2), I appreciate having an
 example program that is as simple as possible, but I feel that the
 included program is too simple as to be unintuitive: it seems very
 weird to write a program that publishes a high variable under the
 implicit understanding that the variable will actually store
 low-sensitive data.
+
+TODO: We do not publish a variable that is high! Perhaps the example in the 
+intro could be changed directly by the one with LIO (next section). 
 
 I feel that the real strength of this paper is that it gives the
 programmer very fine-grained control of mutating the sensitivity of
@@ -178,6 +236,8 @@ list or tree) over time: such a program could be used to show how the
 language allows a programmer to reuse the same data structure to store
 different information without having to expensively reallocate new
 data structures with similar structure.
+
+TODO: (Pablo/Deian) We should include this insight in the paper. 
 
 Sec I: I don't understand how the program in Fig. 1 illustrates how
 label changes are used as a covert channel. The program seems to
