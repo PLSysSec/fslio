@@ -246,15 +246,21 @@ variable is changed, and in particular the label of variable "t" is
 not changed from "H" to "L", as claimed in the discussion of the
 example.
 
+TODO: (Pablo/Deian) We should include this insight in the paper. 
+
 Sec. II A: the paragraph on monadic terms does not give a good
 motivation for the need for monads. In particular, the explanation of
 "return" and "bind" does not explain why they are needed over simply
 pure terms and term application, respectively.
 
+TODO: Pablo (integrate)
+
 Sec. III: Why is it impractical to assume that practical IFC systems
 do not include a top element? This seems odd, given that several of
 the inference rules in the paper rely on a join operation, so it seems
 like the labels should form a join-semilattice.
+
+TODO: Deian (check author response/ DCLabels and sets!) 
 
 Sec. III: In the rule for writeRefFS, I could not get a good intuition
 for why the side condition is "l_{cur} flows-to l join l'" and not,
@@ -264,10 +270,14 @@ Sec. V A: I think that the explanation of the embedding here could
 strongly benefit from some discussion of the non-trivial rewrite rules
 in Fig. 13, in particular the rule for writeRefFS.
 
+TODO: Pablo (integrate)
+
 There seems to be a lot of momentum in verifying that the semantics of
 small but tricky core languages, like the one presented in this paper,
 satisfy properties like non-interference (see [17]), and this language
 has enough subtle corners that it would be nice to have high
 confidence in its semantics. What would be the major challenges in
 proving correctness of the semantics mechanically?
+
+TODO: Ignore. 
 
