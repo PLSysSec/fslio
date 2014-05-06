@@ -1,6 +1,25 @@
 \section{Related work}
 \label{sec:related}
 
+%% Label on the label idea
+\Red{
+The \emph{label on the label} could be seen as a fixed label that dictates which
+principals can read or modify the policy (inner label) of a flow-sensitive
+entity. In a different setting, trust management frameworks have
+explored this idea~\cite{4556677}, where role-based rules are labeled to
+restrict the view on policies---the mere presence of certain policies could
+become inappropriate conduits of information. 
+
+Several authors propose an
+\emph{existence security label} to remove leaks due to the termination covert
+channel~\cite{DBLP:conf/csfw/RafnssonHS12,Rafnson:2013} or certain behaviors
+in dynamic nested data structures~\cite{Russo:2009,DBLP:conf/csfw/HedinS12}. While the
+existence security label and the label on the label are structurally isomorphic,
+they are used for different purposes and in different scenarios, e.g., it is not
+allowed to query labels in
+\cite{Russo:2009,DBLP:conf/csfw/HedinS12,DBLP:conf/csfw/RafnssonHS12,Rafnson:2013}.
+}
+
 %% Flow-sensitive monitors 
 Hunt and Sands~\citep{Hunt:2006} show the equivalence (modulo code
 transformation) between flow-sensitive and flow-insensitive type-systems. 
