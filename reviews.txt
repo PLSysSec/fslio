@@ -120,14 +120,14 @@ for Flexible Policy Management in Security-Typed Languages," CSF'08.
 The setting here is quite different, but there might be some useful
 ideas here.
 
-TOOD: (Ale) and I should check the relation with the "presence label"
+DONE: (Ale) and I should check the relation with the "presence label"
 
 - The idea of "withRefs" seems related to Foster's "restrict"
 primitive in the way it disallows access to labels that would confound
 stronger reasoning; cf. http://dl.acm.org/citation.cfm?id=512531
 Section 4.
 
-TODO: (Ale)
+DONE: (Ale)
 
 Typos/nits:
 p. 1: Hy --> H
