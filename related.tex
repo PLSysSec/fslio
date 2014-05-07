@@ -164,7 +164,15 @@ safely approximate label changes. As a result, no leaks due to label changes are
 present in provably secure programs.
 %% Hybrid approaches
 Le Guernic et al.~\citep{LeGuernic:2006,Guernic:2007:ACM} combine dynamic and
-static checks in a flow-sensitive execution monitor.
+static checks in a flow-sensitive execution monitor. \Red{In a flow-sensitive
+type-system, Foster et al.~\cite{Foster:2002:FTQ:512529.512531} propose the
+primitive \textbf{restrict} to limit the use of variables' aliases in a block of
+code. Similar to |withRefs|, \textbf{restrict} is used to increase the
+permissiveness of the analysis.}
+
+
+
+
  
 
 
