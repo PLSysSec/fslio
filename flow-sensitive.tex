@@ -41,8 +41,12 @@ has read sensitive data such that the current label is |H|, now writing to the
 log raises the label of the reference to |H|.
 %
 As identified by other language-based IFC systems
-(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}), this
-approach is not safe; consider the code in Figure~\ref{fig:fs-attack}.
+(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}),
+this approach is not safe; consider the code in
+Figure~\ref{fig:fs-attack}. \Red{The function |when| acts like an |if|
+  statement without the |else| branch, and |($)| is an alternative
+  notation for function application, i.e. |f $ x| is the same as |f
+  (x)|.}
 %While this approach was clearly shown to be unsafe, due to implicit-flows, in
 %language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
 %construction and thus raises the question: \emph{is this approach safe in LIO?}
@@ -215,7 +219,8 @@ reference after raising the current label (with |unlabel|) to account for the
 fact that the label of the reference |l'| is a value at sensitivity level |l|,
 i.e., we raise the current label to the join of the current label and the label
 on the label.
-%
+
+
 The rules for reading and writing to flow-sensitive references are mostly
 standard; |readRef S| raises the current label to the label of the reference
 (which is above the label on the label) and |writeRef S| ensures that the

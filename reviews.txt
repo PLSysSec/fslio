@@ -149,6 +149,7 @@ second paragraph of section VI. I wonder if you could provide an
 example?
 
 TODO: Pablo
+DONE
 
 ----------------------- REVIEW 4 ---------------------
 PAPER: 59
