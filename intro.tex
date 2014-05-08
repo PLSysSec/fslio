@@ -100,7 +100,8 @@ To close this covert channel, there have been three main approaches:
 incorporate some static analysis/information into the execution
 monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}; forbid certain label
 changes, a policy known as \emph{no-sensitive
-  upgrades}~\cite{Austin:Flanagan:PLAS10}; and, deny branches on certain
+  upgrades}~\Red{\cite{Zdancewic02programminglanguages}}% \cite{Austin:Flanagan:PLAS10}
+; and, deny branches on certain
 variables which have mutated their labels, a policy named \emph{permissive
   upgrades}~\cite{Austin:Flanagan:PLAS10}. All of these solutions are proposed
 for sequential programming languages.
@@ -155,7 +156,8 @@ another label, called \emph{the label on the label}, which describes the
 confidentiality of the value's label. The calculus then forbids changing a
 label of a reference if \emph{the label on the label is below the
   floating-label} (similar to the {\nsu}
-discipline~\cite{Austin:Flanagan:PLAS10}). Inspired by~\cite{Hedin13}, we add
+discipline~\Red{\cite{Zdancewic02programminglanguages}}).%Austin:Flanagan:PLAS10})
+Inspired by~\cite{Hedin13}, we add
 a primitive for \emph{upgrading} labels under certain safe conditions in
 order to boost permissiveness. As one of our main insights and results, we prove
 that the {\nsu} policy and upgrade operations can be already expressed using
