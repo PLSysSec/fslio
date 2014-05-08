@@ -249,7 +249,8 @@ variable is changed, and in particular the label of variable "t" is
 not changed from "H" to "L", as claimed in the discussion of the
 example.
 
-TODO: (Pablo/Deian) We should include this insight in the paper. 
+TODO: (Pablo/Deian) We should include this insight in the paper.
+DONE
 
 Sec. II A: the paragraph on monadic terms does not give a good
 motivation for the need for monads. In particular, the explanation of
