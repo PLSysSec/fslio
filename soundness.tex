@@ -25,10 +25,20 @@ homomorphically in all other cases. We use the |WrapRef| to mark
 the flow-insensitive references that are being used to represent
 flow-sensitive ones, so as to distinguish them from ordinary
 flow-insensitive references. The functions |wrap| and |unwrap| are
-used to add and remove this boundary encoding
+used to add and remove this boundary encoding.
 %
-For the sake of brevity, we do not explain the mapping in detail, but remark
-that it is directly based on the rules in Figure~\ref{fig:sos:fs}.
+\Red{In the embedding of |writeRef S|, we use |toLabeled| to make any
+  changes to the current label (possibly caused by reading the
+  reference) local to this operation. Inside |toLabeled|, the code
+  fetches the labeled value from the reference (|readRef I|), and then
+  performs the security check as in the rule in
+  Figure~\ref{fig:sos:fs}. If this succeeds, a new labeled value that
+  wraps |t| is made (|label|), and then stored in the reference
+  (|writeRef I|).}
+%
+For the sake of brevity, we do not explain the mapping in further
+detail, but remark that it is directly based on the rules in
+Figure~\ref{fig:sos:fs}.
 %
 
 \begin{figure}

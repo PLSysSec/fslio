@@ -275,6 +275,7 @@ strongly benefit from some discussion of the non-trivial rewrite rules
 in Fig. 13, in particular the rule for writeRefFS.
 
 TODO: Pablo (integrate)
+Sec V: DONE, Sec III: DISCUSS
 
 There seems to be a lot of momentum in verifying that the semantics of
 small but tricky core languages, like the one presented in this paper,
