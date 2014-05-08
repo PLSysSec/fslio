@@ -258,6 +258,7 @@ motivation for the need for monads. In particular, the explanation of
 pure terms and term application, respectively.
 
 TODO: Pablo (integrate)
+DONE
 
 Sec. III: Why is it impractical to assume that practical IFC systems
 do not include a top element? This seems odd, given that several of

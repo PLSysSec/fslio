@@ -158,7 +158,15 @@ do  x <- t
 \caption{\label{fig:do}|do|-notation}
 \end{wrapfigure}
 Monadic terms are used to create complex LIO computations from simpler
-ones. Term |return t| produces a computation which simply returns the value
+ones.
+%
+\Red{We include such terms in our calculus becase side-effects in
+  Haskell (such as I/O) must always be performed in a monad, a
+  language feature which LIO leverages in order to precisely control
+  which operations the programmer is allowed to perform at any given
+  time.  }
+%
+Term |return t| produces a computation which simply returns the value
 denoted by |t|. The monadic term |>>=|, called \emph{bind}, is used to sequence
 LIO programs. Specifically, term |t >>= (\x.t')| takes the result produced by
 term |t| and gives it as an argument to the function |\x.t'|.  This operator
