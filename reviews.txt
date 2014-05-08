@@ -99,6 +99,9 @@ TODO:
   We address this point in the author response. We should integrate that into 
   the paper. Pablo 
 
+DONE, but I don't like the placement of this point (it's now in the
+formal results section)
+
 I also would have liked more examples just to help explain what was going on,
 both in terms of security and permissiveness. The prose in the paper largely
 restated the rules, without providing much insight beyond the statement of some
@@ -107,6 +110,8 @@ requirements would end up being very restrictive.
 
 TODO: 
    We address that in the author response as well (just integrate). Pablo. 
+** Pablo: I can't find this in the author response, and I don't think we
+have enough space for it.
 
 A natural example to carry through the paper is a logging application, whose
 policy could be tuned as you go to highlight the different extensions, even

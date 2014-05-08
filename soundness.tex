@@ -267,6 +267,32 @@ or internal timing leaks.
 The detailed proofs for the results in this section can be found in the
 extended version of the paper~\cite{extended}.
 
+\subsection{Permissiveness}
+\Red{
+
+  Our flow-sensitive calculus is as permissive as flow-insensitive
+  LIO. Any flow-insensitive LIO program can be trivially converted to
+  a flow-sensitive LIO program (without auto-upgrades) by using
+  flow-sensitive references instead of flow-insensitive ones.  Since
+  these references would never be upgraded, they will behave just like
+  their flow-insensitive counterparts.
+
+  This means that all existing LIO programs can be run in our
+  flow-sensitive monitor. As an example of such a program, we
+  highlight Hails~\cite{giffin:hails}, a web framework using LIO, on
+  top of which a number of applications have been built (e.g.,
+  GitStar, a code-hosting web platform, LearnByHacking, a
+  blog/tutorial platform similar to School of Haskell, and
+  LambdaChair, an EasyChair-like conference review system).
+}
+
+% GitStar's core could be run in our
+%   flow-sensitive monitor; the full system uses other features like
+%   privileges and exceptions that we have not directly implemented in
+%   this version of the flow-sensitive monitor, but we see no major
+%   challenges in incorporating flow-sensitivity to the full version of
+%   LIO.
+
 % \hl{NOTE}
 
 % Why is |toLabeled| secure in the implementation of |writeRef S|? It
