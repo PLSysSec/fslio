@@ -5,7 +5,7 @@
 Information-flow control (IFC) is a promising approach to preserving
 confidentiality and integrity of data in the presence of untrusted code.  In
 particular, it has become attractive for web 
-applications (e.g.,\cite{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
+applications (e.g., \cite{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
   yang:2013:towards, conf/esorics/AkhaweLHSS13, Hedin13}) and mobile phone
 platforms (e.g., \cite{Enck:2010,android:esorics13}), where the challenge is
 to allow untrusted code to access confidential information while restricting its
@@ -13,7 +13,7 @@ manipulation.
 
 % Intro to non-interference 
 In its simplest form the role of IFC is to prevent (or bound) the leaking of
-sensitive, or secret, data into public channel.  When no leaks are desired, the
+sensitive, or secret, data into public channels.  When no leaks are desired, the
 chosen baseline policy is
 \emph{non-interference}~\cite{Goguen:Meseguer:Noninterference}, which
 essentially demands that there be no dependence between public events and
@@ -38,7 +38,7 @@ information can only flow from public data into secret entities.
 %% Treatment of variables 
 %% Definition flow-sensitive, flow-insensitive 
 One of the facets of IFC analysis lies in the treatment of
-variables~\cite{Hunt:2006}. Some system, known as \emph{flow-insensitive},
+variables~\cite{Hunt:2006}. Some systems, known as \emph{flow-insensitive},
 prevent variables from changing their security labels at execution time, i.e., labels
 are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} systems
 allow changes on labels to reflect the confidentiality of the stored data, i.e.,
@@ -103,8 +103,7 @@ To close this covert channel, there have been three main approaches:
 incorporate some static analysis/information into the execution
 monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}; forbid certain label
 changes, a policy known as \emph{no-sensitive
-  upgrades}\Red{, first proposed by Zdancewic~\cite{Zdancewic02programminglanguages} and named by Austin and Flanagan~\cite{Austin:Flanagan:PLAS09}}
-; and, deny branches on certain
+  upgrades}\Red{, first proposed by Zdancewic~\cite{Zdancewic02programminglanguages} and named by Austin and Flanagan~\cite{Austin:Flanagan:PLAS09}}; and, deny branches on certain
 variables which have mutated their labels, a policy named \emph{permissive
   upgrades}~\cite{Austin:Flanagan:PLAS10}. All of these solutions are proposed
 for sequential programming languages.
