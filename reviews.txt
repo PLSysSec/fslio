@@ -233,7 +233,8 @@ low-sensitive data.
 
 TODO: We do not publish a variable that is high! Perhaps the example in the 
 intro could be changed directly by the one with LIO (next section). 
-ALE: I will take this, Deian party :)
+ALE: DONE. We keep the example as it is. Fixing the typo (see author response), 
+the example should be clear. 
 
 I feel that the real strength of this paper is that it gives the
 programmer very fine-grained control of mutating the sensitivity of

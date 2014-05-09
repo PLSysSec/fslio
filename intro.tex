@@ -80,7 +80,8 @@ Unfortunately, the introduction of flow-sensitive references to purely dynamic I
 systems can turn label changes into a covert channel~\cite{Russo:2010}. 
 Figure \ref{fig:fsattackintro} illustrates the problem of allowing arbitrary
 label changes.  In the attack, variables |l| and |h| do not change their
-security levels, which are respectively |low| and |high|. In contrast, variable |t|
+security levels, which are respectively |low| and |high|. Observe that the
+program always publishes the public value stored in |l| (|publish(l)|). In contrast, variable |t|
 changes its security level to |high| from |low|. For purely dynamic monitors, where
 non-taken branches are not inspected, the attack successfully leaks information
 about |h|. More precisely, when |h| is true, the initial labels for |l| and |t|
