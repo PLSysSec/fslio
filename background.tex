@@ -160,11 +160,11 @@ do  x <- t
 Monadic terms are used to create complex LIO computations from simpler
 ones.
 %
-\Red{We include such terms in our calculus becase side-effects in
-  Haskell (such as I/O) must always be performed in a monad, a
-  language feature which LIO leverages in order to precisely control
-  which operations the programmer is allowed to perform at any given
-  time.  }
+We include such terms in our calculus because side-effects in
+Haskell (such as I/O) must always be performed in a monad~\cite{moggi:monads,wadler:monads}, a
+language feature which LIO leverages in order to precisely control
+which operations the programmer is allowed to perform at any given
+time.
 %
 Term |return t| produces a computation which simply returns the value
 denoted by |t|. The monadic term |>>=|, called \emph{bind}, is used to sequence
@@ -466,8 +466,8 @@ Intuitively, if the current label at the point of executing
 restores the current label to |lcurr|, i.e., |toLabeled| provides a
 separate context in which |t| is evaluated.
 %
-(Here, the state merge function |merge| is defined as: |c merge c' @=
-c'|, in the next section we present an alternative definition.)
+(Here, the state merge function $\searrow$ is defined as: |c merge c' @=
+c|, in the next section we present an alternative definition.)
 %
 Returning the result of evaluating |t| directly (i.e. |conf c (E[toLabeled l t]) --> conf c'' (E[t'])|) 
 would allow for trivial leaks; therefore, |toLabeled| labels |t'| with |l| 
