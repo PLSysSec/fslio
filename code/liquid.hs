@@ -57,9 +57,12 @@ writeFSRef (FSRefTCB a ref) x = do
   unless (Set.member a addrs) $ fail "Reference out of scope"
   liftLIO $ do
     forkLIO $ do
-      lv <- readLIORef ref
-      lv' <- label (labelOf lv) x
-      writeLIORef ref lv'
+      lv <- readLIORef ref            -- lcur' = lcur \join l1 
+      lv' <- label (labelOf lv) x     -- label l1 x => lcur' <= l2, it means 
+                                      -- lcur \join l1 <= l2, then 
+                                      -- lcur <= lcur \join l1 <= l2 \join l1 
+                                      -- lcur <= l1 \join l2 (as before) 
+      writeLIORef ref lv'             -- lcur <= l1 
 
 evalFSLIO :: FSLIO l a -> LIOState l -> IO a
 evalFSLIO (FSLIOTCB act) s = do
