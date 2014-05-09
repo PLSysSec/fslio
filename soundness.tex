@@ -3,7 +3,7 @@
 
 In this section, we show that our flow-sensitive enforcement can be
 embedded into the flow-insensitive version of LIO. Additionally, we
-provide security guarantees in terms of non-interference by reusing
+provide security guarantees in terms of non-interference definitions by reusing
 previous results about LIO.
 
 \subsection{Embedding into \lio{}}
@@ -174,8 +174,8 @@ cannot distinguish among different runs of a program with
 \end{proof}
 
 \begin{corollary}[TINI for \lioafs{}]
-  The previous non-interference result can be extended to \lioafs{} in
-  a straightforward manner. In \lioafs{}, the |unlabel| operation
+  The previous non-interference result can be easily extended to \lioafs{}. 
+  In \lioafs{}, the |unlabel| operation
   triggers the automatic upgrades mechanism, which consists in
   performing the |upgrade| operation for every flow-sensitive
   reference in scope before actually raising the current label.
