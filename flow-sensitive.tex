@@ -226,6 +226,13 @@ standard; |readRef S| raises the current label to the label of the reference
 (which is above the label on the label) and |writeRef S| ensures that the
 current computation can write to the reference (|lcurr canFlowTo (l lub l')|).
 %
+\Red{In certain situations, this condition ensures that the enforcement is sufficiently
+permissive. For example, consider a flow-sensitive reference with a |high| label
+and with a |low| label on the label. If we checked the conditions
+|lcurr canFlowTo l| and |lcurr canFlowTo l'| independently, then it
+would not be possible to write to this reference when
+|lcurr| is |high|.}
+%
 One peculiarity with |writeRef S| is the case when the current label does not
 flow to the join of the reference label, i.e., |lcurr cantFlowTo l lub l'|, and
 thus the write should fail.

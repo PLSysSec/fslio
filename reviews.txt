@@ -248,7 +248,7 @@ data structures with similar structure.
 TODO: (Pablo/Deian) We should include this insight in the paper.
 (Pablo: I don't think this is a very useful insight. In Haskell we
 don't normally mutate data structures.)
-ALE: Revise
+ALE: DONE
 
 Sec I: I don't understand how the program in Fig. 1 illustrates how
 label changes are used as a covert channel. The program seems to
@@ -285,7 +285,7 @@ strongly benefit from some discussion of the non-trivial rewrite rules
 in Fig. 13, in particular the rule for writeRefFS.
 
 TODO: Pablo (integrate)
-Sec V: DONE, Sec III: DISCUSS
+Sec V: DONE, Sec III: DONE
 
 There seems to be a lot of momentum in verifying that the semantics of
 small but tricky core languages, like the one presented in this paper,
