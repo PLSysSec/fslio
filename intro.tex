@@ -46,11 +46,15 @@ labels \emph{mutable} according to the data stored in them.
 Consider, for instance, program |P @= h := l ; publish(h)|, where variables |h| and |l| respectively have labels |H| and |L|, and
 function |publish(v)| that writes value |v| to a public channel.
 %
-While flow-insensitive systems do not permit this program since it appears as
-if we are leaking |h| into a public channel (at the point of |publish(h)|), |P|
-is a valid program in the more-permissive flow-sensitive systems: |h|'s label
-changes from |H| to |L| after the assignment (|h := l|), thus allowing the
-value to be published to a public channel.
+While flow-insensitive systems do not permit this program since it appears as if
+we are leaking |h| into a public channel (at the point of |publish(h)|), |P| is
+a valid program in the more-permissive flow-sensitive systems: |h|'s label
+changes from |H| to |L| after the assignment (|h := l|), thus allowing the value
+to be published to a public channel. As shown by this example, flow-sensitive
+analyses are capable to boost permissiveness by leveraging the changes on labels
+in order to reduce the number of
+rejected programs. %(recall program |P| above).
+
 
 %Although static flow-sensitive and flow-insensitive analysis are
 %equivalent in expressiveness (module code rewriting)~\citep{Hunt:2006}, the 
@@ -58,24 +62,22 @@ value to be published to a public channel.
 
 %% Why one instead of the other one 
 %%%%% FS+ Permissiveness in dynamic approaches, limited resources, 
-Flow-sensitive analyses are useful in many scenarios. When considering scarce
-resources (e.g., CPU registers) it is not feasible to assume that each
-reference will be assigned a fixed security label throughout program
-execution~\cite{BonelliCM05}. More importantly, flow-sensitive analyses often
-boost permissiveness by leveraging the changes on labels to reduce the number
-of rejected programs (recall program |P| above). 
+%Flow-sensitive analyses are useful in many scenarios. When considering scarce
+%resources (e.g., CPU registers) it is not feasible to assume that each
+%reference will be assigned a fixed security label throughout program
+%execution~\cite{BonelliCM05}. 
 
 
 %% Problems with Flow-sensitivity and purely dynamic IFC
-Unfortunately, introducing flow-sensitive references to purely dynamic IFC
-systems can turn label changes into a covert channel~\cite{Russo:2010}. 
-\begin{wrapfigure}{r}{0.5\columnwidth}
+\begin{wrapfigure}{r}{0.55\columnwidth}
 |l := 1 ; t := 0 ;| \\
 |if h then t := 1;| \\
 |if t /= 1 then l := 0| \\
 |publish(l)| 
 \caption{\small\label{fig:fsattackintro} Flow-sensitive attack}
 \end{wrapfigure}
+Unfortunately, the introduction of flow-sensitive references to purely dynamic IFC
+systems can turn label changes into a covert channel~\cite{Russo:2010}. 
 Figure \ref{fig:fsattackintro} illustrates the problem of allowing arbitrary
 label changes.  In the attack, variables |l| and |h| do not change their
 security levels, which are respectively |low| and |high|. In contrast, variable |t|
