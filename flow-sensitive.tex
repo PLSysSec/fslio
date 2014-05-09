@@ -19,7 +19,7 @@ used to write the log to a file, this is unsatisfactory: it assumes the
 existence of a top element, which in practical IFC systems such as
 Hails~\cite{giffin:hails}, does not exist.
 %
-More importantly, it almost always over-approximates the sensitivity of the
+Additionally, it almost always over-approximates the sensitivity of the
 log. For instance, suppose that the computation never reads sensitive data, yet wishes to
 read the log content to, e.g., format it, then it needs to taint itself to $\top$!
 %
@@ -71,11 +71,11 @@ subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 %\concept{can leak into ref label}
 %\noindent
 %
-In this attack, |leakRef| can be used to leak the value stored in a |high| reference
+In this attack, |leakRef| can be used to leak the value stored in the secret reference
 |href|, while keeping the current label |low|, by leveraging a new
 covert channel: the label of references.
 %
-Concretely, in |leakRef| we create a public reference |tmp| and, within the
+Concretely, |leakRef| creates a public reference |tmp| and, within the
 |toLabeled| block, which is used to ensure that the current label remains
 |low|, the label of this reference is changed to |H| if the secret stored in
 |href| is |true|, and left intact (|L|) if the secret is |false|.
@@ -269,7 +269,7 @@ flow-insensitive and flow-sensitive references as small as possible.
 Instead, we provide |upgradeR| precisely for this purpose; this primitive is
 used to raise the label of the reference.
 %
-Importantly it ensures that the current computation can modify the label by
+It ensures that the current computation can modify the label by
 checking that the current label flows to the label on the label (|lcurr
 canFlowTo l|).
 
@@ -412,8 +412,8 @@ subset of references |v|.
 %
 %
 This extension and type rule \ruleref{Type-withRef}, which ensures that a term
-cannot access a reference outside it's store, are shown in
-Figure~\ref{fig:sos:withRefs}
+cannot access a reference outside its store, are shown in
+Figure~\ref{fig:sos:withRefs}. 
 %
 A bag is either empty |nil|, or a number of references |set (v,..)|, where each
 element in the bag may be a reference of a distinct type.
@@ -427,7 +427,7 @@ value between both stores, it chooses the one appearing on the left-hand-side.
 %
 We note that \ruleref{withRefs-Ctx} is triggered until the term under
 evaluation is reduced to a value, at which point \ruleref{withRefs-Done} is
-triggered, returning said value; we specify this big-step rule in terms of
+triggered, returning a value; we specify this big-step rule in terms of
 small-steps to facilitate the formalization of our concurrent calculus (see
 Section~\ref{sec:conc}).
 %
@@ -435,9 +435,10 @@ The |withRefs| primitive is mostly standard and provides a programming paradigm
 similar to that already present in some mainstream languages (e.g., C++'s
 lambda closures require the programmer to specify the captured references).
 %
-We lastly remark that by simply wrapping |toLabeled| with |withRefs|,
+We lastly remark the elimination of 
+the aforementioned attack by simply wrapping |toLabeled| with |withRefs|,
 thereby preventing the (untrusted) code within the |toLabeled| block from
-upgrading arbitrary references, we eliminate the aforementioned attack.
+upgrading arbitrary references. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
