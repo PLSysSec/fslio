@@ -172,7 +172,7 @@ LIO programs. Specifically, term |t >>= (\x.t')| takes the result produced by
 term |t| and gives it as an argument to the function |\x.t'|.  This operator
 allows computation |t'| to depend on the value produced by |t|.  We sometimes
 use Haskell’s |do|-notation to write such computations. For example, the term |t
->>= \x.return (x+1)|, which describes the computation adding one to the value
+>>= \x.return (x+1)|, which describes a computation that adds one to the value
 produced by the term |t|, is written as in Figure \ref{fig:do}.
 
 %\concept{configurations}
@@ -375,17 +375,17 @@ The |labelOf| function provides a means for inspecting the label of a
 labeled value.
 %
 As detailed by reduction rule \ruleref{labelOf}, given a labeled value
-|LabeledTCB l t| the function returns the label |l| protecting term
+|LabeledTCB l t|, the function returns the label |l| protecting term
 |t|.
 %
 This allows code to check the label of a labeled value before deciding
-to unlabel it, and thereby raise the current label.
+to unlabel it, and thereby raising the current label.
 %
 It it worth noting that regardless of the current label in the
 configuration, the label of a labeled value can be inspected---hence
 labels are effectively ``public.''\footnote{
-In fact labels are actually protected by the current label, but since
-code can always observe objects labeled at the current label this is
+In fact, labels are actually protected by the current label. Since
+code can always observe objects labeled at the current label, this is
 akin to being public.
 }
 
@@ -418,7 +418,7 @@ less sensitive locations.
 % lowered to the label at the point before the |unlabel|, since we now
 % have (potentially) more sensitive data in scope.
 %
-This raising of the current label to a point where the computation can
+The raising of the current label to a point where the computation can
 no longer perform useful tasks is known as \emph{label
 creep}~\cite{sabelfeld:language-based-iflow}.
 %
@@ -460,7 +460,7 @@ toLabeled Ep t|, respectively, and give the precise semantics of
 }
 \end{mathpar}
 %
-Intuitively, if the current label at the point of executing 
+If the current label at the point of executing 
 |toLabeled l t| is |lcurr|, |toLabeled| evaluates |t| to completion 
 (|conf c t ==> conf c' (LIOTCB t')|) and
 restores the current label to |lcurr|, i.e., |toLabeled| provides a
@@ -575,8 +575,8 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 %
 The syntactic extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
 %
-We use subscript |s| to respectively distinguish flow-insensitive and
-flow-sensitive productions (the former are explained in this section, and the
+We use subscript |s| to respectively distinguish flow-insensitive (\textrm{FI}) and
+flow-sensitive (\textrm{FS}) productions (the former are explained in this section, and the
 latter in Section \ref{sec:flow-sensitive}.)
 %, the semantics for latter are
 %described in Section~\ref{sec:flow-sensitive}.

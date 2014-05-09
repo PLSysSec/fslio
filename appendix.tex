@@ -32,12 +32,6 @@ E   ::= []| Ep | E >>= t
 \inferrule[bind]
 { }
 { |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (E[t2 t1])| }
-\and
-\inferrule[getLabel]
-{ |c = (lcurr, ...)|  }
-{
-|conf c (E[getLabel]) --> conf c (E[return lcurr])|
-}
 \end{mathpar}
 \caption{Reduction rules for base \lio.\label{fig:sos:rules}}
 \end{figure}
