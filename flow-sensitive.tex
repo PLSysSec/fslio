@@ -45,8 +45,8 @@ As identified by other language-based IFC systems
 this approach is not safe; consider the code in
 Figure~\ref{fig:fs-attack}. \Red{The function |when| acts like an |if|
   statement without the |else| branch, and |($)| is a lightweight
-  notation for function application, i.e. |f $ x| is the same as |f
-  (x)|.}
+  notation for function application (|f $ x| is the same as |f
+  (x)|) used to reduce the number of parentheses in the expression.}
 %While this approach was clearly shown to be unsafe, due to implicit-flows, in
 %language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
 %construction and thus raises the question: \emph{is this approach safe in LIO?}
