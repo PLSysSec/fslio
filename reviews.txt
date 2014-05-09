@@ -112,6 +112,7 @@ TODO:
    We address that in the author response as well (just integrate). Pablo. 
 ** Pablo: I can't find this in the author response, and I don't think we
 have enough space for it.
+TODO (ALE): Revise
 
 A natural example to carry through the paper is a logging application, whose
 policy could be tuned as you go to highlight the different extensions, even
@@ -125,7 +126,7 @@ for Flexible Policy Management in Security-Typed Languages," CSF'08.
 The setting here is quite different, but there might be some useful
 ideas here.
 
-DONE: (Ale) and I should check the relation with the "presence label"
+DONE: (Ale) I checked the relation with the "presence label"
 
 - The idea of "withRefs" seems related to Foster's "restrict"
 primitive in the way it disallows access to labels that would confound
@@ -232,6 +233,7 @@ low-sensitive data.
 
 TODO: We do not publish a variable that is high! Perhaps the example in the 
 intro could be changed directly by the one with LIO (next section). 
+ALE: I will take this, Deian party :)
 
 I feel that the real strength of this paper is that it gives the
 programmer very fine-grained control of mutating the sensitivity of
@@ -246,6 +248,7 @@ data structures with similar structure.
 TODO: (Pablo/Deian) We should include this insight in the paper.
 (Pablo: I don't think this is a very useful insight. In Haskell we
 don't normally mutate data structures.)
+ALE: Revise
 
 Sec I: I don't understand how the program in Fig. 1 illustrates how
 label changes are used as a covert channel. The program seems to
@@ -271,6 +274,7 @@ the inference rules in the paper rely on a join operation, so it seems
 like the labels should form a join-semilattice.
 
 TODO: Deian (check author response/ DCLabels and sets!) 
+DONE 
 
 Sec. III: In the rule for writeRefFS, I could not get a good intuition
 for why the side condition is "l_{cur} flows-to l join l'" and not,
