@@ -47,9 +47,9 @@ readFSRef (FSRefTCB a ref) = do
   (_, addrs) <- getTCB
   unless (Set.member a addrs) $ fail "Reference out of scope"
   liftLIO $ do
-    taint $ labelOf ref
-    lv <- readLIORef ref
-    unlabel lv
+    taint $ labelOf ref      -- lcur = lcur \join l1 
+    lv <- readLIORef ref     -- lcur = lcur \join l1 ?
+    unlabel lv               -- lcur = lcur \join l1 \join l2 
 
 writeFSRef :: Label l => FSRef l a -> a -> FSLIO l ()
 writeFSRef (FSRefTCB a ref) x = do
