@@ -55,8 +55,7 @@ of the previous year: Efficient Purely Dynamic Information Flow Analysis), was
 proposed by Zdancewic in his PhD thesis (which is pointed out by Austin and
 Flanagan in their paper).
 
-TODO (Pablo)
-DONE
+DONE (Pablo)
 
 ----------------------- REVIEW 3 ---------------------
 PAPER: 59
@@ -94,13 +93,13 @@ harder is to see why it is sufficiently permissive. There was no real evaluation
 in the paper aside from a few code snippets that might bump the current label
 too high. What about "normal" programs?  Can you prove a permissiveness theorem?
 
-TODO: 
+DONE: 
 
   We address this point in the author response. We should integrate that into 
   the paper. Pablo 
 
-DONE, but I don't like the placement of this point (it's now in the
-formal results section)
+Pablo: I don't like the placement of this point (it's now in the
+formal results section). Ale: It is Ok. 
 
 I also would have liked more examples just to help explain what was going on,
 both in terms of security and permissiveness. The prose in the paper largely
@@ -112,7 +111,7 @@ TODO:
    We address that in the author response as well (just integrate). Pablo. 
 ** Pablo: I can't find this in the author response, and I don't think we
 have enough space for it.
-TODO (ALE): Revise
+Ale: Revise
 
 A natural example to carry through the paper is a logging application, whose
 policy could be tuned as you go to highlight the different extensions, even
@@ -126,7 +125,7 @@ for Flexible Policy Management in Security-Typed Languages," CSF'08.
 The setting here is quite different, but there might be some useful
 ideas here.
 
-DONE: (Ale) I checked the relation with the "presence label"
+DONE: (Ale) I checked the relation with the "presence label" as well.
 
 - The idea of "withRefs" seems related to Foster's "restrict"
 primitive in the way it disallows access to labels that would confound
@@ -154,8 +153,7 @@ p. 11: I didn't follow the relation to "no-sensitive upgrades" in the
 second paragraph of section VI. I wonder if you could provide an
 example?
 
-TODO: Pablo
-DONE
+DONE: Pablo
 
 ----------------------- REVIEW 4 ---------------------
 PAPER: 59
@@ -222,7 +220,8 @@ much easier to let a programmer reason about flow-insensitive virtual
 registers, and then use standard compiler techniques to map these to
 the limited physical registers. 
 
-TODO: (Deian) we should change this!
+DONE: (Deian) we should change this! Ale: I removed the reference to registers
+and focus on permissiveness and reducing the burden of annotations. 
 
 Regarding (2), I appreciate having an
 example program that is as simple as possible, but I feel that the
@@ -231,10 +230,9 @@ weird to write a program that publishes a high variable under the
 implicit understanding that the variable will actually store
 low-sensitive data.
 
-TODO: We do not publish a variable that is high! Perhaps the example in the 
-intro could be changed directly by the one with LIO (next section). 
-ALE: DONE. We keep the example as it is. Fixing the typo (see author response), 
-the example should be clear. 
+DONE: Ale: We keep the example as it is. Fixing the typo (see author response), 
+the example should be clear. Bringing the LIO example of flow-sensitivity
+requires to understand toLabeled and a lot of things. 
 
 I feel that the real strength of this paper is that it gives the
 programmer very fine-grained control of mutating the sensitivity of
@@ -246,10 +244,10 @@ language allows a programmer to reuse the same data structure to store
 different information without having to expensively reallocate new
 data structures with similar structure.
 
-TODO: (Pablo/Deian) We should include this insight in the paper.
+DONE: (Pablo/Deian) We should include this insight in the paper.
 (Pablo: I don't think this is a very useful insight. In Haskell we
 don't normally mutate data structures.)
-ALE: DONE
+Ale: I added a sentence in the conclusions describing this fact. 
 
 Sec I: I don't understand how the program in Fig. 1 illustrates how
 label changes are used as a covert channel. The program seems to
@@ -258,24 +256,21 @@ variable is changed, and in particular the label of variable "t" is
 not changed from "H" to "L", as claimed in the discussion of the
 example.
 
-TODO: (Pablo/Deian) We should include this insight in the paper.
-DONE
+DONE: (Pablo/Deian) We should include this insight in the paper.
 
 Sec. II A: the paragraph on monadic terms does not give a good
 motivation for the need for monads. In particular, the explanation of
 "return" and "bind" does not explain why they are needed over simply
 pure terms and term application, respectively.
 
-TODO: Pablo (integrate)
-DONE
+DONE: Pablo (integrate)
 
 Sec. III: Why is it impractical to assume that practical IFC systems
 do not include a top element? This seems odd, given that several of
 the inference rules in the paper rely on a join operation, so it seems
 like the labels should form a join-semilattice.
 
-TODO: Deian (check author response/ DCLabels and sets!) 
-DONE 
+DONE: Deian (check author response/ DCLabels and sets!) 
 
 Sec. III: In the rule for writeRefFS, I could not get a good intuition
 for why the side condition is "l_{cur} flows-to l join l'" and not,
@@ -285,7 +280,7 @@ Sec. V A: I think that the explanation of the embedding here could
 strongly benefit from some discussion of the non-trivial rewrite rules
 in Fig. 13, in particular the rule for writeRefFS.
 
-TODO: Pablo (integrate)
+Pablo (integrate)
 Sec V: DONE, Sec III: DONE
 
 There seems to be a lot of momentum in verifying that the semantics of
@@ -295,5 +290,5 @@ has enough subtle corners that it would be nice to have high
 confidence in its semantics. What would be the major challenges in
 proving correctness of the semantics mechanically?
 
-TODO: Ignore. 
+DONE: Ignore. 
 
