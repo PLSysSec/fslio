@@ -2,7 +2,7 @@
 \label{sec:intro}
 
 %% Information-flow control as a promising technology 
-Information-flow control (IFC) is a promising approach to preserving
+Information-flow control (IFC) is a promising approach to preserve
 confidentiality and integrity of data in the presence of untrusted code.  In
 particular, it has become attractive for web 
 applications (e.g., \cite{DeGroef:2012:FWB:2382196.2382275, giffin:hails,
@@ -12,7 +12,7 @@ to allow untrusted code to access confidential information while restricting its
 manipulation.
 
 % Intro to non-interference 
-In its simplest form the role of IFC is to prevent (or bound) the leaking of
+In its simplest form, the role of IFC is to prevent (or bound) the leaking of
 sensitive, or secret, data into public channels.  When no leaks are desired, the
 chosen baseline policy is
 \emph{non-interference}~\cite{Goguen:Meseguer:Noninterference}, which
@@ -44,11 +44,11 @@ are treated as \emph{immutable}. In contrast, \emph{flow-sensitive} systems
 allow changes on labels to reflect the confidentiality of the stored data, i.e.,
 labels \emph{mutable} according to the data stored in them.
 Consider, for instance, program |P @= h := l ; publish(h)|, where variables |h| and |l| respectively have labels |H| and |L|, and
-function |publish(v)| that writes value |v| to a public channel.
+function |publish(v)| writes value |v| to a public channel.
 %
 While flow-insensitive systems do not permit this program since it appears as if
 we are leaking |h| into a public channel (at the point of |publish(h)|), |P| is
-a valid program in the more-permissive flow-sensitive systems: |h|'s label
+a valid program in more-permissive flow-sensitive systems: |h|'s label
 changes from |H| to |L| after the assignment (|h := l|), thus allowing the value
 to be published to a public channel. As shown by this example, flow-sensitive
 analyses are capable of boosting permissiveness by leveraging the changes on labels
@@ -85,7 +85,7 @@ program always publishes the public value stored in |l| (|publish(l)|). In contr
 changes its security level to |high| from |low|. For purely dynamic monitors, where
 non-taken branches are not inspected, the attack successfully leaks information
 about |h|. More precisely, when |h| is true, the initial labels for |l| and |t|
-are |low| since they initially store constants (|l :=1 ; t := 0|).  Due to 
+are |low| since they store constants (|l :=1 ; t := 0|).  Due to 
 the assignment |t := 1| inside the
 first |then|-branch (which depends on |h|), the value of |t| changes to |1| and its label to
 |high|. The condition of the second branch does not hold and therefore 
@@ -103,7 +103,7 @@ To close this covert channel, there have been three main approaches:
 incorporate some static analysis/information into the execution
 monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}; forbid certain label
 changes, a policy known as \emph{no-sensitive
-  upgrades}\Red{, first proposed by Zdancewic~\cite{Zdancewic02programminglanguages} and named by Austin and Flanagan~\cite{Austin:Flanagan:PLAS09}}; and, deny branches on certain
+  upgrades} \Red{(first proposed by Zdancewic~\cite{Zdancewic02programminglanguages} and named by Austin and Flanagan~\cite{Austin:Flanagan:PLAS09})}; and deny branches on certain
 variables which have mutated their labels, a policy named \emph{permissive
   upgrades}~\cite{Austin:Flanagan:PLAS10}. All of these solutions are proposed
 for sequential programming languages.
@@ -123,7 +123,7 @@ is commonly referred to as ``tainting.''
 The subjects' labels restrict read and write actions in order to
 preserve confidentiality. For instance, if a process reads a file labeled as
 |high|, it gets tainted and its label becomes |high|, which prevents it from subsequently
-writing to public files. As in the language case, changing labels can become a covert
+writing to public files. As in language-based approaches, changing labels can become a covert
 channel itself, if not handled accordingly. To avoid it, HiStar and Flume require label changes to be done
 explicitly.  Asbestos, on the other hand, allowed changes in security labels as
 the result of receiving messages under specific and safe conditions.
@@ -140,7 +140,7 @@ this light, it is not surprising that LIO treats objects (e.g., references,
 synchronization variables, etc.) as flow-insensitive entities. Different from
 other IFC tools~\cite{jif,FlowCaml,Hedin13}, LIO allows programs to query
 objects' labels without affecting the floating-label---a useful feature to
-increase permissiveness when interacting building practical systems~\cite{giffin:hails}.
+increase permissiveness when building practical systems~\cite{giffin:hails}.
 
 %% Contributions 
 %Inspired by previous results~\citep{Austin:Flanagan:PLAS10}, 
@@ -158,12 +158,12 @@ another label, called \emph{the label on the label}, which describes the
 confidentiality of the value's label. The calculus then forbids changing a
 label of a reference if \emph{the label on the label is below the
   floating-label} (similar to the {\nsu}
-discipline).%Austin:Flanagan:PLAS10})
-Inspired by~\cite{Hedin13}, we add
+discipline). %Austin:Flanagan:PLAS10})
+ Inspired by~\cite{Hedin13}, we add
 a primitive for \emph{upgrading} labels under certain safe conditions in
 order to boost permissiveness. As one of our main insights and results, we prove
 that the {\nsu} policy and upgrade operations can be already expressed using
-flow-insensitive concepts---the key idea being the ability have nested labeled
+flow-insensitive concepts---the key idea being the ability to have nested labeled
 values.  
 Our sequential semantics for flow-sensitive references directly extend to the
 concurrent setting, for which the termination channel must not be
@@ -211,7 +211,7 @@ More concretely, the contributions of this paper are:
 \end{itemize}
 %
 Although developed for LIO, we believe that our results generalize to other
-sequential and concurrent settings floating-label systems (e.g.,
+sequential and concurrent floating-label systems (e.g.,
 \cite{10.1109/SP.2013.10, Efstathopoulos:2005, zeldovich:histar, krohn:flume}).
 
 %\hl{Structure of the paper, i.e., the paper is organized as follows}
