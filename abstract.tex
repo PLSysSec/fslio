@@ -7,8 +7,8 @@
   However, in a purely dynamic setting, mutable labels can expose a covert
   channel capable of leaking secrets at a high rate.
   %
-  We present an extension for LIO---a language-level floating-label
-  system--that safely handles flow-sensitive references.
+  We present an extension for LIO---a language-based floating-label
+  system---that safely handles flow-sensitive references.
   %
   The key insight to safely manipulating the label of a reference is to not
   only consider the label on the data stored in the reference, i.e, the
@@ -18,12 +18,12 @@
   can be used to change the label of a reference, when deemed safe.
   %
   To eliminate the burden of determining when it is safe to upgrade a
-  reference, we additionally provide a mechanism for the automatic upgrades.
+  reference, we additionally provide a mechanism for automatic upgrades.
   %
   Our approach naturally extends to a concurrent setting, not previously
   considered by dynamic flow-sensitive systems.
   %
-  For both our sequential and concurrent calculi we prove non-interference by
+  For both our sequential and concurrent calculi, we prove non-interference by
   embedding the flow-sensitive system into the flow-insensitive LIO calculus;
   the embedding itself is a surprising result.
 \end{abstract}
