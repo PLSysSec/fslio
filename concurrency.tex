@@ -12,7 +12,7 @@ in the concurrent version of LIO~\cite{stefan:addressing-covert}.
 Intuitively, this concurrent calculus \lioconc{} simply defines a scheduler over
 sequential threads, such that taking a step in the concurrent calculus amounts
 to taking a step in a sequential thread and context switching to a different
-thread.
+one.
 %
 For brevity, we restrict our discussion in this section to the case where the
 underlying sequential calculus is \lioafs{}, since this calculus extends
@@ -102,16 +102,16 @@ We note that the thread term |t| executed with its stored current label
 |lcurr|, and a subset of the flow-sensitive memory store, by wrapping it in
 |withRefs|.
 %
-While the use of |withRefs| makes the extension straight forward, one
+While the use of |withRefs| makes the extension straightforward, one
 peculiarity arises: since \ruleref{T-step} always wraps the thread term |t|
 with |withRefs|, if |t| does not reduce in one step to a value, and instead
-reduces to |t'|, the next time the thread is scheduled we will superfluously
+reduces to |t'|, the next time the thread is scheduled, we will superfluously
 wrap |withRefs t'| with yet another |withRefs|---thus preventing the thread
 from making progress!
 %
-To address this we extend the calculus with rule \ruleref{withRefs-Opt} that
+To address this problem, we extend the calculus with rule \ruleref{withRefs-Opt} that
 collapses nested |withRefs| blocks.\footnote{
-This change also requires modifying \ruleref{withRefs-Ctx} to not trigger when
+This change also requires modifying \ruleref{withRefs-Ctx} to not be triggered when
 the term being evaluated is a |withRefs| term.
 }
  
@@ -126,7 +126,7 @@ As shown in Figure~\ref{fig:sos:conc}, to allow for dynamic thread creation, we
 extend \lioafs{}'s terms with |forkLIO|, and add a new reduction rule that sends
 an event to the scheduler, specifying the term to execute in a new
 thread.\footnote{
-In fact the reduction rule for \lioafs{} must be changed to account for events.
+In fact, the reduction rule for \lioafs{} must be changed to account for events.
 However, since |fork| is the only event in our system, we treat |-->| as
 implicitly carrying an empty event.
 }
@@ -149,25 +149,26 @@ calculus.
 As described in~\cite{stefan:addressing-covert}, we must remove |toLabeled| to
 guarantee termination-sensitive non-interference.
 %
-Importantly, however |forkLIO| with synchronization primitives (e.g.,
+Importantly, however, |forkLIO| with synchronization primitives (e.g.,
 flow-insensitive labeled MVars, as discussed
 in~\cite{stefan:addressing-covert}) can be used to provide functionality
 equivalent to that of |toLabeled|;
 %
 we omit synchronization primitives from \lioconc{} for simplicity of
 exposition.\footnote{
-Our approach to safely adding flow-sensitive references can directly
-be applied to other objects.
+%Our approach to safely adding flow-sensitive references can directly
+%be applied to other objects.
 %
-Extending \lioconc{} to provide flow-sensitive labeled MVars of follows
-identically, and similar to the embedding of \liofs{} into \lio{}, we can embed
-\lioconc{} with flow-sensitive MVars into \lioconc.
+Extending \lioconc{} to provide flow-sensitive labeled MVars follows
+identically, and similar to the embedding of \liofs{} into \lio{}. 
+%, we can embed
+%\lioconc{} with flow-sensitive MVars into \lioconc.
 }
 
 \concept{still have attack}
 The flow-sensitive attack in Figure~\ref{fig:fs-attack} relied on |toLabeled|
-to restore the current label and thus allow for the leak of |high| data to be
-observed in a |low| context.
+to restore the current label and thus allowing for the leak of secret data to be
+observed in a public context.
 %
 A natural question, given that we remove |toLabeled|, is whether we can use the
 naive flow-sensitive reference semantics of Section~\ref{sec:flow-sensitive}
