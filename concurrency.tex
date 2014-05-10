@@ -2,8 +2,9 @@
 \label{sec:conc}
 
 \concept{extending \lioafs{}}
-In this section, we consider flow-sensitive references in the presence of
-concurrency.
+In this section, we consider flow-sensitive references in the presence
+of concurrency (e.g., a web application in which request-handling
+threads share a common log).
 %
 Concretely, we extend our sequential \liofs{} and \lioafs{} calculi with
 threads and a new terminal, |forkLIO|, for dynamically creating new threads, as
@@ -79,7 +80,6 @@ t    ::= cdots  | forkLIO t | noToLabeled
   i.e., with and without auto-upgrade\label{fig:sos:conc}.}
 \end{figure}
 
-\concept{con progs}
 Figure~\ref{fig:sos:conc} shows our extended concurrent calculus, \lioconc{}.
 %
 A concurrent program configuration has the form |tconf mI mS (k1, k2,...)|,
@@ -91,7 +91,6 @@ encapsulating the current label of the thread |lcurr|, the term under
 evaluation |t|, and a bag of references |v| the thread may access, i.e.,
 |k=thread lcurr v t|.
 
-\concept{step}
 The reduction rules for concurrent programs are mostly standard.
 %
 Rule \ruleref{T-step} specifies that if the first thread in the thread pool
@@ -105,7 +104,7 @@ We note that the thread term |t| executed with its stored current label
 While the use of |withRefs| makes the extension straightforward, one
 peculiarity arises: since \ruleref{T-step} always wraps the thread term |t|
 with |withRefs|, if |t| does not reduce in one step to a value, and instead
-reduces to |t'|, the next time the thread is scheduled, we will superfluously
+reduces to a term |t'|, the next time the thread is scheduled, we will superfluously
 wrap |withRefs t'| with yet another |withRefs|---thus preventing the thread
 from making progress!
 %
@@ -115,12 +114,10 @@ This change also requires modifying \ruleref{withRefs-Ctx} to not be triggered w
 the term being evaluated is a |withRefs| term.
 }
  
-\concept{done/stuck}
 Rules \ruleref{T-done} and \ruleref{T-stuck} specify that once a thread term
 has reduced to a value or got stuck, which is represented by |diverge|, the
 scheduler removes it from the thread pool and schedules the next thread.
 
-\concept{fork}
 %
 As shown in Figure~\ref{fig:sos:conc}, to allow for dynamic thread creation, we
 extend \lioafs{}'s terms with |forkLIO|, and add a new reduction rule that sends
@@ -141,8 +138,7 @@ event: |t'|.
 %
 Subsequently, we add the new thread to the thread pool.
 
-\concept{no toLabeled}
-The final modification in extending \lioafs{} to \lioconc{} shown in
+The final modification in extending \lioafs{} to \lioconc{} given in
 Figure~\ref{fig:sos:conc} is the removal of |toLabeled| from the underlying
 calculus.
 %
@@ -152,31 +148,23 @@ guarantee termination-sensitive non-interference.
 Importantly, however, |forkLIO| with synchronization primitives (e.g.,
 flow-insensitive labeled MVars, as discussed
 in~\cite{stefan:addressing-covert}) can be used to provide functionality
-equivalent to that of |toLabeled|;
+equivalent to that of |toLabeled|.
 %
-we omit synchronization primitives from \lioconc{} for simplicity of
-exposition.\footnote{
-%Our approach to safely adding flow-sensitive references can directly
-%be applied to other objects.
-%
-Extending \lioconc{} to provide flow-sensitive labeled MVars follows
-identically, and similar to the embedding of \liofs{} into \lio{}. 
-%, we can embed
-%\lioconc{} with flow-sensitive MVars into \lioconc.
-}
+Due to space constraints we omit synchronization primitives from
+\lioconc{};
+we only remark that extending \lioconc{} to provide flow-sensitive
+labeled MVars follows in a straightforward way.
 
-\concept{still have attack}
-The flow-sensitive attack in Figure~\ref{fig:fs-attack} relied on |toLabeled|
-to restore the current label and thus allowing for the leak of secret data to be
-observed in a public context.
-%
-A natural question, given that we remove |toLabeled|, is whether we can use the
-naive flow-sensitive reference semantics of Section~\ref{sec:flow-sensitive}
+Since the flow-sensitive attack in Figure~\ref{fig:fs-attack} relied
+on |toLabeled| to restore the current label, a natural question, given
+that we remove |toLabeled|, is whether we can use the naive
+flow-sensitive reference semantics of Section~\ref{sec:flow-sensitive}
 for concurrent LIO.
 %
-As shown by the attack code in Figure~\ref{fig:fs-conc-attack}, in which we use
-|forkLIO| instead of |toLabeled| to address a potential label creep, the
-fundamental problem remains: the label on the reference label is not protected!
+As shown by the attack code in Figure~\ref{fig:fs-conc-attack}, in
+which we use |forkLIO| instead of |toLabeled| to address a potential
+label creep, the fundamental problem remains: the label on the
+reference label is not protected!
 %
 \begin{figure}
 \small
@@ -185,9 +173,9 @@ leakRef :: LIORefTCB space Bool -> LIO Bool
 leakRef href = do
   tmp   <- newRef space low ()
   forkLIO $ do  h <- readRef space href
-                when h (writeRef space tmp ())
+                when h $ writeRef space tmp ()
   delay
-  return (labelOfR space tmp == high)
+  return $ labelOfR space tmp == high
 \end{code}
 \cut{$}
 \caption{Attack in concurrent LIO with naive flow-sensitive reference
