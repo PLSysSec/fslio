@@ -73,10 +73,6 @@ upgradeFSRef (FSRefTCB a ref) l = do
       lv' <- cloneLIORef lv l
       writeLIORef ref lv'
 
--- This has to be a deep clone. In other words if ref has a reference,
--- we must create copies of that, etc. etc.
--- Otherwise, we must assume that the theorem only holds for top-level
--- references.
 cloneLIORef :: Label l => LIORef l a -> l -> LIO l (LIORef l a)
 cloneLIORef (LObjTCB l ref) l' = do
   lcur <- getLabel
