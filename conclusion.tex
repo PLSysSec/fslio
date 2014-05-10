@@ -1,26 +1,31 @@
 \section{Conclusions}
 \label{sec:conclusion}
 
-We show an extension of LIO with flow-sensitive references. Our approach allows
-secure label changes, and includes |upgrade| operations to boost
-permissiveness. As a programmer, introducing |upgrade| operations might be
-cumbersome. In order to reduce that burden, we propose automatically inserting
-them at convenient places, i.e., when the floating label is raised.
-Importantly, our design has the ability to be naturally extended to a
-concurrent setting.  To the best of our knowledge, this is the first work to
-address the problem of label changes for a concurrent language, where IFC is
-enforced by a purely dynamic monitor.  A key insight of this work is to show
-that, both for the sequential and concurrent settings, it is possible to encode
-our techniques for flow-sensitivity in terms of flow-insensitive
-concepts---this is due to the ability of LIO to handle nested labeled values.
-As a consequence, soundness of our extension is reduced to previous results on
-LIO.
-
-\Red{
-We believe that our results could be generalized to essentially arbitrary
-structures, e.g., trees or lists, so that programmers
-can have fine-grained control on mutating the sensitivity of data.
-}
+We presented an extension of LIO with flow-sensitive references.
+%
+As in previous flow-sensitive work, our approach allows secure label
+changes using an |upgrade| operation, as a way to boost the
+permissiveness of the IFC system, i.e., |upgrade| can be used to
+allows for the encoding of programs that would otherwise be rejected.
+%
+Since manually inserting |upgrade| operations can be cumbersome, we
+extend the calculus to automatically insert upgrades whenever the
+current label is raised, while still giving programmers fine-grained
+control over which references untrusted code can upgrade.
+%
+Importantly, our approach naturally extends to a concurrent setting.
+%
+To the best of our knowledge, this is the first work to address the
+problem of flow-sensitive label changes for a concurrent, purely
+dynamic IFC language.
+%
+A key insight of this work was to show that, by leveraging nested
+labeled objects, both the sequential and concurrent calculi with
+flow-sensitive references can be encoded in terms of flow-insensitive
+concepts.
+%
+As a consequence, our soundness proof was reduced to an invocation of
+previous results for LIO.
 
 % Local Variables:
 % TeX-master: "main.tex"
