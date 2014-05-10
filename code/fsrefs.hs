@@ -73,12 +73,24 @@ upgradeFSRef (FSRefTCB a ref) l = do
       lv' <- cloneLIORef lv l
       writeLIORef ref lv'
 
+-- This has to be a deep clone. In other words if ref has a reference,
+-- we must create copies of that, etc. etc.
+-- Otherwise, we must assume that the theorem only holds for top-level
+-- references.
 cloneLIORef :: Label l => LIORef l a -> l -> LIO l (LIORef l a)
 cloneLIORef (LObjTCB l ref) l' = do
   lcur <- getLabel
   let lnew = lcur `lub` l `lub` l'
   v <- ioTCB $ readIORef ref
   newLIORef lnew  v
+
+labelOfFSRef :: Label l => FSRef l a -> FSLIO l l
+labelOfFSRef (FSRefTCB a ref) = do
+  (_, addrs) <- getTCB
+  unless (Set.member a addrs) $ fail "Reference out of scope"
+  liftLIO $ do
+    lv <- readLIORef ref
+    return (labelOf lv)
 
 
 evalFSLIO :: (LIO l a -> LIOState l -> IO b) -> FSLIO l a -> LIOState l -> IO b
@@ -98,7 +110,8 @@ main = forM_ [1..2] $ \_ -> do
    x <- readFSRef ref
    writeFSRef ref $ "yo " ++ x
    upgradeFSRef ref ("yo" %% True)
-   readFSRef ref
+   upgradeFSRef ref (True %% True)
+   labelOfFSRef ref
  print res
 
 -- now I remember why I wrote lcur [= l `lub` l' in writeRef-FS:
