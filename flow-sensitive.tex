@@ -222,31 +222,69 @@ fact that the label of the reference |l'| is a value at sensitivity level |l|,
 i.e., we raise the current label to the join of the current label and the label
 on the label.
 
+The rule for reading flow-sensitive references is standard.
+%
+As given by \ruleref{readREf-fs}, |readRef S| simply raises the
+current label to join of the reference label and label on the
+reference label (|l lub l'|) and returns the protected value.
+%
+This reflects the fact that the computation is observing both data at
+level |l| (the label on the reference) and |l'| (the actual term).
 
-\Red{HERE}
-The rules for reading and writing to flow-sensitive references are mostly
-standard; |readRef S| raises the current label to the label of the reference
-(which is above the label on the label) and |writeRef S| ensures that the
-current computation can write to the reference (|lcurr canFlowTo (l lub l')|).
+
+\begin{wrapfigure}{r}{0.5\columnwidth}
+\vspace{-15pt}
+\begin{code}
+do  r <- newRef S high ()
+    readRef S r
+    writeRef S r ()
+\end{code}
+\vspace{-15pt}
+\caption{\label{fig:permissive} Permissiveness.}
+\end{wrapfigure}
 %
-\Red{In certain situations, this condition ensures that the enforcement is sufficiently
-permissive. For example, consider a flow-sensitive reference with a |high| label
-and with a |low| label on the label. If we checked the conditions
-|lcurr canFlowTo l| and |lcurr canFlowTo l'| independently, then it
-would not be possible to write to this reference when
-|lcurr| is |high|.}
+The rule for writing flow-sensitive references deserves more
+attention.
 %
-One peculiarity with |writeRef S| is the case when the current label does not
+First, |writeRef S| ensures that the current computation can write to
+the reference by checking that |lcurr canFlowTo (l lub l')|.
+%
+We impose this condition instead of the two conditions |lcurr
+canFlowTo l| and |lcurr canFlowTo l'|---which respectively check that
+the current computation can modify both, the label of the reference,
+and the reference itself---since it is more permissive, yet still
+safe.
+%
+When imposing the two conditions independently, certain programs, such
+as the one given in Figure~\ref{fig:permissive}, would fail.
+%
+In this program, we first create a flow-sensitive reference labeled
+|high| when the current label is |low| (and thus the label on |high|
+is |low|).
+%
+Then, we raise the label by reading from the reference.
+%
+Finally, we attempt to write the to the reference.
+%
+Under our semantics, this program behaves as expected; however, when
+imposing the two condition independently, the write fails---the
+current label does not flow to the label on the label of the
+reference.
+ 
+Another peculiarity with |writeRef S| is the case when the current label does not
 flow to the join of the reference label, i.e., |lcurr cantFlowTo l lub l'|, and
-thus the write should fail.
+thus the write should not be allowed.
 %
-If the semantics got stuck in \ruleref{writeRef-fs}, the current label would
+If the semantics simply got stuck, the current label (at the point of
+the stuck term) would
 not reflect the fact that the success of applying such rule depends on the
-label |l'| (itself protected by |l|), which might lead to information leaks;
-hence, we provide an explicit rule for this failure case that first raises the
-current label (through |unlabel|) and then diverges; see rule
-\ruleref{writeref-fs-fail}, where |diverge| represents a divergent computation
-(we do not provide a reduction rule for |diverge|).
+label |l'|, which is itself protected by |l|.
+%
+Indeed, this might lead to information leaks and we thus we provide an
+explicit rule, \ruleref{writeref-fs-fail}, for this failure case that
+first raises the current label (through |unlabel|) to |l| and then
+diverges; in the rule, |diverge| represents a divergent term for which
+we do not provide a reduction rule.
 
 % there is a termination leak which reveals
 % information about the possible changes on label |l'| (itself protected by |l|).
@@ -264,7 +302,7 @@ current label (through |unlabel|) and then diverges; see rule
 %The effects of this rule in a sequential settings is analogous to getting
 %stuck\footnote{This is not true if we consider exceptions, a feature 
 %out of the scope of this paper}. 
-Additionally, we note that |writeRef S| does not modify the label of the reference.
+Finally, we note that |writeRef S| does not modify the label of the reference.
 %
 This is, in part, because we wish to keep the difference between
 flow-insensitive and flow-sensitive references as small as possible.
@@ -272,9 +310,10 @@ flow-insensitive and flow-sensitive references as small as possible.
 Instead, we provide |upgradeR| precisely for this purpose; this primitive is
 used to raise the label of the reference.
 %
-It ensures that the current computation can modify the label by
-checking that the current label flows to the label on the label (|lcurr
-canFlowTo l|).
+Rule \ruleref{upgradeRef} is straight forward---it simply ensures that
+the current computation can modify the label of the reference by
+checking that the current label flows to the label on the label
+(|lcurr canFlowTo l|).
 
 
 
@@ -356,6 +395,10 @@ Unfortunately, our system (and others like it) requires that we insert
 |upgrade|s before we raise the current label so that it is possible to 
 write references in a more-sensitive context, e.g., to modify a public reference
 (with label on the label |L|) after reading a secret. 
+%
+In the case of the logging example, we would need to upgrade the label
+before reading any sensitive data, if we later which wish to write to
+the log.
 
 %\concept{auto upgrade}
 Inspired by~\citep{Hedin13}, we thus provide an extension to \liofs{} that can
@@ -367,35 +410,35 @@ Intuitively, whenever the current label is about to be raised, we first upgrade
 all the references in the |mS| store %, with |upgradeM|, in the store 
 and then raise the current label.
 %
-Rule \ruleref{upgradestore} upgrades every reference in the flow-sensitive store
+Rule \ruleref{upgradeStore} upgrades every reference in the flow-sensitive store
 |mS| by executing |t_1 >> t_2 >> cdots >> t_n|, where 
 |ti = upgradeR (LIORefTCB S a_i) l|. Term |t >> t'| is
 similar to bind except that it discards the result produced by
-|t|\footnote{Formally, |t >> t'| is defined as |t >>= \x.t'| where |x| does not
-  appear free in |t'|}. 
+|t|.
+%\footnote{Formally, |t >> t'| is defined as |t >>= \x.t'| where |x| does not
+%  appear free in |t'|}
 %
-Since in our calculus |unlabel| is the only function that raises the current
-label, we augment the \ruleref{unlabel} rule with \ruleref{unlabel-au} given in
+Since |unlabel| is the only function that raises the current label, we
+augment the \ruleref{unlabel} rule with \ruleref{unlabel-au}, given in
 Figure~\ref{fig:sos:afs}.
 %
-In doing so, this ensures that as the computation progresses it does not
-``lose'' write access to its references.
+This ensures that as the computation progresses it does not ``lose''
+write access to its references.
 %
 Returning to our logging example, with auto-upgrades, the reference used as the
 log never needs to be explicitly upgraded and can always be written to---an
 interface expected of a log.
 
 %\concept{store creep}
-Recall, however, that |toLabeled| provides a means for temporarily raising the
-current label, thereby allowing us to write programs avoiding 
-label creep.
+Recall, however, that |toLabeled| is used to avoid label creep by
+allowing code to only temporarily raise the current label.
 %
 Unfortunately, with auto-upgrades, when the current label gets raised 
 within a |toLabeled| block, the upgrades of the flow-sensitive references remain even
 after the current label is restored.
 %
 Thus, reading from any flow-sensitive reference after the |toLabeled|
-block will raise the current label to, at least, the current label at the end
+block will raise the current label to (at least) the current label at the end
 of the |toLabeled| block (since all references are upgraded every time that 
 the current label gets raised).
 %
@@ -418,13 +461,13 @@ This extension and type rule \ruleref{Type-withRef}, which ensures that a term
 cannot access a reference outside its store, are shown in
 Figure~\ref{fig:sos:withRefs}. 
 %
-A bag is either empty |nil|, or a number of references |set (v,..)|, where each
-element in the bag may be a reference of a distinct type.
+A bag is either empty |nil|, or it may contain a set of references
+of (potentially) distinct types |set (v,..)|.
 %
 Rules \ruleref{withRefs-Ctx} and \ruleref{withRefs-Done} precisely define the
 semantics of this new primitive, where meta function |addrs| converts a bag of
 references to a set of their corresponding addresses, |refs| performs the
-inverse conversion, and |merge| is used to merge the stores, giving preferences
+inverse conversion, and $\;\;|merge|\;\;$ is used to merge the stores, giving preferences
 to the left-hand-side store, i.e., when there is a discrepancy on a stored
 value between both stores, it chooses the one appearing on the left-hand-side.
 %
@@ -433,15 +476,17 @@ evaluation is reduced to a value, at which point \ruleref{withRefs-Done} is
 triggered, returning said value; we specify this big-step rule in terms of
 small-steps to facilitate the formalization of our concurrent calculus (see
 Section~\ref{sec:conc}).
+% 
+Aside from the modeling of bags, the |withRefs| primitive is
+straightforward and mostly standard;
+indeed, the programming paradigm is similar to that already present in
+some mainstream languages (e.g., C++'s lambda closures require the
+programmer to specify the captured references).
 %
-The |withRefs| primitive is mostly standard and provides a programming paradigm
-similar to that already present in some mainstream languages (e.g., C++'s
-lambda closures require the programmer to specify the captured references).
-%
-We lastly remark the elimination of 
-the aforementioned attack by simply wrapping |toLabeled| with |withRefs|,
-thereby preventing the (untrusted) code within the |toLabeled| block from
-upgrading arbitrary references. 
+Lastly, we note that the poison pill attack can now be addressed by
+simply wrapping |toLabeled| with |withRefs|, which prevents
+(untrusted) code within the |toLabeled| block from upgrading arbitrary
+references. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
