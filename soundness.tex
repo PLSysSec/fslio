@@ -12,8 +12,8 @@ We now show that we can implement our flow-sensitive semantics in terms of
 flow-insensitive references. More concretely, every flow-sensitive reference
 with label |l_d| created in a context where the current label is |l_o| (and
 thus stored in |mS| as |LabeledTCB l_o (LabeledTCB l_d t)|), can be represented
-by a flow-insensitive reference with label |l_o|, whose contents are the
-labeled value |LabeledTCB l_d t|.
+by a flow-insensitive reference with label |l_o|, whose contents are
+another flow-insensitive reference containing |t| and labeled |l_d|.
 
 Figure~\ref{fig:fs-exts-semantics-impl} shows our implementation of
 the flow-sensitive reference operations in this setting.  For a given
@@ -27,14 +27,19 @@ flow-sensitive ones, so as to distinguish them from ordinary
 flow-insensitive references. The functions |wrap| and |unwrap| are
 used to add and remove this boundary encoding.
 %
-\Red{In the embedding of |writeRef S|, we use |toLabeled| to make any
-  changes to the current label (possibly caused by reading the
-  reference) local to this operation. Inside |toLabeled|, the code
-  fetches the labeled value from the reference (|readRef I|), and then
-  performs the security check as in the rule in
-  Figure~\ref{fig:sos:fs}. If this succeeds, a new labeled value that
-  wraps |t| is made (|label|), and then stored in the reference
-  (|writeRef I|).}
+In the embedding of |writeRef S|, we use |toLabeled| to make any
+changes to the current label (possibly caused by reading the outer
+reference) local to this operation. Inside |toLabeled|, the code
+fetches the inner reference (|readRef I|), and then performs the
+actual write of the new value.  If this fails, the computation
+diverges, but, importantly, the current label was raised (with
+|readRef I|) to reflect the fact that the label on the label of the
+reference was observed.
+%
+The embedding of |upgradeR| follows similarly, but further relies on
+|upgradeRI| which, like the upgrade function for labeled values,
+creates a \emph{new} reference with the same contents as the supplied
+reference |i|, but whose label is upgraded.
 %
 For the sake of brevity, we do not explain the mapping in further
 detail, but remark that it is directly based on the rules in
@@ -46,39 +51,37 @@ Figure~\ref{fig:sos:fs}.
 \begin{code}
 wrap r @= WrapRef r
 unwrap (WrapRef r) @= r
-whenDiv t t1 @= if t then t1 else diverge
 
-impl (LIORefTCB S r) ((lcurr,mI,mS)) @= wrap (LIORefTCB I (labelOf mS(r)) r)
+impl (LIORefTCB S r) ((lcurr,mI,mS)) @= wrap (LIORefTCB I (labelOfR I mS(r)) r)
 
 impl (newRef S) c @= \ l t . do
+  i      <- newRef I l t
   lcurr  <- getLabel
-  v      <- label l t
-  r      <- newRef I lcurr v
-  return (wrap r)
+  o      <- newRef I lcurr i
+  return (wrap o)
 
 
-impl (readRef S) c @= \r . readRef I (unwrap r) >>= unlabel
+impl (readRef S) c @= \r . readRef I (unwrap r) >>= readRef I
 
 
-impl (writeRef S) c @= \r t . let  r'  = unwrap r
-                                   l   = labelOf r' in do
+impl (writeRef S) c @= \r t .let o = unwrap r in do
   lcurr <- getLabel
-  toLabeled (l lub lcurr) $ do
-     v   <- readRef I r'
-     whenDiv (lcurr canFlowTo l lub (labelOf v)) $ do
-       v'  <- label (labelOf v) t
-       writeRef I r' v'
+  toLabeled (lcurr lub (labelOf o)) $ do
+    i <- readRef I o
+    writeRef I i t
 
 
-impl (labelOfR S) c @= \r . readRef I (unwrap r) >>= return . labelOf
+impl (labelOfR S) c @= \r . 
+  readRef I (unwrap r) >>= return . labelOfR I
 
-impl (upgradeR) c @= \r l . let  r'  = unwrap r
-                                 l'  = labelOf r' in do
+impl (upgradeR) c @= \r l . let  o   = unwrap r
+                                 l'  = labelOf o in do
   lcurr <- getLabel
-  whenDiv (lcurr canFlowTo l') $ toLabeled l' $ do
-     v   <- readRef I r'
-     v'  <- upgrade v l
-     writeRef I r' v'
+  if (lcurr cantFlowTo l) then diverge else 
+    toLabeled l' $ do
+      i   <- readRef I o
+      i'  <- upgradeRI i l
+      writeRef I o i'
 
 impl (withRefs v t) ((lcurr,mI,mS)) @= impl t ((lcurr, mI, mS'))
    where
@@ -94,7 +97,7 @@ into \lio{} environments, by having |impl1 ((lcurr, mI, mS)) @=
 for each binding of the form |a_i mapsto LabeledTCB li v_i| in
 |mS|. Note that the domains of |mI| and |mS| are disjoint because the
 |fresh| predicate that we use in the semantics is assumed to produce
-globally unique names.
+globally unique addresses.
 
 In order to prove that our implementation is correct with respect to
 the semantics, we show that, if we take a program with flow-sensitive
@@ -126,19 +129,19 @@ with the flow-sensitive semantics.
   %     references, the other doesn't), so syntactic equiality is not
   %     right.  we need the equivalence relation I defined before}}
 \end{theorem}
+%
 While straight forward, this theorem highlights an important result: in
 floating label systems, flow-sensitive references can be encoded in a calculus
-with flow-insensitive references and explicitly labeled values!
+with flow-insensitive references and explicitly labeled values.
 
 \subsection{Security guarantees for \liofs{}, \lioafs{} and \lioconc{}}
 
-From previous results, we know that LIO has termination-insensitive
+From previous results, we know that LIO satisfies termination-insensitive
 non-interference (TINI) in the sequential setting, and termination-sensitive
-non-interference (TSNI) in the presence of concurrency. By combining the previous
-embedding theorem with these results, we can show that they hold for LIO with
-flow-sensitive references.
+non-interference (TSNI) in the concurrent setting. By using the
+embedding theorem we can extend these results for LIO with flow-sensitive references.
 
-In order to make this paper self-contained, we now present our
+For completeness, we now present our
 non-interference theorems, as straightforward applications of the theorems in
 previous work. Our security results rely on the notion of
 |l|-equivalence for terms and configurations, which captures the idea
@@ -155,9 +158,9 @@ cannot distinguish among different runs of a program with
 
 \begin{theorem}[TINI for \liofs{}]
   Consider two well-typed terms |t1| and |t2| in
-  \liofs{} which do not contain any |TCB| syntax nodes, such that |t1 &~
-  t2|. We assume there is an attacker that observes data at level
-  |l|. Let |c| be an initial environment, and let
+  \liofs{} which do not contain any |cdot TCB| syntax nodes, such that |t1 &~
+  t2|, where |l| is the attacker observation level.
+  Let |c| be an initial environment, and let
 \[
     |conf c (t1) ==> conf c1 v1|\mbox{ and }
     |conf c (t2) ==> conf c2 v2|
@@ -170,14 +173,14 @@ cannot distinguish among different runs of a program with
   definition given in Figure~\ref{fig:fs-exts-semantics-impl}, we get
   terms in \lio{}, which by Theorem~\ref{thm:eq} has equivalent
   semantics. Therefore, the result follows from the
-  termination-insensitive non-interference of \lio{}~\citep{stefan:lio}.
+  \lio{} TINI result of~\citep{stefan:lio}.
 \end{proof}
 
 \begin{corollary}[TINI for \lioafs{}]
   The previous non-interference result can be easily extended to \lioafs{}. 
   In \lioafs{}, the |unlabel| operation
-  triggers the automatic upgrades mechanism, which consists in
-  performing the |upgrade| operation for every flow-sensitive
+  triggers the automatic upgrades mechanism, which 
+  performs the |upgrade| operation for every flow-sensitive
   reference in scope before actually raising the current label.
   Regardless of how |unlabel| is used, we note that the resulting term
   (after inserting the necessary |upgrade|s), is just an \liofs{}
@@ -191,11 +194,9 @@ cannot distinguish among different runs of a program with
 %    withRefs}
 \end{corollary}
 
-In the concurrent setting, we need to prove a lemma about the
-relationship between the current label and the label on the label of
-flow-sensitive references. We show that, in every context where a
-reference |r| is bound, it must be the case that the current label is
-at least as sensitive as the label on the label of |r|.
+For the concurrent result, we need a supporting lemma which states
+that the current label is always at least as sensitive as
+the label of every reference in scope. Formally,
 
 \begin{lemma} \label{lem:lolFlowslCurr}
   Let |t| be a well-typed term in \lioconc{}, |c = (lcurr, mI, mS)| an initial
@@ -206,7 +207,7 @@ at least as sensitive as the label on the label of |r|.
 
 \begin{proof}
   Note that the result holds immediately after creating |r|, since
-  the current label becomes the label on the label of |r|, i.e., |l_o =
+  the current label is the label on the label of |r|, i.e., |l_o =
   lcurr|. It is easy to show that |l_o| is immutable, since there are
   no reduction rules that modify it. Moreover, given that the current
   label is monotonic, the only way in which |l_o canFlowTo lcurr| can
@@ -225,9 +226,9 @@ or internal timing leaks.
 
 \begin{theorem}[TSNI for \lioconc{}]
   Consider two well-typed terms |t1| and |t2| in
-  \lioconc{} which do not contain any |TCB| syntax nodes, such that |t1
-  &~ t2|. We assume there is an attacker that observes data at level
-  |l|. Let |c = (lcurr, mI, mS)| be an initial environment, and let
+  \lioconc{} which do not contain any |cdot TCB| syntax nodes, such that |t1
+  &~ t2|, where |l| is the attacker observation level.
+  Let |c = (lcurr, mI, mS)| be an initial environment, and let
 \[
  |tconf mI mS (thread lcurr (refs (dom mS)) t1) ==> M1|
 \]
@@ -246,15 +247,13 @@ or internal timing leaks.
   |toLabeled| in these two cases, we note that the embedding produces
   valid concurrent \lio{} terms (which does not have |toLabeled|).
 
-  We remark that our embedding includes no synchronization to
-  ensure atomicity of the flow-sensitive operations, so certain
-  interleavings that break semantic equivalence are possible. However,
-  we note that all the critical sections in our operations consist in
-  a |readRef I| followed by a |writeRef I|. Therefore, we argue that
-  the problem could be addressed by replacing these operations with
-  |atomicModifyRef I|, an atomic operation that performs the read and write and
-  is part of the actual implementation of LIO, but which we elide in order to
-  simplify our presentation.
+
+%%   However, we note that all the critical sections in our operations consist in
+%%   a |readRef I| followed by a |writeRef I|. Therefore, we argue that
+%%   the problem could be addressed by replacing these operations with
+%%   |atomicModifyRef I|, an atomic operation that performs the read and write and
+%%   is part of the actual implementation of LIO, but which we elide in order to
+%%   simplify our presentation.
 
   Finally, by expanding all the flow-sensitive operations in |t1| and |t2|
   using their definition given in
@@ -262,29 +261,37 @@ or internal timing leaks.
   \lio{}.  Therefore, the result follows from the
   termination-sensitive non-interference of concurrent
   \lio{}~\citep{stefan:addressing-covert}.
+  %
+  We remark, however, that our embedding includes no synchronization to
+  ensure atomicity of the flow-sensitive operations, so certain
+  interleavings that break semantic equivalence are possible.
+  Importantly, this does not affect security.
 \end{proof}
 
 The detailed proofs for the results in this section can be found in the
 extended version of the paper~\cite{extended}.
 
 \subsection{Permissiveness}
-\Red{
+In Section~\ref{sec:related} we compare the permissiveness of our
+system with previous flow-sensitive IFC systems. Here, we
+solely remark that the above results imply that our
+flow-sensitive calculus is as permissive as flow-insensitive
+LIO. In particular, any flow-insensitive LIO program can be trivially
+converted to a flow-sensitive LIO program (without auto-upgrades) by
+using flow-sensitive references instead of flow-insensitive ones.
+Since these references would never be upgraded, they will behave just
+like their flow-insensitive counterparts.
+%
+This means that all existing LIO programs can be run in our
+flow-sensitive monitor. This includes Hails~\cite{giffin:hails}, a
+web framework using LIO, on top of which a number of applications
+have been built (e.g., GitStar\footnote{\url{www.gitstar.com}}, a
+code-hosting web platform,
+LearnByHacking\footnote{\url{www.learnbyhacking.org}}, a
+blog/tutorial platform similar to School of Haskell, and
+LambdaChair~\cite{stefan:2012:arxiv-flexible}, an EasyChair-like
+conference review system).
 
-  Our flow-sensitive calculus is as permissive as flow-insensitive
-  LIO. Any flow-insensitive LIO program can be trivially converted to
-  a flow-sensitive LIO program (without auto-upgrades) by using
-  flow-sensitive references instead of flow-insensitive ones.  Since
-  these references would never be upgraded, they will behave just like
-  their flow-insensitive counterparts.
-
-  This means that all existing LIO programs can be run in our
-  flow-sensitive monitor. As an example of such a program, we
-  highlight Hails~\cite{giffin:hails}, a web framework using LIO, on
-  top of which a number of applications have been built (e.g.,
-  GitStar\footnote{\url{www.gitstar.com}}, a code-hosting web platform, LearnByHacking\footnote{\url{www.learnbyhacking.org}}, a
-  blog/tutorial platform similar to School of Haskell, and
-  LambdaChair~\cite{stefan:2012:arxiv-flexible}, an EasyChair-like conference review system).
-}
 
 % GitStar's core could be run in our
 %   flow-sensitive monitor; the full system uses other features like
