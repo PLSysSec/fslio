@@ -26,7 +26,7 @@ log.
 Hence, for example, a computation that never reads sensitive data, yet
 wishes to read the log content as to send error message to a user over
 the network (e.g., as done in a web application) cannot do so---LIO
-prevents the computation from read the log, thereby tainting itself
+prevents the computation from reading the log, thereby tainting itself
 $\top$, and subsequently writing to the network.\footnote{
   Here, as in most IFC systems, we assume the network is public.
 }
