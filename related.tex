@@ -2,7 +2,6 @@
 \label{sec:related}
 
 %% Label on the label idea
-\Red{
 The \emph{label on the label} could be seen as a fixed label that dictates which
 principals can read or modify the policy (inner label) of a flow-sensitive
 entity. In a different setting, trust management frameworks have
@@ -18,7 +17,6 @@ existence security label and the label on the label are structurally isomorphic,
 they are used for different purposes and in different scenarios, e.g., it is not
 allowed to query labels in
 \cite{Russo:2009,DBLP:conf/csfw/HedinS12,DBLP:conf/csfw/RafnssonHS12,Rafnson:2013}.
-}
 
 %% Flow-sensitive monitors 
 Hunt and Sands~\citep{Hunt:2006} show the equivalence (modulo code
@@ -30,8 +28,8 @@ the menace of mutable labels for purely dynamic monitors. They prove that
 monitors require static analysis in order to be more permissive than traditional
 flow-sensitive type-systems. Targeting purely dynamic monitors, Austin and
 Flanagan~\citep{Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10} describes the
-label-change policies \emph{\nsu} \Red{(proposed by
-  Zdancewic~\cite{Zdancewic02programminglanguages})} and \emph{\pu}, where the
+label-change policies \emph{\nsu} (originally proposed by
+  Zdancewic~\cite{Zdancewic02programminglanguages}) and \emph{\pu}, where the
 latter is provably more permissive than the former, i.e., it rejects fewer
 programs. The {\nsu} discipline stops execution on any attempt to change the
 label of a public variable inside a secret context. In contrast, {\pu} allows
@@ -42,35 +40,37 @@ marked|.  Austin and Flanagan propose a \emph{privatization} operation to boost
 the permissiveness of {\pu}.  It is not clear how this technique generalizes to
 arbitrary lattices. Moreover, the privatization operation can only enforce
 non-interference when outputs are suppressed after branching on a marked
-flow-sensitive reference. Unfortunately, none of the mentioned work so far
-consider concurrency. In fact, the notion of {\pu} does not easily generalize to
-the concurrent setting. The reason is that it would require tracking occurrences
-of branches across threads, which challenges scalability.
+flow-sensitive reference. Unfortunately, none of the mentioned work 
+consider flow-sensitive in the presence of concurrency.
+In fact, the notion of {\pu} does not easily generalize to
+the concurrent setting, as this would require tracking occurrences
+of branches across threads.
 
 The flow-sensitive extension for LIO is capable of encoding a generalized version
 of {\nsu} by using an extra level of indirection.  To illustrate this, we
-consider all the references as three-level nested labeled values---perfectly
-expressible in \liofs{}. Specifically, we utilize flow-sensitive references of
+consider all the references as three-level nested labeled
+values---easily expressible in \liofs{}.
+Specifically, we use flow-sensitive references of
 type |LIORef S (Labeled l a)|, where |mS(a) = LabeledTCB l (LabeledTCB l
 (LabeledTCB l' t))| for a given flow-sensitive reference at address |a|. Observe
 that the first and second label of the nested structure are the same---this is
 effectively like having collapsed the first and second levels of the structure. For
-creating a reference, we call |r <- newRef S lcurr lv|, where |lcurr| is the
+creating a reference, we execute |r <- newRef S lcurr lv|, where |lcurr| is the
 current label and |lv| is just a labeled value of the form |LabeledTCB l'' t|
 for an arbitrary label |l''|.  The newly created reference is of the form
-|LabeledTCB lcurr (LabeledTCB lcurr lv)|.  As in {\nsu}, writing a (labeled)
-value into r using |writeRef S r lv'|, demands that the current label flows into
-|lcurr|, i.e., the label on the label at the time of creating |r|. This
-restriction rules out situations where, if |r| was created in a public
-environment (|low|), it would not be possible to modify it in a secret context
-(|high|). These are exactly the forbidden label changes in {\nsu}. Additionally,
-|writeRef S r lv'| allows changing the initially stored labeled value |lv| for
-another one |lv'| with an arbitrary label. This label change (on the last
-labeled value of the nested structure) might be rejected by {\nsu}, where it is
-only possible to change the label of a reference if the new label is 
-above the label given to the reference at the time of creation. In our encoding,
-instead, |writeRef S r lv'| always succeeds when the current label is
-|lcurr|, regarless of the |labelOf lv'|. 
+|LabeledTCB lcurr (LabeledTCB lcurr lv)|.  As in the {\nsu} case, writing a (labeled)
+value into r using |writeRef S r lv'|, requires that the current label
+flow to |lcurr|, i.e., the label on the label at the time of creating
+|r|. Howerver, the {\nsu} rule
+prevents a program from modifying a reference |r|, created in a public
+environment (|low|), from being modified in a secret context
+(|high|). However,
+|writeRef S r lv'| allows changing the initially stored labeled value
+|lv| with another arbitrary-labeled value |lv'|. Such ``label changes'' (of
+the innermost labeled value) make our encoding more permissive than
+{\nsu}, which only allows
+changing the label of a reference if the new label is 
+above the initial label of the reference.
 
 
 %Different from {\pu}, our approach
@@ -119,42 +119,38 @@ instead, |writeRef S r lv'| always succeeds when the current label is
 
 %% Breeze
 Recently, Hritcu et al.~\citep{Breeze} propose a floating-label
-system called Breeze. It allows label changes in the current label (i.e., |pc|) and
-considers flow-insensitive values. Given the design similarities with
-LIO~\citep{stefan:lio}, we believe that our results could be easily adapted to
-Breeze.
+system called Breeze. Like LIO, Breeze allows changes in the current
+context label (i.e., |pc|) and only considered values with
+flow-insensitive labels. Given the design similarities with
+LIO~\citep{stefan:lio}, we believe that our results could be easily
+adapted to Breeze.
 
 %% JSFlow
-In a web scenario, and focusing on reducing the number of rejected web pages,
 Hedin et al. \citep{Hedin13} recently developed JSFlow, an IFC flow-sensitive
-monitor for JavaScript. The monitor utilizes the {\nsu} label changing
+monitor for JavaScript. The monitor uses the {\nsu} label changing
 policy. To overcome some of the restrictions imposed by this discipline, the
 primitive \textbf{upgrade} is introduced to explicitly change labels. Our
 upgrade operation resembles that proposed by Hedin et al. Moreover, the
-extension to |unlabel| in Section \ref{sec:flow-sensitive} can be seen as an
+extension to |unlabel| as described Section \ref{sec:flow-sensitive} can be seen as an
 automatic application of \textbf{upgrade} every time that the current label gets
 raised. Using testing, Birgisson et al.~\citep{Arnar2012} automatically insert
-\textbf{upgrade} instructions to boost the permissiveness of {\nsu}. We show how
-the concept of \textbf{upgrade} can be extended to work in a concurrent setting.
+\textbf{upgrade} instructions to boost the permissiveness of {\nsu}.
+We further extend this concept of (automatic) \textbf{upgrade}s to a concurrent setting.
 
 
 
 %% OS-like work for the browser 
-Coarse-grained IFC enforcements, similar to the ones found in OS work, have been
-applied to web browsers. BFlow~\citep{Yip:2009} tracks flows of information at
-the granularity of secure zones, i.e., compartments composed of one or several
-iframes. The zones' labels, i.e., subjects' labels, must be explicitly updated---no
-implicit tainting. The data-confined sandbox (DCS)
-system~\citep{conf/esorics/AkhaweLHSS13}, on the other hand, allows implicit
-tainting while restricting the propagation of information by using iframes and
-mediating crossdomain operations (e.g., access to local storage, fragment-IDs, and
-network communication). It is unclear that flow-sensitive objects would be
-useful in such scenarios. Naturally, the DOM-tree could be thought of as being
-composed of flow-sensitive objects, which change security labels based on the
-dynamic behavior of the web page~\citep{Russo:2009}. However, the
-coarse-granularity of the mentioned approaches leads to treating the whole DOM-tree
-as having the same security label as the security zone (BFlow) or sandbox iframe
-(DCS). 
+Coarse-grained IFC enforcements, similar to the ones found in IFC OS
+work, have been applied to web browsers. BFlow~\citep{Yip:2009} tracks
+the flow of information at the granularity of protection zones, i.e.,
+compartments composed of iframes. As in LIO, a zone's label, i.e., a
+subject's label, must be explicitly updated. Different from LIO, BFlow
+does not have finer-grained labeled object; hence the flow-sensitivity
+result is only applicable at the protection zone level.  Naturally, by
+taking a more fine grained approach, the DOM-tree could be thought of
+as being composed of flow-sensitive objects, whose security
+labels change according to the dynamic behavior of the web
+page~\citep{Russo:2009}.
 
 %% Logic / verification approaches 
 Hoare-like logics for IFC are often
@@ -164,11 +160,13 @@ safely approximate label changes. As a result, no leaks due to label changes are
 present in provably secure programs.
 %% Hybrid approaches
 Le Guernic et al.~\citep{LeGuernic:2006,Guernic:2007:ACM} combine dynamic and
-static checks in a flow-sensitive execution monitor. \Red{In a flow-sensitive
-type-system, Foster et al.~\cite{Foster:2002:FTQ:512529.512531} propose the
-primitive \textbf{restrict} to limit the use of variables' aliases in a block of
-code. Similar to |withRefs|, \textbf{restrict} is used to increase the
-permissiveness of the analysis.}
+static checks in a flow-sensitive execution monitor.
+%
+For a flow-sensitive type-system, Foster et
+al.~\cite{Foster:2002:FTQ:512529.512531} propose a \textbf{restrict}
+primitive that limits the use of variables' aliases in a block of
+code. Our |withRefs| is similar to \textbf{restrict} in being used to
+increase the permissiveness of the analysis.
 
 
 
