@@ -107,7 +107,7 @@ lcurr'| and we can restore the current label from |lcurr'| to |lcurr|,
 since a leak would then be observable within the program itself.
 %
 In the case where the label of the object is immutable, as is the case for
-flow-insensitive references (and labeled valued), this is not a concern: even if
+flow-insensitive references (and labeled values), this is not a concern: even if
 the current label is raised to |lcurr'| and then restored to |lcurr|, we do not
 learn any information more sensitive than |lcurr|---the label of the label at the
 time of creation---by inspecting the label of the reference (or
