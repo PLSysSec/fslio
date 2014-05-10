@@ -56,8 +56,11 @@ writeFSRef (FSRefTCB a ref) x = do
   unless (Set.member a addrs) $ fail "Reference out of scope"
   liftLIO $ do
     discard $ do
-      lv <- readLIORef ref
-      writeLIORef lv x
+      lv <- readLIORef ref  -- lcur2 = lcur \join l1 
+      writeLIORef lv x      -- lcur2 <= l2 
+                            -- lcur \join l1 <= l2 
+                            -- lcur \join l1 <= l2 \join l1
+                            -- lcur <= l2 \join l1
 
 upgradeFSRef :: Label l => FSRef l a -> l -> FSLIO l ()
 upgradeFSRef (FSRefTCB a ref) l = do
