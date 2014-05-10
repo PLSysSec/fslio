@@ -65,7 +65,6 @@ writeFSRef (FSRefTCB a ref) x = do
 upgradeFSRef :: Label l => FSRef l a -> l -> FSLIO l ()
 upgradeFSRef (FSRefTCB a ref) l = do
   liftLIO $ guardAlloc l
-  liftLIO $ guardAlloc (labelOf ref)
   (_, addrs) <- getTCB
   unless (Set.member a addrs) $ fail "Reference out of scope"
   liftLIO $ do
