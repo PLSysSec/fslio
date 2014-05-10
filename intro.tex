@@ -101,7 +101,7 @@ missed to catch the information leak about |h|.
 
 To close this covert channel, there have been three main approaches:
 incorporate some static analysis/information into the execution
-monitor~\cite{Russo:2010,stefan:lio,10.1109/SP.2013.10}; forbid certain label
+monitor~\cite{Russo:2010,stefan:lio,Breeze}; forbid certain label
 changes, a policy known as \emph{no-sensitive
   upgrades} \Red{(first proposed by Zdancewic~\cite{Zdancewic02programminglanguages} and named by Austin and Flanagan~\cite{Austin:Flanagan:PLAS09})}; and deny branches on certain
 variables which have mutated their labels, a policy named \emph{permissive
@@ -212,7 +212,7 @@ More concretely, the contributions of this paper are:
 %
 Although developed for LIO, we believe that our results generalize to other
 sequential and concurrent floating-label systems (e.g.,
-\cite{10.1109/SP.2013.10, Efstathopoulos:2005, zeldovich:histar, krohn:flume}).
+\cite{Breeze, Efstathopoulos:2005, zeldovich:histar, krohn:flume}).
 
 %\hl{Structure of the paper, i.e., the paper is organized as follows}
 The rest of the paper is organized as

@@ -4,11 +4,6 @@
 
 \begin{figure} % sos:rules
 \small
-\begin{code}
-Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
-E   ::= []| Ep | E >>= t 
-\end{code}
-
 \begin{mathpar}
 \inferrule[app]
 { } { |Ep[(\x.t1) t2] ~> Ep[{ t2 / x } t1]| }
@@ -33,7 +28,7 @@ E   ::= []| Ep | E >>= t
 { }
 { |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (E[t2 t1])| }
 \end{mathpar}
-\caption{Reduction rules for base \lio.\label{fig:sos:rules}}
+\caption{Reduction rules for standard terms of base \lio.\label{fig:sos:rules}}
 \end{figure}
 
 
@@ -51,20 +46,21 @@ maps terms to values, to precisely capture this implementation detail.
 
 %\concept{pure red}
 %
-The reduction rules for pure terms are mostly standard. For instance, 
-in rule \ruleref{ifTrue}, when the branch has a true condition, i.e., 
-|Ep[if true then t2 else t3]|, it reduces to the then branch (|Ep[t2]|). 
-The rest are self-explanatory and we do not discuss them any further. 
+The reduction rules for pure terms are standard. For instance, in rule
+\ruleref{ifTrue}, when the branch has a true condition, i.e., |Ep[if
+true then t2 else t3]|, it reduces to the then branch (|Ep[t2]|).  The
+rest are self-explanatory and we do not discuss them any further. 
 %
 
 %\concept{monad red}
 %
-The reduction rules for monadic terms deserve some attention.
+%The reduction rules for monadic terms deserve some attention.
 %
-The definition for |return| and |(>>=)| are trivial: the former simply reduces
-to a monadic value by wrapping the term with the |LIOTCB| constructor, while the
-latter evaluates the left-hand term and supplies the result to the right-hand
-term, as usual.
+Since all the IFC checks are performed by individual LIO terms, the
+definition for |return| and |(>>=)| are trivial.
+The former simply reduces to a monadic value by wrapping the term with
+the |LIOTCB| constructor, while the latter evaluates the left-hand
+term and supplies the result to the right-hand term, as usual.
 
 
 \section{attack on naive flow-sensitive references}

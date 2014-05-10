@@ -113,7 +113,6 @@ changed!
 \begin{figure} % semantics
 \small
 \begin{code}
-s    ::= cdots  | S
 v    ::= cdots  | LIORefTCB S t
 t    ::= cdots  | upgradeR t t | diverge
 Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
@@ -397,7 +396,7 @@ of the |toLabeled| block (since all references are upgraded every time that
 the current label gets raised).
 %
 This can be used to carry out a \emph{poison pill}-like
-attack~\cite{10.1109/SP.2013.10}, wherein the (usually untrusted) computation
+attack~\cite{Breeze}, wherein the (usually untrusted) computation
 executing within the |toLabeled| block will render the outer computation useless
 by imposing label creep.
 %

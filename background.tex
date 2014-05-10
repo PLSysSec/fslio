@@ -4,9 +4,11 @@
 %\hl{DONE, in the description of Figure 2}
 
 %\concept{LIO library as LIO-monad}
-LIO is a language-level IFC system, implemented as a library in Haskell.  The
-library provides a special API, called the \emph{monad} |LIO|, which 
-programmers utilize to write their computations to enforce IFC policies. 
+LIO is a language-level IFC system, implemented as a library in
+Haskell.  The library provides a new \emph{monad}, |LIO|, atop which
+programmers implement computations, which may, in turn, use the LIO
+API to perform side effects (e.g., mutate a reference or write to a
+file).
 %
 %Concretely, LIO provides programmers with a new monad, called |LIO|,
 %that is similar to---and is intended to be used in place of---the
@@ -18,19 +20,21 @@ programmers utilize to write their computations to enforce IFC policies.
 %
 %\concept{Current label used to govern flows}
 
-The |LIO| monad essentially implements a purely dynamic execution monitor. More 
-specifically, it encapsulates the state necessary to enforce IFC for the computation
-under evaluation.
+The |LIO| monad implements a purely dynamic execution monitor.
 %
-Part of this state is the \emph{current floating-label} (or just current label for short).
+To this end, |LIO| encapsulates the state necessary to enforce
+IFC for the computation under evaluation.
+%
+Part of this state is the \emph{current (floating) label}.
 %
 Intuitively, the current label serves a role similar to the program
-counter (|pc|) of more-traditional IFC systems
-(e.g.,~\cite{FlowCaml}).
+counter (|pc|) of more-traditional IFC systems (e.g.,~\cite{FlowCaml}).
 %
-More specifically, it prevents the current computation from performing 
-side-effects compromising confidentiality of data.
-Henceforth, we assume that all computations are encoded in |LIO|.
+More specifically, the current label is used to restrict the current
+computation from performing side-effects that may compromise the
+confidentiality or integrity of data (e.g., by restricting where the
+current computation may write).
+%Henceforth, we assume that all computations are encoded in |LIO|.
 
 %
 %For instance, if the current label is |lcurr|, LIO restricts the
@@ -41,24 +45,20 @@ Henceforth, we assume that all computations are encoded in |LIO|.
 %labeled |l_e|, unless |lcurr canFlowTo l_e|.
 
 %\concept{Current label is label on all in scope}
-Conceptually speaking, to soundly reason about IFC, every piece of data 
- \emph{must} be labeled, i.e., associated with a security level.
+To soundly reason about IFC, every piece of data \emph{must} be
+labeled, including literals, terms, and labels themselves.
 %
-%This includes literals, terms, labels, execution contexts, etc.
 %
-%However and in contrast to language-based systems (e.g.,
-%Jif~\cite{myers:jif}, FlowCaml~\cite{FlowCaml}, Breeze~\cite{Breeze},
-%etc.), where every value is explicitly labeled, values in LIO are
-%Haskell values and thus do not have explicit labels.
+However and in contrast to language-based systems
+(e.g.,~\cite{myers:jif, FlowCaml, Breeze}) where every value is
+explicitly labeled,
 %
-%(LIO cannot explicitly label every Haskell value without modifying the
-%language runtime!)
+LIO takes a coarse-grained approach and uses the current label to protect all
+values in scope.
 %
- Different from other language-based systems (e.g.~\cite{myers:jif,FlowCaml}),
- LIO takes a coarse-grained approach and uses the current label to protect all
- values in scope, i.e., in LIO, the current label |lcurr| is the label on all
- the non-explicitly labeled values in the context of a computation---an idea taken
- from IFC operating systems~\cite{Efstathopoulos:2005,zeldovich:histar}.
+As in IFC operating systems~\cite{Efstathopoulos:2005,
+zeldovich:histar}, in LIO, the current label |lcurr| is the label on
+all the non-explicitly labeled values in the context of a computation.
 %
 %% It is repetitive with the previous paragraph
 %Since the current label is used to restrict the current computation
@@ -68,13 +68,11 @@ Conceptually speaking, to soundly reason about IFC, every piece of data
 
 %\concept{Floating label}
 
-Further borrowing from IFC operating systems (namely,
-HiStar~\cite{zeldovich:histar}), LIO raises the current label to
-protect newly read data in scope.
+Further borrowing from the OS community, LIO raises the current label
+to protect newly read data.
 %
 That is, the current label is raised to ``float'' above the labels of
 all the objects read by the current computation.
-(Hence the name ``floating-label.'')
 % 
 Raising the current label allows computations to flexibly read data,
 at the cost of being more limited in where they can subsequently
@@ -85,9 +83,10 @@ labeled |l_d| by raising its current label to |lcurr' = lcurr lub
 l_d|, but can thereafter only write to entities labeled |l_e| if
 |lcurr' canFlowTo l_e|.
 %
-For example, LIO allows a public computation to read secret data by
-raising |lcurr| from |low| to |high|. Importantly, the new current label
-prevents the computation from subsequently writing to public entities.
+Hence, for example, a public LIO computation can read secret data by
+first raising |lcurr| from |low| to |high|. Importantly, however, the
+new current label prevents the computation from subsequently writing
+to public entities.
 
 % \concept{Labeled objects}
 % \hl{TODO:talk about labeled values and references}
@@ -111,13 +110,13 @@ Terms   t    ::=  v | x | t t | fix t | if t then t else t
 Types   tau  ::=  Bool | () | tau -> tau | lattice | LIO tau  
 LOps    lop  ::=  lub | glb | canFlowTo
 \end{code}
-\caption{\label{fig:sos:base}
-          Base \lio{} syntactic categories.}
+\caption{\label{fig:sos:base} Syntactic categories for base \lio.}
 \end{figure}
 
-We describe a calculus which gives precise semantics to |LIO| and the role of
-the current label when preserving confidentiality. More technically, we consider
-LIO as an extended simply-typed, call-by-name $\lambda$-calculus, called \lio.
+We give the precise semantics for LIO by extending the simply-typed,
+call-by-name $\lambda$-calculus;
+%
+we call this extended IFC calculus \lio.
 %
 The formal syntax of the core \lio{} calculus, parametric in the label
 type |lattice|, is given in Fig.~\ref{fig:sos:base}.
@@ -131,7 +130,7 @@ t|).\footnote{ We restrict our formalization to computations implemented in the
   |LIO| monad and only consider Haskell features relevant to IFC, similar to the
   presentation of LIO in~\cite{stefan:lio,stefan:addressing-covert}.  } We note
 that values of the form |LIOTCB t| denote computations subject to security
-checks. In fact, security checks might only occur when evaluating such values.
+checks. (In fact, security checks are only applied to such values.)
 %
 Terms are composed of standard constructs (values, variables |x|, function
 application, the |fix| operator, and conditionals), terminals corresponding to
@@ -139,15 +138,26 @@ label operations (|t lop t|, where |lub| is the join, |glb| is the meet, and
 |canFlowTo| is the partial-order on labels), standard monadic operators (|return
 t| and |t >>= t|), and |getLabel|, to be explained below.
 %
-Terms with the annotation |TCB| as superscript are not part of the surface
-syntax, i.e. they are not made available to programmers---these syntax nodes
-are only used internally in the semantics.
+Terms annotated with |cdot TCB| are not part of the surface syntax,
+i.e., such syntax nodes are not made available to programmers and are
+solely used internally in our semantic description.
 %
 Types consist of Booleans, unit, function types, labels, and |LIO|
 computations; since the \lio{} type system is standard, we do not
 discuss it further.
 
 % Monadic operators 
+%
+We include monadic terms in our calculus since (in Haskell) monads
+dictate the evaluation order of a program and encapsulate all
+side-effects, including I/O~\cite{moggi:monads, wadler:monads};
+%
+LIO leverages monads to precisely control what (side-effecting)
+operations the programmer is allowed to perform at any given time.
+%
+In particular, an LIO program is simply a computation in the |LIO| monad,
+composed from simpler monadic terms using \emph{return} and \emph{bind}.
+%
 \begin{wrapfigure}{r}{0.4\columnwidth}
 \vspace{-15pt}
 \begin{code}
@@ -157,40 +167,40 @@ do  x <- t
 \vspace{-15pt}
 \caption{\label{fig:do}|do|-notation}
 \end{wrapfigure}
-Monadic terms are used to create complex LIO computations from simpler
-ones.
-%
-We include such terms in our calculus because side-effects in
-Haskell (such as I/O) must always be performed in a monad~\cite{moggi:monads,wadler:monads}, a
-language feature which LIO leverages in order to precisely control
-which operations the programmer is allowed to perform at any given
-time.
 %
 Term |return t| produces a computation which simply returns the value
-denoted by |t|. The monadic term |>>=|, called \emph{bind}, is used to sequence
-LIO programs. Specifically, term |t >>= (\x.t')| takes the result produced by
-term |t| and gives it as an argument to the function |\x.t'|.  This operator
-allows computation |t'| to depend on the value produced by |t|.  We sometimes
-use Haskell’s |do|-notation to write such computations. For example, the term |t
->>= \x.return (x+1)|, which describes a computation that adds one to the value
-produced by the term |t|, is written as in Figure \ref{fig:do}.
+denoted by |t|. Term |>>=|, called \emph{bind}, is used to sequence
+LIO computations. Specifically, term |t >>= (\x.t')| takes the result
+produced by term |t| and applies function |\x.t'| to it.  (This
+operator allows computation |t'| to depend on the value produced by
+|t|.)  We sometimes use Haskell’s |do|-notation to write such monadic
+computations. For example, the term |t >>= \x.return (x+1)|, which
+simply adds 1 to the value produced by the term |t|, can be written
+using |do|-notation as shown in Figure~\ref{fig:do}.
 
 %\concept{configurations}
 %The reduction rules for monadic terms deserve some attention.
 %
-%Rather than modeling state, such as the current label, as
-%purely-functional monad layers, we take an operational and
-%more-imperative approach by modeling state as a separate component.
+%%Rather than modeling LIO state, such as the current label, as
+%%purely-functional monad layer, we take an operational and more
+%%imperative approach by modeling state as a separate component in a
+%%configuration.
 %
-Following a more imperative approach, we model the state kept by LIO as a
-separate component in a configuration.
+%%Following a more imperative approach, we model the state kept by LIO as a
+%%separate component in a configuration.
 %in an operational and
 %more-imperative style as a separate component.
-Specifically, a top-level computation is a \emph{configuration} of the form
+A top-level \lio{} computation is a \emph{configuration} of the form
 |conf c t|, where |t| is the monadic term and |c| is the state associated with
-the term. We partially specify the state of \lio as being composed of the
-current label |lcurr|, i.e., |c = (lcurr, ...)| where |...| denotes other parts
-of the state not relevant at this point.
+the term.
+%
+As in~\cite{stefan:lio,stefan:addressing-covert}, we take an
+imperative approach to modeling the LIO state as a separate component
+of the configuration (as opposed to it being part of the term).
+%
+We partially specify the state of \lio to at least contain the
+current label |lcurr|, i.e., |c = (lcurr, ...)|, where |...| denotes
+other parts of the state not relevant at this point.
 %
 Under this definition, a top-level well-typed \lio{} term has the form | D, G
 :- t : LIO tau|, where |D| is the store typing, and |G| is the usual type
@@ -207,7 +217,7 @@ environment.
 \small
 \begin{code}
 Ep  ::= Ep t | fix Ep | if Ep then t else t | Ep lop t | v lop Ep
-E   ::= []| Ep | E >>= t 
+E   ::= []| Ep | E >>= t
 \end{code}
 \begin{mathpar}
 %{\centering ...}
@@ -225,21 +235,26 @@ E   ::= []| Ep | E >>= t
 We use evaluation contexts in the style of Felleisen and Hieb to specify the
 reduction rules for \lio~\cite{felleisen1992revised}.
 %
-Figure~\ref{fig:sos:rules-abr} defines the evaluation contexts |Ep| for pure
-terms and |E| for monadic ones, as well as giving an
-example of a reduction rule for the monadic term |getLabel|, which retrieves
-the current label.
+Figure~\ref{fig:sos:rules-abr} defines the evaluation contexts for pure
+terms (|Ep|) and monadic (|E|) terms for the base \lio.
 %
-
+The definitions are standard; we solely highlight that monadic terms
+are evaluated only at the outermost use of bind (|E >>= t|), as in
+Haskell.  
 %
-The evaluation contexts are standard; we solely highlight that monadic terms are
-evaluated only at the outermost use of bind (|E >>= t|), as in Haskell.  
-Rule \ruleref{getLabel} defines the LIO library function |getLabel|.
+For the base \lio, we also give the reduction rule for the monadic
+term |getLabel|, which simply retrieves the current label.
+%
+As shown later, it is precisely this label that is used to restrict
+the reads/writes performed by the current computation.
+%
+%Rule \ruleref{getLabel} defines the LIO library function |getLabel|.
 %
 %\hl{The following sentence seems out of place, like it's missing a follow-up sentence.}
 %Recall that it is the current label that protects all the values in scope.
 % 
-The rest of the reduction rules can be found in the Appendix~\ref{sec:app:sem}.
+The rest of the reduction rules for the base calculus are straight
+forward and given Appendix~\ref{sec:app:sem}.
 %
 
 
@@ -280,7 +295,7 @@ a branch).
 %the sensitive bit---the current label is used when governing all
 %writes (even those in a branch).
 %
-This coarse-grained labeling approach suffers from a severe restriction: a piece
+However, this coarse-grained labeling approach suffers from a severe restriction: a piece
 of code cannot, for example, %and independently of any secret,
 write the public
 constant |42| to a public channel labeled |low| after observing secret
@@ -330,27 +345,30 @@ Ep   ::= cdots  | label Ep t | unlabel Ep | labelOf Ep
 
  
 %\concept{labeled values}
-To address this limitation, LIO provides |Labeled| values, a means to 
-explicitly associate labels to terms, irrespective of the current label.
+To address this limitation, LIO provides |Labeled| values.
 %
-Intuitively, a term can be %heterogeneously 
-labeled by a label at least as restrictive as |lcurr|. 
+A |Labeled| value is a term that is explicitly protected by a label
+other than the current label.
+%
+%%Intuitively, a term can be %heterogeneously 
+%%labeled by a label at least as restrictive as |lcurr|. 
 %  if we can ``transfer'' protection from the current label
 % to this |Labeled| value (e.g., by ensuring that the protected value
 % cannot be inspected in a (future) less-sensitive context).
 %
-To this end, we extend \lio{} as shown in Figure~\ref{fig:sos:labeled}.
+Figure~\ref{fig:sos:labeled} shows the extension of the base \lio{}
+with |Labeled| values.
 
 %\concept{label}
-The |label| terminal (|label t t|) is used to explicitly label a term.
+The |label| terminal (|label l t|) is used to explicitly label a term.
 %
 As rule \ruleref{label} shows, the function associates the supplied
 label |l| with term |t| by wrapping the term with the |LabeledTCB|
 constructor.
 %
-Importantly, it first asserts that the new label (|l|) used to
-protect |t| is at least as restricting as the current label 
-(|lcurr canFlowTo l|).
+Importantly, it first asserts that the new label (|l|), which will
+used to protect |t|, is at least as restricting as the current label,
+i.e., |lcurr canFlowTo l|.
  
 %\concept{unlabel}
 Dually, terminal |unlabel| unwraps explicitly labeled values.
@@ -363,10 +381,10 @@ is instead protected by the current label, |lcurr| must be at least
 as restricting as |l|.
 %
 To ensure this, the current label is raised from |lcurr| to |lcurr lub
-l|---this captures the fact that the remaining computation might
-depend on |t|. 
+l|, capturing the fact that the remaining computation might depend on
+|t|. 
 %
-Moreover, this rule highlights the fact that the current label always
+Moreover, the rule highlights the fact that the current label always
 ``floats'' above the labels of the values observed by the current
 computation.
 
@@ -382,11 +400,16 @@ This allows code to check the label of a labeled value before deciding
 to unlabel it, and thereby raising the current label.
 %
 It it worth noting that regardless of the current label in the
-configuration, the label of a labeled value can be inspected---hence
-labels are effectively ``public.''\footnote{
-In fact, labels are actually protected by the current label. Since
-code can always observe objects labeled at the current label, this is
-akin to being public.
+configuration, the label of a labeled value can be
+inspected---hence labels are effectively ``public.''\footnote{
+  Since labeled values can be nested, this only applies to
+  the labels of top-level labeled values.
+  %
+  Indeed, even these labels are not public---they are protected by the
+  current label.
+  %
+  However, since code can always observe objects labeled at the
+  current label, this is akin to being public.
 }
 
 %\concept{upgrade}
@@ -425,8 +448,8 @@ creep}~\cite{sabelfeld:language-based-iflow}.
 % Label creep does not compromise security, since the current
 % label still protects all data in lexical scope.
 %
-Despite not compromising security, label creep makes LIO overly
-restrictive for building practical applications. 
+Despite not compromising security, label creep can make LIO overly
+restricting when building practical applications. 
 %---in general, being able to perform computations on
 %sensitive data without raising the current label is crucial to
 %building practical applications.
@@ -466,18 +489,19 @@ If the current label at the point of executing
 restores the current label to |lcurr|, i.e., |toLabeled| provides a
 separate context in which |t| is evaluated.
 %
-(Here, the state merge function $\searrow$ is defined as: |c merge c' @=
+(Here, the state merge function |merge| is defined as: |c merge c' @=
 c|, in the next section we present an alternative definition.)
 %
-Returning the result of evaluating |t| directly (i.e. |conf c (E[toLabeled l t]) --> conf c'' (E[t'])|) 
-would allow for trivial leaks; therefore, |toLabeled| labels |t'| with |l| 
-(|conf c'' (E[label l t']|).
+We note that returning the result of evaluating |t| directly (e.g., as
+|conf c (E[toLabeled l t]) --> conf c'' (E[t'])|) would allow for
+trivial leaks; thus, |toLabeled| labels |t'| with |l| (|conf c''
+(E[label l t']|).
 %
 This effectively states that the result of |t| is protected by label
-|l|, as opposed to the current label at the point |t| completed.
+|l|, as opposed to the current label (|lcurr'|) at the point |t| completed.
 %
 Importantly, this requires that the result not be more sensitive than
-|l|.
+|l|, i.e., |lcurr' canFlowTo l|.
 
 % %% This can be removed!
 % \concept{upgrade with toLabeled}
@@ -509,13 +533,14 @@ Conceptually, flow-insensitive references are simply mutable |Labeled| values.
 Like labeled values, the label of a reference is immutable and serves to
 protect the underlying term.
 %
-(Recall that |upgrade| provides the effect of raising the label of a value by simply
-producing another immutable value.)
+(Recall that |upgrade| for labeled values create another immutable
+value with the new label.)
 %
-The immutable label makes the semantics straightforward: writing a term to a
-reference amounts to ensuring that the reference label is as restrictive as the current
-label (i.e., the reference label must be above the current label);
-reading from a reference taints the current label with the reference label.
+The immutable label makes the semantics straightforward: writing a
+term to a reference amounts to ensuring that the reference label is as
+restrictive as the current label, i.e., the reference label must be
+above the current label; reading from a reference taints the current
+label with the reference label.
 %
 % In this paper we also introduce a flow-sensitive version of
 % references, where the reference label itself is also mutable; the
@@ -525,7 +550,6 @@ reading from a reference taints the current label with the reference label.
 \begin{figure}[t]
 \small
 \begin{code}
-s    ::= I
 v    ::= cdots  | LIORefTCB I l a
 t    ::= cdots  | newRef s t t | writeRef s t t | readRef s t
                 | labelOfR s t
@@ -573,18 +597,19 @@ Ep   ::= cdots  | newRef s Ep t | writeRef s Ep t | readRef s Ep
 \end{figure}
 %\concept{new syntax}
 %
-The syntactic extensions to our calculus are shown in Fig.~\ref{fig:sos:refs}.
+The syntactic extensions to our calculus are shown in Figure~\ref{fig:sos:refs}.
 %
-We use subscript |s| to respectively distinguish flow-insensitive (\textrm{FI}) and
-flow-sensitive (\textrm{FS}) productions (the former are explained in this section, and the
-latter in Section \ref{sec:flow-sensitive}.)
+We use meta-variable |s| to distinguish flow-insensitive (\textrm{FI})
+and flow-sensitive (\textrm{FS}) productions (the latter are described
+in Section \ref{sec:flow-sensitive}).
+%
 %, the semantics for latter are
 %described in Section~\ref{sec:flow-sensitive}.
 %
-In the semantics, we extend configurations to involve a reference (memory) store |mI|: |c = (lcurr, mI, ...)|;
+We also extend configurations to contain a reference (memory)
+store |mI|: |c = (lcurr, mI, ...)|;
 %
-|mI| maps memory addresses---spanned over by metavariable |a|---to |Labeled|
-values.
+|mI| maps memory addresses---spanned over by metavariable |a|---to |Labeled| values.
 %
 %% Second, we add a flow-insensitive reference value (|LIORefTCB I l a|), and
 %% terms for creating (|newRef s|), reading (|readRef s|), modifying (|writeRef
@@ -595,39 +620,50 @@ values.
 %
 When creating a flow-insensitive reference, |newRef I l t| creates a labeled
 value that guards |t| with label |l| (|LabeledTCB l t|) and stores it in the
-memory store at a new, fresh, address |a| (|mI[a mapsto LabeledTCB l t]|).
+memory store at a fresh address |a| (|mI[a mapsto LabeledTCB l t]|).
 %
-Subsequently, the function returns a value of the form |LIORefTCB I l a| (with type
-|LIORef I|) which simply encapsulates the reference label and address where the
+Subsequently, the function returns a value of the form |LIORefTCB I l
+a| which simply encapsulates the reference label and address where the
 term is stored.
 %
-Rule \ruleref{readRef-|I|} specifies the semantics for reading a
+We remark that since any references created within a |toLabeled|
+block may outlive the |toLabeled| block computation, 
+%
+the merge function used in rule~\ruleref{toLabeled} must also account
+for this, i.e.,
+|(lcurr, mI, ...) merge (lcurr', mI', ...) = (lcurr, mI', ...)|.
+%
+%% This function restores the current label to that of the outer
+%% configuration, but retains the latest memory store.
+ 
+Rule \ruleref{readRef-|I|} gives the semantics for reading a
 labeled reference; reading the term stored at address |a| simply
 amounts to unlabeling the value |m(a)| stored at the underlying
 address (|unlabel mI(a)|).
-%
+ 
 Terminal |writeRef I| is used to update the memory store with a new labeled term
 |t| for the reference at location |a|.
 %
-Note that |writeRef I| \emph{leaves the label of the reference intact}, i.e., the
-label of a flow-insensitive reference is never changed, but in turn requires
-that the current label not be any more sensitive than the reference label
-(|lcurr canFlowTo l|).
+Note that |writeRef I| \emph{leaves the label of the reference
+intact}, i.e., the label of a flow-insensitive reference is never
+changed, but, in turn, requires the current label to be below the
+reference label when performin the write (|lcurr canFlowTo l|).
 %
-Consequently, |labelOfR I| can always be used to inspect the label of such a
-reference.
+In addition to keeping the semantics simple, this has the additional
+benefit of allowing code to always inspect the label of a reference
+(with |labelOfR I|).
 %
 
 %\concept{updated |merge| }
-We finally remark that any references created in a |toLabeled| block might 
-outlive the |toLabeled| block computation.
-%
-Hence, we update the merge function used in rule~\ruleref{toLabeled} to
-accommodate for references as follows:
-|(lcurr, mI, ...) merge (lcurr', mI', ...) = (lcurr, mI', ...)|.
-%
-In other words, the merge function restores the current label to that of the
-outer configuration, but retains the latest memory store.
+%% We lastly remark that any references created within a |toLabeled|
+%% block may outlive the |toLabeled| block computation.
+%% %
+%% Hence, we update the merge function used in rule~\ruleref{toLabeled} to
+%% accommodate for references as follows:
+%% |(lcurr, mI, ...) merge (lcurr', mI', ...) = (lcurr, mI', ...)|.
+%% %
+%% In other words, the merge function restores the current label to that of the
+%% outer configuration, but retains the latest memory store.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
