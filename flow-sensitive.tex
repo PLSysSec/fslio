@@ -13,19 +13,27 @@ reference be labeled.
 Equally important is to be able to read the log at any point in the program to,
 for instance, save it to a file.
 %
-Although labeling the reference with the top element in the
-security lattice (i.e., $\top$) would always allow writes to the log, and |toLabeled| can be
-used to write the log to a file, this is unsatisfactory: it assumes the
-existence of a top element, which in practical IFC systems such as
-Hails~\cite{giffin:hails}, does not exist.
+Although labeling the reference with the top element in the security
+lattice ($\top$) would always allow writes to the log, and |toLabeled|
+can be used to read the log and then write it to a file, this is
+unsatisfactory: it assumes the existence of a top element, which in
+some practical IFC systems, including HiStar~\cite{zeldovich:histar}
+and Hails~\cite{giffin:hails}, does not exist.
 %
-Additionally, it almost always over-approximates the sensitivity of the
-log. For instance, suppose that the computation never reads sensitive data, yet wishes to
-read the log content to, e.g., format it, then it needs to taint itself to $\top$!
+Moreover, it almost always over-approximates the sensitivity of the
+log.
 %
-It is clear that even in the case of simple scenarios, having references with
-mutable labels that vary according to the sensitivity of what is stored in the
-reference is useful.
+Hence, for example, a computation that never reads sensitive data, yet
+wishes to read the log content as to send error message to a user over
+the network (e.g., as done in a web application) cannot do so---LIO
+prevents the computation from read the log, thereby tainting itself
+$\top$, and subsequently writing to the network.\footnote{
+  Here, as in most IFC systems, we assume the network is public.
+}
+%
+It is clear that even for such a simple use case, having references
+with labels that vary according to the sensitivity of what is stored
+in the reference is useful.
 
 %\concept{naive approach doesn't work}
 % Ale: I don't like implicit since it might be associated to implicit flows
@@ -33,26 +41,18 @@ However, naively implementing flow-sensitive references can effectively
 introduce label changes as a covert channel. 
 %similar to other language-based system to LIO.
 %
-Suppose that we allow for the label of a reference to simply be raised to the
-current label at the time a |writeRef space| is performed.
+Suppose that we allow for the label of a reference to be raised to the
+current label at the time of the |writeRef space|.
 %
-So, for example, if the label of our log reference is |low| and the computation
-has read sensitive data such that the current label is |H|, now writing to the
-log raises the label of the reference to |H|.
+So, for example, if the label of our log reference is |low| and the
+computation has read sensitive data (such that the current label is
+|H|), subsequently writing to the log will raises the label of the
+reference to |H|.
 %
-As identified by other language-based IFC systems
-(e.g. \cite{Russo:2010,Austin:Flanagan:PLAS09,Austin:Flanagan:PLAS10}),
-this approach is not safe; consider the code in
-Figure~\ref{fig:fs-attack}. \Red{The function |when| acts like an |if|
-  statement without the |else| branch, and |($)| is a lightweight
-  notation for function application (|f $ x| is the same as |f
-  (x)|) used to reduce the number of parentheses in the expression.}
-%While this approach was clearly shown to be unsafe, due to implicit-flows, in
-%language-based systems~\tocite{}, LIO eliminates the implicit-flows problem by
-%construction and thus raises the question: \emph{is this approach safe in LIO?}
-%
-%Unfortunately, the answer to this question is \emph{no} 
-%
+Unfortunately, while this may appear safe, as previously show
+in~\cite{Austin:Flanagan:PLAS09,Russo:2010, Austin:Flanagan:PLAS10},
+the approach is unsound.
+
 \begin{figure}[t]
 \small
 \begin{code}
@@ -60,54 +60,58 @@ leakRef :: LIORefTCB space Bool -> LIO Bool
 leakRef href = do
   tmp   <- newRef space low ()
   toLabeled high $ do  h <- readRef space href
-                       when h (writeRef space tmp ())
-  return (labelOfR space tmp == high)
+                       when h $ writeRef space tmp ()
+  return $ labelOfR space tmp == high
 \end{code}
 \cut{$}
 \caption{Attack in LIO with naive flow-sensitive reference extension. We omit
 subscripts on reference terminals for clarity.  \label{fig:fs-attack}}
 \end{figure}
 
-%\concept{can leak into ref label}
-%\noindent
+The code fragment in Figure~\ref{fig:fs-attack} defined a function,
+|leakRef|, that can be used to leak the contents of a reference by
+leveraging the newly introduced covert channel: the label of references.
 %
-In this attack, |leakRef| can be used to leak the value stored in the secret reference
-|href|, while keeping the current label |low|, by leveraging a new
-covert channel: the label of references.
+(In this and future examples we use function |when| to denote an |if|
+statement without the |else| branch and |($)| as lightweight notation
+for function application, i.e., |f $ x| is the same as |f (x)|.)
 %
-Concretely, |leakRef| creates a public reference |tmp| and, within the
-|toLabeled| block, which is used to ensure that the current label remains
-|low|, the label of this reference is changed to |H| if the secret stored in
+To illustrate an attack, suppose that the current label is public
+(|low|) and |leakRef| is called with a secret (|high|) reference
+(|href|).
+%
+|leakRef| first creates a public reference |tmp| and, then, within the
+|toLabeled| block---which is used to ensure that the current label remains
+|low|---the label of this reference is changed to |H| if the secret stored in
 |href| is |true|, and left intact (|L|) if the secret is |false|.
 %
-Then, simply inspecting the label of the reference reveals the value stored in
-|href|!
-%
-We note that the use of |labelOfR space| is not fundamental to this attack; in
-Appendix~\ref{sec:app:fs-attack2} we show an alternative version of |leakRef|
-which does not rely on label inspection and follows the structure of the attack
-given in Section~\ref{sec:intro}.
+Finally, by simply inspecting the label of the reference the value stored in
+|href| is revealed.\footnote{%
+The use of |labelOfR space| is not fundamental to this attack and in
+Appendix~\ref{sec:app:fs-attack2} we show an alternative attack that
+does not rely on such label inspection.
+}
 
 %\concept{KEY INSIGHT:}
-Fundamentally, the label protecting the \emph{label} of an object (e.g.,
-labeled values and references) is the current label |lcurr| at the time of
-creation.
+Fundamentally, the label protecting the \emph{label} of an object,
+such as a reference or labeled value, is the current label |lcurr| at
+the time of creation.
 %
 Hence, to modify the label of the object within some context (e.g., |toLabeled|
 block) wherein the current label is |lcurr'|, \emph{it must be the case that} |lcurr'
 canFlowTo lcurr|, i.e., we must be able to write data at sensitivity level
-|lcurr'| into an entity (the label) labeled |lcurr|.
+|lcurr'| into an entity---the label of the object---labeled |lcurr|.
 %
-This restriction is especially important if we can restore the current label
-from |lcurr'|, where |lcurr canFlowToStrict lcurr'|,  
-to |lcurr| and subsequently observe the leak within the program itself.
+This restriction is especially important if |lcurr canFlowToStrict
+lcurr'| and we can restore the current label from |lcurr'| to |lcurr|, 
+since a leak would then be observable within the program itself.
 %
 In the case where the label of the object is immutable, as is the case for
-labeled values and flow-insensitive references, this is not a concern: even if
+flow-insensitive references (and labeled valued), this is not a concern: even if
 the current label is raised to |lcurr'| and then restored to |lcurr|, we do not
-learn any information more sensitive than |lcurr| (the label of the label at the
-time of creation) by inspecting the label of the reference: the label has not
-changed!
+learn any information more sensitive than |lcurr|---the label of the label at the
+time of creation---by inspecting the label of the reference (or
+value): the label has not changed!
 %
 
 \begin{figure} % semantics
@@ -190,12 +194,11 @@ on the label of the reference at the time of creation, |lcurr|.
 In turn, when changing the label of the reference, we must ensure that no data
 from the context at the time of the change, whose label is |lcurr'|, is leaked
 into the label of the reference by ensuring that |lcurr' canFlowTo lcurr|,
-i.e., we can write data labeled |lcurr'| into the label labeled |lcurr|.
-%
+i.e., we can write data labeled |lcurr'| into the label that is labeled |lcurr|.
+ 
 Formally, we extend the \lio{} syntax and reduction rules as shown in
 Figure~\ref{fig:sos:fs}; we call this calculus \liofs{}.
-
-%\concept{\liofs{} semantics}
+%
 When creating a flow-sensitive reference, |newRef S l t| creates a labeled
 value that guards |t| with label |l| (|LabeledTCB l t|).
 %
@@ -220,6 +223,7 @@ i.e., we raise the current label to the join of the current label and the label
 on the label.
 
 
+\Red{HERE}
 The rules for reading and writing to flow-sensitive references are mostly
 standard; |readRef S| raises the current label to the label of the reference
 (which is above the label on the label) and |writeRef S| ensures that the
