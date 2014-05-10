@@ -147,6 +147,7 @@ Ep   ::= cdots  | upgradeR Ep t | upgradeR v Ep
 { |c = (lcurr, mI mS)|\\
   |mS(a) = LabeledTCB l (LabeledTCB l' t')| \\
   |lcurr canFlowTo (l lub l')|\\
+  \Red{|lcurr lub l canFlowTo l'|}\\
   |mS' = mS[a mapsto LabeledTCB l (LabeledTCB l' t)]|\\
   |c' = (lcurr, mI, mS')|
 }
