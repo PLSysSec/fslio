@@ -63,13 +63,16 @@ in general, the partial order |canFlowTo| (label check) is used when
 governing the allowed flows.
 %
 
-In this work we focus on the Haskell/LIO IFC system~\cite{stefan:lio,
-stefan:addressing-covert}; though, we believe that our results also
-generalize to Breeze~\cite{Breeze}.
+In this work we focus on coarse-grained floating-label systems, in
+particular, the Haskell/LIO IFC system~\cite{stefan:lio,
+stefan:addressing-covert}. 
 %
-LIO bring ideas from the IFC Operating Systems---notably,
-HiStar~\cite{zeldovich:histar}, Asbestos~\cite{Efstathopoulos:2005},
-and Flume~\cite{krohn:flume}---language-based setting.
+However, our results generalize to similar language-based systems
+(e.g.,Breeze~\cite{Breeze} and Aeolus) and IFC Operating Systems.
+(e.g., HiStar~\cite{zeldovich:histar},
+Asbestos~\cite{Efstathopoulos:2005}, and Flume~\cite{krohn:flume}).
+%
+LIO bring ideas from the IFC OSes into language-based setting.
 %
 In particular, LIO take a OS-like coarse-grained approach by
 associating a single floating-label with a computation (and everything
