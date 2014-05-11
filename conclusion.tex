@@ -6,26 +6,27 @@ We presented an extension of LIO with flow-sensitive references.
 As in previous flow-sensitive work, our approach allows secure label
 changes using an |upgrade| operation, as a way to boost the
 permissiveness of the IFC system, i.e., |upgrade| can be used to
-allows for the encoding of programs that would otherwise be rejected.
+allow for the encoding of programs that would otherwise be rejected by
+the IFC monitor.
 %
 Since manually inserting |upgrade| operations can be cumbersome, we
 extend the calculus to automatically insert upgrades whenever the
 current label is raised, while still giving programmers fine-grained
 control over which references untrusted code can upgrade.
 %
-Importantly, our approach naturally extends to a concurrent setting.
+Importantly, our approach extends to a concurrent setting.
 %
 To the best of our knowledge, this is the first work to address the
 problem of flow-sensitive label changes for a concurrent, purely
 dynamic IFC language.
 %
-A key insight of this work was to show that, by leveraging nested
+A further insight of this work was to show that, by leveraging nested
 labeled objects, both the sequential and concurrent calculi with
-flow-sensitive references can be encoded in terms of flow-insensitive
-concepts.
+flow-sensitive references can be encoded using only flow-insensitive
+constructs.
 %
-As a consequence, our soundness proof was reduced to an invocation of
-previous results for LIO.
+As a consequence, our soundness proof can be reduced to an invocation
+of previous results for LIO.
 
 % Local Variables:
 % TeX-master: "main.tex"

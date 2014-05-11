@@ -2,7 +2,7 @@
 \section{Semantics for the base calculus}
 \label{sec:app:sem}
 
-\begin{figure} % sos:rules
+\begin{figure}[b] % sos:rules
 \small
 \begin{mathpar}
 \inferrule[app]
@@ -73,9 +73,9 @@ leakRef href = do
   lref  <- newRef space low true
   tmp   <- newRef space low false
   toLabeled high $ do  h <- readRef space href
-                       when h (writeRef space tmp true)
+                       when h $ writeRef space tmp true
   toLabeled high $ do  t <- readRef space tmp
-                       when (not t) (writeRef space lref false)
+                       when (not t) $ writeRef space lref false
   readRef space lref
 \end{code}
 \caption{An attack in LIO with naive flow-sensitive reference
@@ -87,7 +87,7 @@ Figure~\ref{fig:fs-attack2} can be used to leak the value stores in a |high|
 reference |href|, while keeping the current label |low|, without using |labelOfR space|.
 %
 Internally, the value is leaked into public reference |lref| by leveraging the
-fact that based on a secret value the label of a public reference (|tmp|) can
+fact that, based on a secret value, the label of a public reference (|tmp|) can
 be changed (or not).
 %
 In the first |toLabeled| block, if |h==true|, then the label of |tmp| is raised

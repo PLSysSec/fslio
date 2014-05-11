@@ -138,6 +138,27 @@ raised. Using testing, Birgisson et al.~\citep{Arnar2012} automatically insert
 We further extend this concept of (automatic) \textbf{upgrade}s to a concurrent setting.
 
 
+The Operating System IFC community has also treated the mutable label
+problem in the presence of purely dynamic monitors.
+%
+Specifically, modern IFC OSes such aas
+Asbestos~\cite{Efstathopoulos:2005}, HiStar~\cite{zeldovich:histar},
+and Flume~\cite{hkrohn:flume} distinguish between subjects
+(processes), and objects ( files, sockets, etc.) such that the
+security labels for objects are immutable, while subject labels change
+according to the sensitivity of data being read.
+%
+As in language-based IFC systems, changing the label of subjects and
+object can become a covert channel, if not handled appropriated.
+%
+Hence, HiStar and Flume require that the label of a subject be done
+done explicitly by the subject code.
+%
+Asbestos, on the other hand, allowed (unsafe) changes to labels as the result
+of receiving messages under specific and safe conditions.
+%
+Our work extends on these concepts to allow for changes in object
+labels.
 
 %% OS-like work for the browser 
 Coarse-grained IFC enforcements, similar to the ones found in IFC OS
