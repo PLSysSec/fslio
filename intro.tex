@@ -61,7 +61,107 @@ such that |low canFlowTo high| and |high cantFlowTo low|;\footnote{
 %
 in general, the partial order |canFlowTo| (label check) is used when
 governing the allowed flows.
+ 
+One of the facets of IFC analysis lies in the treatment of
+object labels~\cite{Hunt:2006}.
 %
+Specifically, some IFC systems (e.g.,~\cite{Breeze, Aeolus, stefan:lio,
+stefan:addressing-covert, zeldovich:histar, Efstathopoulos:2005, krohn:flume})
+treat labels on objects as \emph{immutable} and do not allow for changes over
+the lifetime of the program, i.e., labels of objects are \emph{flow-insensitive}.
+%
+In contrast, other systems (e.g.,~\cite{jif, FlowCaml,
+Zdancewic02programminglanguages, Austin:Flanagan:PLAS09,
+Austin:Flanagan:PLAS10}) are \emph{flow-sensitive}, i.e., they allow object
+labels to change according to the sensitive of the data stored in the object in
+certain conditoins.
+%
+In general, flow-sensitive systems are more permissive, i.e., they allow
+programs that may be rejected by flow-insensitive monitors.
+ 
+Consider, for instance, a web application that writes to a labeled
+log while servicing user requests.
+%
+If the label of the log is |low|, a flow-insensitive IFC monitor would disallow
+writing any sensitive data (e.g., error messages containing user-supplied data)
+to the log, since this would constitute a leak.
+%
+However, in a flow-sensitive system, the label of the log can change (to
+|high|), accomodate the kinds of data being written to the log.
+%
+For many applications, allowing labels to change in such a way is very
+desireable---it alleviates the burden of having to, a priori, determine the
+precise labels of objects.
+
+\begin{wrapfigure}{r}{0.5\columnwidth}
+\vspace{-15pt}
+  \small
+\begin{code}
+l    := true
+tmp  := false
+if h then tmp := true
+if not tmp then l := false
+\end{code}
+\vspace{-15pt}
+%%|l := 1 ; t := 0 ;| \\
+%%|if h then t := 1;| \\
+%%|if t /= 1 then l := 0| \\
+%%|publish(l)| 
+\caption{\small\label{fig:fsattackintro} Flow-sensitive attack}
+\end{wrapfigure}
+%
+Unfortunately, naively introducing flow-sensitive objects to a purely dynamic
+IFC system can turn label changes into a covert channel~\cite{Russo:2010}. 
+%
+Consider the code fragment of Figure~\ref{fig:fsattackintro}
+where references |l| and |h| are respectively labeled |low| and
+|high|.
+%
+By naively allowing arbitrary label changes---even if the new label is
+more sensitive---we can leak the contents of |h| into |l|.
+%
+In particular, suppose that the temporary variable |tmp| is initially
+labeled |low|.
+%
+If the value stored in |h| is |true|, then in the first conditional we
+assign |true| into |tmp| and raise its label to |high|, reflecting the
+fact that the branch condition depends on sensitive data.
+%
+Since the value stored in |tmp| is |true|, the branch condition for
+the second conditional is |false| and thus the value and label of |l|
+is left intact, i.e., |true| at |low|.
+%
+However, if the value of |h| is |false|, then the value and label of
+|tmp| is left intact---the code does not perform the (conditional)
+assignment.
+%
+Thus, the |l := false| assignment is performed; importantly, however,
+the label of |l| remains |low|, since the label of the branch
+condition is also |low|.
+%
+Note that in both cases the label of |l| remains |low|, but the value
+stored in the reference is the same as the secret stored in |h|.
+%
+For systems, such as LIO and Breeze, which allow labels to be inspected, the
+attack can be further simplified by simply checking the label of |tmp| after
+the assignment---if the secret is true then the label will be |high|, otherwise
+it will be |low|; hence why the label change is considered a covert channel.
+
+This attack is not new, and, to ensure that the covert channel is
+not introduced when adding flow-sensitive reference in such a way,
+three main approaches have been proposed.  First, the monitor can
+incorporate static information to ensure that such leaks are not
+possible~\cite{Russo:2010,stefan:lio,Breeze}\Red{Why is LIO and Breeze
+cited here?} \Red{Ale: I don't like ``not possible'', can you expand
+on what the static analysis is doing}.  Second, the IFC monitor can
+forbid label changes according to the program counter label (which is
+similar to the current label); for instance, the \emph{no-sensitive
+upgrades} policy disallows raising the label of a public reference in
+a sensitive context, i.e., when the branch condition is
+|high|~\cite{Zdancewic02programminglanguages,Austin:Flanagan:PLAS09}.
+And, third, the monitor can disallow branches that depend on certain
+variables, for which the label was mutated, as done by the
+\emph{permissive upgrades} policy~\cite{Austin:Flanagan:PLAS10}.
 
 In this work we focus on coarse-grained floating-label systems, in
 particular, the Haskell/LIO IFC system~\cite{stefan:lio,
@@ -100,26 +200,26 @@ This allows programs to inspect the label of object without tainting
 the context---a useful feature when building practical
 systems~\cite{giffin:hails, Breeze}.
 
-Unfortunately, this also makes LIO less permissive than
-\emph{flow-sensitive} systems that allow the label of references to
-change throughout the execution of the program. 
-%
-Consider, for instance, a web application that writes to a labeled
-log while servicing user requests.
-%
-If the label of the log is |low|, then, once the computation reads
-some sensitive data, raising the current label to |high|, it will no
-longer be able to log any information---the IFC monitor prevents
-writing to entities less sensitive than the current label.
-%
-Yet, labeling the log |high| a-priori is similarly
-unsatisfactory---e.g., it prevents a computation from writing the log
-to the user, over the public network, even if the log is solely
-composed of public data.
-%
-It is clear that, a more permissive system, i.e., a flow-sensitive
-system, would allow the label of the log to change though the lifetime
-of the application and according to the data the computation isreading.
+%% Unfortunately, this also makes LIO less permissive than
+%% \emph{flow-sensitive} systems that allow the label of references to
+%% change throughout the execution of the program. 
+%% %
+%% Consider, for instance, a web application that writes to a labeled
+%% log while servicing user requests.
+%% %
+%% If the label of the log is |low|, then, once the computation reads
+%% some sensitive data, raising the current label to |high|, it will no
+%% longer be able to log any information---the IFC monitor prevents
+%% writing to entities less sensitive than the current label.
+%% %
+%% Yet, labeling the log |high| a-priori is similarly
+%% unsatisfactory---e.g., it prevents a computation from writing the log
+%% to the user, over the public network, even if the log is solely
+%% composed of public data.
+%% %
+%% It is clear that, a more permissive system, i.e., a flow-sensitive
+%% system, would allow the label of the log to change though the lifetime
+%% of the application and according to the data the computation isreading.
 
 
 
@@ -156,62 +256,62 @@ of the application and according to the data the computation isreading.
 %execution~\cite{BonelliCM05}. 
 
 
-%% Problems with Flow-sensitivity and purely dynamic IFC
-\begin{wrapfigure}{r}{0.5\columnwidth}
-\vspace{-15pt}
-  \small
-\begin{code}
-l    := true
-tmp  := false
-if deref h then tmp := true
-if not (deref tmp) then l := false
-\end{code}
-\vspace{-15pt}
-%%|l := 1 ; t := 0 ;| \\
-%%|if h then t := 1;| \\
-%%|if t /= 1 then l := 0| \\
-%%|publish(l)| 
-\caption{\small\label{fig:fsattackintro} Flow-sensitive attack}
-\end{wrapfigure}
-%
-Unfortunately, naively introducing flow-sensitive objects to a purely
-dynamic IFC system, such as LIO, can turn label changes into a covert
-channel~\cite{Russo:2010}. 
-%
-Consider the ML-like code fragment of Figure~\ref{fig:fsattackintro}
-where references |l| and |h| are respectively labeled |low| and
-|high|.
-%
-By naively allowing arbitrary label changes---even if the new label is
-more sensitive---we can leak the contents of |h| into |l|.
-%
-In particular, suppose that the temporary variable |tmp| is initially
-labeled |low|.
-%
-If the value stored in |h| is |true|, then in the first conditional we
-assign |true| into |tmp| and raise its label to |high|, reflecting the
-fact that the branch condition depends on sensitive data.
-%
-Since the value stored in |tmp| is |true|, the branch condition for
-the second conditional is |false| and thus the value and label of |l|
-is left intact, i.e., |true| at |low|.
-%
-However, if the value of |h| is |false|, then the value and label of
-|tmp| is left intact---the code does not perform the (conditional)
-assignment.
-%
-Thus, the |l := false| assignment is performed; importantly, however,
-the label of |l| remains |low|, since the label of the branch
-condition is also |low|.
-%
-Note that in both cases the label of |l| remains |low|, but the value
-stored in the reference is the same as the secret stored in |h|.
-%
-For systems, such as LIO and Breeze, that allow label inspection the
-attack can be further simplified by simply checking the label of |tmp|
-after the assignment---if the secret is true then the label will be
-|high|, otherwise it will be |low|; hence why the label change is
-considered a covert channel.
+%% %% Problems with Flow-sensitivity and purely dynamic IFC
+%% \begin{wrapfigure}{r}{0.5\columnwidth}
+%% \vspace{-15pt}
+%%   \small
+%% \begin{code}
+%% l    := true
+%% tmp  := false
+%% if h then tmp := true
+%% if not tmp then l := false
+%% \end{code}
+%% \vspace{-15pt}
+%% %%|l := 1 ; t := 0 ;| \\
+%% %%|if h then t := 1;| \\
+%% %%|if t /= 1 then l := 0| \\
+%% %%|publish(l)| 
+%% \caption{\small\label{fig:fsattackintro} Flow-sensitive attack}
+%% \end{wrapfigure}
+%% %
+%% Unfortunately, naively introducing flow-sensitive objects to a purely
+%% dynamic IFC system, such as LIO, can turn label changes into a covert
+%% channel~\cite{Russo:2010}. 
+%% %
+%% Consider the code fragment of Figure~\ref{fig:fsattackintro}
+%% where references |l| and |h| are respectively labeled |low| and
+%% |high|.
+%% %
+%% By naively allowing arbitrary label changes---even if the new label is
+%% more sensitive---we can leak the contents of |h| into |l|.
+%% %
+%% In particular, suppose that the temporary variable |tmp| is initially
+%% labeled |low|.
+%% %
+%% If the value stored in |h| is |true|, then in the first conditional we
+%% assign |true| into |tmp| and raise its label to |high|, reflecting the
+%% fact that the branch condition depends on sensitive data.
+%% %
+%% Since the value stored in |tmp| is |true|, the branch condition for
+%% the second conditional is |false| and thus the value and label of |l|
+%% is left intact, i.e., |true| at |low|.
+%% %
+%% However, if the value of |h| is |false|, then the value and label of
+%% |tmp| is left intact---the code does not perform the (conditional)
+%% assignment.
+%% %
+%% Thus, the |l := false| assignment is performed; importantly, however,
+%% the label of |l| remains |low|, since the label of the branch
+%% condition is also |low|.
+%% %
+%% Note that in both cases the label of |l| remains |low|, but the value
+%% stored in the reference is the same as the secret stored in |h|.
+%% %
+%% For systems, such as LIO and Breeze, that allow label inspection the
+%% attack can be further simplified by simply checking the label of |tmp|
+%% after the assignment---if the secret is true then the label will be
+%% |high|, otherwise it will be |low|; hence why the label change is
+%% considered a covert channel.
 
 %% %
 %% Here, variables |l| and |h| do not change their
@@ -234,22 +334,22 @@ considered a covert channel.
 %% |publish(l)|, which produces the public event |0|. As a result, the monitor 
 %% missed to catch the information leak about |h|.  
 
-This attack is not new, and, to ensure that the covert channel is
-not introduced when adding flow-sensitive reference in such a way,
-three main approaches have been proposed.  First, the monitor can
-incorporate static information to ensure that such leaks are not
-possible~\cite{Russo:2010,stefan:lio,Breeze}\Red{Why is LIO and Breeze
-cited here?} \Red{Ale: I don't like ``not possible'', can you expand
-on what the static analysis is doing}.  Second, the IFC monitor can
-forbid label changes according to the program counter label (which is
-similar to the current label); for instance, the \emph{no-sensitive
-upgrades} policy disallows raising the label of a public reference in
-a sensitive context, i.e., when the branch condition is
-|high|~\cite{Zdancewic02programminglanguages,Austin:Flanagan:PLAS09}.
-And, third, the monitor can disallow branches that depend on certain
-variables, for which the label was mutated, as done by the
-\emph{permissive upgrades} policy~\cite{Austin:Flanagan:PLAS10}.
-%All of these solutions are proposed for sequential programming languages.
+%% This attack is not new, and, to ensure that the covert channel is
+%% not introduced when adding flow-sensitive reference in such a way,
+%% three main approaches have been proposed.  First, the monitor can
+%% incorporate static information to ensure that such leaks are not
+%% possible~\cite{Russo:2010,stefan:lio,Breeze}\Red{Why is LIO and Breeze
+%% cited here?} \Red{Ale: I don't like ``not possible'', can you expand
+%% on what the static analysis is doing}.  Second, the IFC monitor can
+%% forbid label changes according to the program counter label (which is
+%% similar to the current label); for instance, the \emph{no-sensitive
+%% upgrades} policy disallows raising the label of a public reference in
+%% a sensitive context, i.e., when the branch condition is
+%% |high|~\cite{Zdancewic02programminglanguages,Austin:Flanagan:PLAS09}.
+%% And, third, the monitor can disallow branches that depend on certain
+%% variables, for which the label was mutated, as done by the
+%% \emph{permissive upgrades} policy~\cite{Austin:Flanagan:PLAS10}.
+%% %All of these solutions are proposed for sequential programming languages.
 
 
 %% %% Operating system community
