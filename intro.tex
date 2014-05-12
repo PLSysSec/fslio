@@ -29,7 +29,8 @@ guaranteed to preserve data confidentiality and integrity if it
 satisfies non-interference.
 %
 Indeed, this appealing guarantee of IFC has recently led to significant
-research and development efforts that use IFC to secure web
+research and development efforts %that use IFC 
+to secure web
 applications (e.g.,~\cite{DeGroef:2012:FWB:2382196.2382275,
 giffin:hails, yang:2013:towards, Hedin13}) and mobile platforms
 (e.g.,~\cite{Enck:2010,android:esorics13}), where untrusted code is
@@ -40,9 +41,10 @@ In particular, language-based systems that employ dynamic execution
 monitors to enforce IFC have become popular~\cite{Hedin2011}.
 %
 This is due, in part, to the permissiveness of dynamic techniques
-(when compared to static approaches~\cite{Sabelfeld:Russo:PSI09}), the
-ability to specify fine-grained policies, and the ability to handle
-complex language features like dynamic code evaluation---a feature
+(when compared to static approaches~\cite{Sabelfeld:Russo:PSI09}), 
+%the ability to specify fine-grained policies, 
+%Ale: Type-system handles fine-grained policies too 
+ and the ability to handle complex language features like dynamic code evaluation---a feature
 common to many scripting languages.
  
 To ensure data confidentiality and integrity, these dynamic IFC
@@ -50,7 +52,7 @@ systems associate \emph{security labels} with data (e.g., by mapping
 variables to labels) and monitor where such data can
 flow~\cite{myers:dlm, Stefan:2011}.  
 %
-In this paper we use the labels |high| and |low|, to respectively
+In this paper, we use the labels |high| and |low|, to respectively
 denote secret and public data, and ensure that information cannot flow
 form a secret entity into a public one, i.e., the labels are ordered
 such that |low canFlowTo high| and |high cantFlowTo low|.
@@ -70,8 +72,9 @@ stefan:addressing-covert, zeldovich:histar, Efstathopoulos:2005, krohn:flume})
 treat labels on objects as \emph{immutable} and do not allow for changes over
 the lifetime of the program, i.e., labels of objects are \emph{flow-insensitive}.
 %
-In contrast, other systems (e.g.,~\cite{jif, FlowCaml,
-Zdancewic02programminglanguages, Austin:Flanagan:PLAS09,
+% In contrast, other systems (e.g.,~\cite{jif, FlowCaml,
+% Ale: FlowCaml and JIF are flow-insensitive (they have label inference tough)
+In contrast, other systems (e.g.,~\cite{Zdancewic02programminglanguages, Austin:Flanagan:PLAS09,
 Austin:Flanagan:PLAS10}) are \emph{flow-sensitive}, i.e., they allow object
 labels to change, in certain conditions, according to the sensitivity of the
 data that is stored in the object.
@@ -154,8 +157,7 @@ several solutions have already been proposed.
 These solutions fall into roughly three categories.
 %
 First, the IFC monitor can incorporate static information to ensure that such
-leaks are disallowed~\cite{Russo:2010,stefan:lio,Breeze}.
-\Red{Why are LIO and Breeze cited here?}
+leaks are disallowed~\cite{Russo:2010}.
 %
 Second, the IFC monitor can forbid certain label changes, depending on the
 context (e.g., the program counter (\emph{pc})
@@ -170,10 +172,11 @@ And, third, the monitor can disallow branches that depend on certain variables,
 for which the label was mutated, as done by the \emph{permissive upgrades}
 policy~\cite{Austin:Flanagan:PLAS10}.
 
-In this paper, we take a fresh perspective on the no-sensitive upgrades
-discipline in the context of coarse-grained floating-label systems, in
-particular, the Haskell/LIO IFC system~\cite{stefan:lio,
-stefan:addressing-covert}. 
+In this paper, we take a fresh perspective on flow-sensitivity %the no-sensitive upgrades
+% discipline 
+in the context of coarse-grained floating-label systems, in
+particular, the LIO IFC system~\cite{stefan:lio,
+stefan:addressing-covert}. % Ale: remove Haskell  
 %
 LIO brings ideas from IFC Operating Systems---notably,
 HiStar~\cite{zeldovich:histar}, Asbestos~\cite{Efstathopoulos:2005}, and
@@ -223,7 +226,7 @@ rejected by the IFC monitor.
 To reduce the programmer's burden of introducing upgrade annotations, our
 calculus provides a means for automatically upgrading references for which the
 computation is about to ``lose'' write access, i.e., before tainting the
-computation by raising the current label we first upgrade all the references
+computation by raising the current label, we first upgrade all the references
 that are less sensitive than this label.
 %
 While secure, this feature facilitates a form of \emph{label creep},
@@ -237,9 +240,9 @@ disallowing access to undeclared ones.
 By taking a fresh perspective on flow-sensitivity, we also show that the {\nsu}
 policy and our upgrade operation can be encoded using existing flow-insensitive
 constructs---the key insight is to explicitly model labels on labels with
-nested labeled references.
+\emph{nested labeled references}.
 %
-In the context of LIO this has the added benefit of allowing us to prove
+In the context of LIO, this encoding has the added benefit of allowing us to prove
 non-interference by simply invoking previous results.
 %
 More interestingly, our sequential semantics for LIO with flow-sensitive
@@ -249,7 +252,7 @@ The contributions of this paper are as follows:
 \begin{itemize}
 
 \item We extend LIO to incorporate flow-sensitive objects, with a focus on
-references. This not only increases LIO's permissiveness, but also provides a
+references. This extension not only increases LIO's permissiveness, but also provides a
 means for safely combining flow-insensitive and flow-sensitive references.
 
 \item We present a uniform mechanism for treating flow-insensitive and
