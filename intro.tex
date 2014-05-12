@@ -141,14 +141,14 @@ branch condition is also |low|.
 Note that in both cases the label of |l| stays |low|, but the value of |l| is
 the same as the secret |h|.
 %
-In systems, such as LIO and Breeze, which allow labels to be inspected, this
+In systems such as LIO and Breeze, which allow labels to be inspected, this
 attack can be further simplified by simply checking the label of |tmp| after
 the first assignment---if the secret is true then the label will be |high|,
 otherwise it will be |low| (hence why the \emph{label change} is considered a
 covert channel).
 
 This attack is not new, and, to ensure that the covert channel is
-not introduced when adding flow-sensitive reference in such a way,
+not introduced when adding flow-sensitive references in such a way,
 several solutions have already been proposed. 
 %
 These solutions fall into roughly three categories.
@@ -179,7 +179,7 @@ LIO brings ideas from IFC Operating Systems---notably,
 HiStar~\cite{zeldovich:histar}, Asbestos~\cite{Efstathopoulos:2005}, and
 Flume~\cite{krohn:flume}---into a language-based setting.
 %
-In particular, LIO takes a OS-like coarse-grained approach by associating a
+In particular, LIO takes an OS-like coarse-grained approach by associating a
 single ``current'' floating-label with a computation (and everything in scope),
 instead of heterogeneously labeling every variable, as typically done by
 language-based systems (e.g.,~\cite{jif,FlowCaml}).
@@ -216,7 +216,7 @@ Our monitor, then only forbids changing a label of a reference if
 Inspired by~\cite{Hedin13}, we add a primitive for \emph{upgrading} labels,
 when permitted by our monitor.
 %
-This boost the permissiveness of LIO, and, for instance, allows programs, such
+This boosts the permissiveness of LIO, and, for instance, allows programs, such
 at the logging web application described above, which would otherwise be
 rejected by the IFC monitor.
 
@@ -234,7 +234,7 @@ To further address this, we propose a block-structured primitive which
 only upgrades the labels of declared flow-sensitive references, while
 disallowing access to undeclared ones.
  
-By taking fresh perspective on flow-sensitivity, we also show that the {\nsu}
+By taking a fresh perspective on flow-sensitivity, we also show that the {\nsu}
 policy and our upgrade operation can be encoded using existing flow-insensitive
 constructs---the key insight is to explicitly model labels on labels with
 nested labeled references.
@@ -248,7 +248,7 @@ references directly extend to the concurrent setting.
 The contributions of this paper are as follows:
 \begin{itemize}
 
-\item We extend LIO to incorporates flow-sensitive objects, with a focus on
+\item We extend LIO to incorporate flow-sensitive objects, with a focus on
 references. This not only increases LIO's permissiveness, but also provides a
 means for safely combining flow-insensitive and flow-sensitive references.
 
