@@ -1,29 +1,32 @@
 \begin{abstract}
   Flow-sensitive analysis for information-flow control (IFC) allows data
-  structures to have mutable security \emph{labels}, i.e., labels that can
-  change over the course of the computation. This feature is beneficial for
-  several reasons: it often boosts permissiveness and reduces the burden of
-  explicit annotations. %, and enables reuse of single-threaded data structures.
-  However, in a purely dynamic setting, mutable labels can expose a covert
-  channel capable of leaking secrets at a high rate.
+  structures to have mutable security labels, i.e., labels that can change over
+  the course of the computation.
   %
-  We present an extension for LIO---a language-based floating-label
-  system---that safely handles flow-sensitive references.
+  This feature is often used to boost the permissiveness of the IFC monitor, by
+  rejecting fewer programs, and to reduce the burden of explicit label
+  annotations.
+  %
+  However, when added naively, in a purely dynamic setting, mutable labels can
+  expose a high bandwidth covert channel.
+  %
+  In this work, we present an extension for LIO---a language-based
+  floating-label system---that safely handles flow-sensitive references.
   %
   The key insight to safely manipulating the label of a reference is to not
-  only consider the label on the data stored in the reference, i.e, the
+  only consider the label on the data stored in the reference, i.e., the
   reference label, but also the \emph{label on the reference label} itself.
   %
   Taking this into consideration, we provide an \emph{upgrade} primitive that
-  can be used to change the label of a reference, when deemed safe.
+  can be used to change the label of a reference in a safe manner.
   %
-  To eliminate the burden of determining when it is safe to upgrade a
-  reference, we additionally provide a mechanism for automatic upgrades.
+  To eliminate the burden of determining when a reference should be upgraded,
+  we additionally provide a mechanism for automatic upgrades.
   %
   Our approach naturally extends to a concurrent setting, not previously
   considered by dynamic flow-sensitive systems.
   %
   For both our sequential and concurrent calculi, we prove non-interference by
-  embedding the flow-sensitive system into the flow-insensitive LIO calculus;
-  the embedding itself is a surprising result.
+  embedding the flow-sensitive system into the flow-insensitive LIO calculus,
+  a surprising result on its own.
 \end{abstract}

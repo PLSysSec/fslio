@@ -28,7 +28,7 @@
 { }
 { |conf c (E[(LIOTCB t1) >>= t2]) --> conf c (E[t2 t1])| }
 \end{mathpar}
-\caption{Reduction rules for standard terms of base \lio.\label{fig:sos:rules}}
+\caption{Reduction rules for standard \lio{} terms.\label{fig:sos:rules}}
 \end{figure}
 
 
@@ -83,7 +83,7 @@ extension without |labelOfR space|.\label{fig:fs-attack2}}
 \end{figure}
 %
 As in the attack of Figure~\ref{fig:fs-attack}, the |leakRef| of
-Figure~\ref{fig:fs-attack2} can be used to leak the value stores in a |high|
+Figure~\ref{fig:fs-attack2} can be used to leak the value stored in a |high|
 reference |href|, while keeping the current label |low|, without using |labelOfR space|.
 %
 Internally, the value is leaked into public reference |lref| by leveraging the
@@ -105,5 +105,4 @@ block, the current label remains |low|, and since |t==false|, we write |false|
 into the public reference.
 %
 In both cases the value stored in |lref| corresponds to that of |href|, yet
-leaving the current label and the label of |lref| intact, |low|---a direct
-leak!
+leaving the current label and the label of |lref| intact (|low|).
